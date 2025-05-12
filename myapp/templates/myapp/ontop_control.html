@@ -1,0 +1,63 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <img 
+    src="{% static 'myapp/ontop.png' %}" 
+    alt="Logo" 
+    height="40" 
+    class="d-inline-block align-text-center me-2"
+    >
+    <h2>Ontop Endpoint Monitor</h2>
+
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="ontopToggle">
+      <label class="form-check-label" for="ontopToggle">Running</label>
+    </div>
+
+    <div id="ontopStatus" class="mb-3">Status: <strong>unknown</strong></div>
+
+    <h5>Console Output:</h5>
+    <pre id="ontopLog" style="height: 100vh; overflow-y: auto; background:#222; color:#0f0; padding:0.5rem;"></pre>
+  </div>
+</div>
+
+<script>
+(function(){
+  const toggle    = document.getElementById('ontopToggle');
+  const statusEl  = document.getElementById('ontopStatus');
+  const logEl     = document.getElementById('ontopLog');
+
+  // refresh status every 2s
+  setInterval(() => {
+    fetch("{% url 'ontop_status' %}")
+      .then(r => r.json())
+      .then(j => {
+        statusEl.innerHTML = 'Status: <strong>' + j.status + '</strong>';
+        toggle.checked = (j.status === 'running');
+      });
+  }, 2000);
+
+  // refresh logs every 3s
+  setInterval(() => {
+    fetch("{% url 'ontop_logs' %}")
+      .then(r => r.json())
+      .then(j => {
+        logEl.textContent = j.lines.join('\n');
+        logEl.scrollTop = logEl.scrollHeight;
+      });
+  }, 3000);
+
+  // user flips the switch → start or stop
+  toggle.addEventListener('change', () => {
+    const action = toggle.checked ? 'start' : 'stop';
+    fetch("{% url 'ontop_control' %}", {
+      method: 'POST',
+      headers: {'X-CSRFToken': '{{ csrf_token }}','Content-Type':'application/x-www-form-urlencoded'},
+      body: 'action=' + action
+    });
+  });
+})();
+</script>
+{% endblock %}
