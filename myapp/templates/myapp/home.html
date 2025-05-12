@@ -1,0 +1,57 @@
+<!-- myapp/templates/myapp/home.html -->
+{% extends 'myapp/base.html' %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    {% load static %}
+    <img 
+      src="{% static 'myapp/csv.png' %}" 
+      alt="Logo" 
+      height="40" 
+      class="d-inline-block align-text-center me-2"
+      >
+    <h1 class="card-title">Upload CSVs </h1>
+      <p class="card-text">
+        Use this page to upload CSV files into DuckDB for further querying and analysis.
+      </p>
+      <form action="{% url 'upload_csv' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="csv_files" class="form-label">Upload CSV Files</label>
+        <input 
+          type="file" 
+          name="csv_files" 
+          multiple 
+          class="form-control" 
+          id="csv_files"
+        >
+      </div>
+      <button type="submit" class="btn btn-primary">Upload</button>
+      <a href="{% url 'query' %}" class="btn btn-secondary ms-2">Go to Query Page</a>
+      <a href="{% url 'map_fields' %}" class="btn btn-secondary ms-2">Map Fields &rarr;</a>
+    </form>
+    {% if tables_columns %}
+    <div class="mt-5">
+      <h3>Physical Schema Diagram</h3>
+      <div class="mermaid">
+  erDiagram
+  {% for table, cols in tables_columns.items %}
+      {{ table }} {
+  {% for col in cols %}
+          string {{ col }}
+  {% endfor %}
+      }
+  {% endfor %}
+      </div>
+  
+      <!-- Mermaid JS -->
+      <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          mermaid.initialize({ startOnLoad: true });
+        });
+      </script>
+    </div>
+  {% endif %}
+  
+{% endblock %}

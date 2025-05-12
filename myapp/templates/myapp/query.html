@@ -1,0 +1,72 @@
+<!-- myapp/templates/myapp/query.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <img 
+    src="{% static 'myapp/duckdb-logo.png' %}" 
+    alt="Logo" 
+    height="40" 
+    class="d-inline-block align-text-center me-2"
+    >
+    <img 
+    src="{% static 'myapp/query.png' %}" 
+    alt="Logo" 
+    height="40" 
+    class="d-inline-block align-text-center me-2"
+    >
+    <h2 class="card-title">Run a SQL Query on DuckDB</h2>
+    <p class="card-text">
+      Enter a valid SQL query below and press “Execute” to see the results.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="sql_query" class="form-label">SQL Query</label>
+        <textarea 
+          name="sql_query" 
+          id="sql_query" 
+          rows="15" 
+          class="form-control"
+        >{{ query_text }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Execute</button>
+    </form>
+
+    {% if error %}
+      <div class="alert alert-danger mt-3">
+        <strong>Error:</strong> {{ error }}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if results %}
+<div class="card mt-4">
+  <div class="card-body">
+    <h3 class="card-title">Results</h3>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            {% for col in columns %}
+              <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results %}
+            <tr>
+              {% for cell in row %}
+                <td>{{ cell }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
