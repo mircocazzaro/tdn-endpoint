@@ -34,7 +34,7 @@ target		bto:Patient{patient} bto:undergo bto:eventOnset1{patient} . bto:eventOns
 source		SELECT patient, onsetDate, onset_bulbar, onset_axial, onset_generalized, onset_limbs FROM "PATIENTS GENERAL DATA"
 
 mappingId	MAPID-541428e7a83441f5bd29e52d66ffc52e
-target		bto:Patient{patient} bto:undergo bto:eventOnset2{patient} . bto:eventOnset2{patient} a bto:Onset ; bto:ageOnset {age_onset}^^xsd:float . 
+target		bto:Patient{patient} bto:undergo bto:eventOnset1{patient} . bto:eventOnset1{patient} bto:ageOnset {age_onset}^^xsd:float . 
 source		SELECT patient, age_onset FROM "PATIENTS GENERAL DATA" WHERE NOT isnan(age_onset)
 
 mappingId	MAPID-ff2b4bdc90af468793b4f58105fa555f
@@ -119,7 +119,7 @@ source		SELECT patient, gene, has_mutation, mutation_type FROM (SELECT patient, 
 			UNION
 			SELECT patient, 'TARDBP' AS gene, TARDBP AS has_mutation, TARDBP_mutation AS mutation_type
 			FROM "PATIENTS GENERAL DATA"
-			WHERE TARDBP IS NOT NULL) AS p_gene
+			WHERE TARDBP IS NOT NULL) AS subquery
 
 mappingId	MAPID-85118f580e28467e9419669253240d0f
 target		bto:Patient{patient} bto:undergo bto:event1{patient} . bto:event1{patient} bto:hasRegisteredCondition bto:com1{patient} . bto:com1{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C3117 . 
