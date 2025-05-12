@@ -1,0 +1,125 @@
+hash,level,query
+16a7ba814b3592271b3727ff1964656ec03ca80869d7e77f19fc31e3c45eb66e96a5dad8a5a21979686967e57e05aa72d6fda4c5db9c6f07e273ed411a3b25f1,0,"ASK WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease  **<disease>** .
+}"
+54674e2129e27dd9f5ecc88a510b3b5050948f64396ff6d45fabae1cc4cb3ed3a0d22d755528635f2144b84ecbbe145c65066745924fcfb14942bfd36929bef3,0,"ASK WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:birthYear ?by .
+  FILTER((2025 - xsd:integer(?by)) < **<age>**)
+}"
+aec55ae2ea30e25bcc63007e73238abb2ad236815741a2e4d9ca0efa5542cca306cf5ebfa58e399909e3d79c6d25782c3ad9e7fe3dc69c903bdf2baff1637c23,1,"SELECT (COUNT(DISTINCT ?pat) AS ?nDISEASE)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** .
+}"
+f5784ad7dc7daf55e7e48c4dcdd54e17d49a6a63a3e46d713dd2f6ec8104732bb713e663fe81481fec3c25ee89aa7501a357294f159a386bbfa1a9efc8b773d8,1,"SELECT (COUNT(DISTINCT ?pat) AS ?nSex)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:sex **<sex>** .
+}"
+bd80afa5df060e2f52d0ebb07e9287a5b28b1cbf62dbd0dff9fca812c408c75cd70ac12d76c6dc37e242c20a810af8b5d5bbf648d2629678d46910318e79fa05,2,"SELECT (AVG(2025 - xsd:integer(?by)) AS ?avgAge)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:birthYear ?by .
+}"
+80c6af5c28addf4d82bf51cf1aa26a915d8e482d8c8dc09046daf468a9f6d6a3647807798b0aff4e75eef31ec663c117723dc2fc29f91b3787a7d50dfb5f2a28,2,"SELECT (AVG(xsd:integer(?diff)) AS ?medianSurvivalDays)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:deathDate ?d .
+  ?ev  a bto:Onset ;
+       bto:eventStart ?s ;
+       bto:registeredFor ?pat .
+  FILTER ( bto:eventStart >= ""<**starting_date**>""^^xsd:date ) 
+  BIND( xsd:integer(?d) - xsd:integer(?s)
+        AS ?diff )
+}"
+ebcc389617a438c8ba59e23b1d4d0cee0339e82dfbdcd0d75fe5a7f6aced672e079c7817f7e9df6e6d27a9162a4e72ece2043cfa1a14317bfe38dfc7d484f866,3,"SELECT ?site (AVG(?ageOn) AS ?avgOnsetAge)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease <http://purl.obolibrary.org/obo/NCIT_C0002736> ;
+       bto:hasEvent ?ev .
+  ?ev  a bto:Onset ;
+       bto:ageOnset ?ageOn ;
+       bto:bulbarOnset ?b .
+  BIND(IF(?b = true,""Bulbar"",""Spinal"") AS ?site)
+}
+GROUP BY ?site"
+5b2e20e3a52b7c3183f74b48f6085ea76662e8cf79b6420d355bc2b4c95d01b30eda816c67ba4931c155280cecc814321e2c02dc22791666d851016f78c5e11e,3,"SELECT ?bracket (COUNT(DISTINCT ?pat) AS ?n)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:birthYear ?by .
+  BIND(2025 - xsd:integer(?by) AS ?age)
+  BIND(
+    IF(?age < **<date1>**, ""<**<date1>**"",
+      IF(?age <= **<date2>**, ""**<date1>**–**<date2>**"", "">**<date3>**"")
+    ) AS ?bracket
+  )
+}
+GROUP BY ?bracket"
+aa9e29de8d16bd35cd37e5cf0c71f211d5194961a213d67b1acb43a3c6fd775e1c30fe4b018c7c9c5bc33179d948353cc2fcaa64b7ac67e01333e357cf364558,4,"SELECT (2025 - xsd:integer(?by) AS ?age) ?sex
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:birthYear ?by ;
+       bto:sex      ?sex .
+}"
+042b275e3b9c141d8e38307428b320384803e15211ce2016c0fd9d1bf2ce072f837da7851b96e00f65a5be118857ab69bc374e50634dbd5e140adb029260468d,4,"SELECT ?treatType (COUNT(DISTINCT ?pat) AS ?n)
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease **<disease>** ;
+       bto:hasEvent ?ev .
+  ?ev  a bto:TherapeuticProcedure ;
+       bto:procedureType ?treatType .
+}
+GROUP BY ?treatType"
+86973d6bd7efc784b86164a611e3b7657f1af5d9392461a26817a311b0869ce7a020b8631ef3eac5daeaa9938b9e195f43ddaff91cd31785e202aa5cfdcd0bfd,5,"SELECT (SHA256(STR(?pat)) AS ?anonID)
+       (2025 - xsd:integer(?by) AS ?age)
+       ?ageOn
+       ?b
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease  <http://purl.obolibrary.org/obo/NCIT_C0002736> ;
+       bto:birthYear   ?by ;
+       bto:hasEvent    ?ev .
+  ?ev  a bto:Onset ;
+       bto:ageOnset    ?ageOn ;
+       bto:bulbarOnset ?b .
+}"
+2860d4f2813b70202f107f2789f313a3c44bc894ff6f191515ef79899c3b6f5a2e6170b3a062130deded6924f7f4d4bc1ec99a1f277cb857ea349ab5c300b03c,5,"SELECT (SHA256(STR(?pat))   AS ?anonID)
+       ?tDate
+       ?tType
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease     **<disease>** ;
+       bto:hasEvent       ?ev .
+  ?ev  a bto:TherapeuticProcedure ;
+       bto:eventStart     ?tDate ;
+       bto:procedureType  ?tType .
+}
+ORDER BY ?anonID ?tDate"
+28d6d9edab7c0af9f279ca219e714414b34c31b2dd41baf8e6b547699f412995ac5cab8641c2f731895b1fb07064401b7424eb722bfd9d32fd601e46651a30e3,6,"SELECT *
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease  **<disease>** ;
+       ?p  ?o .
+}"
+e70f53b151d24f4afa7b80f169c586ca142135cc72a4cf0c9843f7344ca09ae780ac182e5a4da572af20901ff98c076061524efe5fd526584feac67b5fac8abd,6,"SELECT ?pat ?name ?birthYear ?sex ?ev ?evType ?evStart ?evEnd ?d
+WHERE {
+  ?pat a bto:Patient ;
+       bto:hasName       ?name ;
+       bto:birthYear     ?birthYear ;
+       bto:sex           ?sex ;
+       bto:hasEvent      ?ev ;
+       bto:hasDisease    ?disease .
+  ?ev  a ?evType ;
+       bto:eventStart    ?evStart ;
+       bto:eventEnd      ?evEnd .
+  OPTIONAL { ?pat bto:deathDate ?d }
+     FILTER (?disease = **<disease>**)
+}"

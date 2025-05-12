@@ -1,0 +1,85 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <img 
+      src="{% static 'myapp/mind-map.png' %}" 
+      alt="Logo" 
+      height="40" 
+      class="d-inline-block align-text-center me-2"
+      >
+      <h2>Map CSV → OBDA</h2>
+      <form method="post">
+        {% csrf_token %}
+        {% for blk in mapping_ui %}
+          <div class="card mb-4">
+            <div class="card-header">
+              Mapping <b>{{ blk.mappingId }}</b>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                Select DuckDB table for mapping <b>{{ blk.table_field.label_tag }}</b><br>
+                {{ blk.table_field }}
+              </div>
+              {% for field in blk.placeholder_fields %}
+                <div class="mb-3">
+                  Map placeholder <b>{{ field.label_tag }}</b><br>
+                  {{ field }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">
+          Generate OBDA File
+        </button>
+      </form>
+{% if mapping_graph %}
+  <div class="mt-5">
+    <h3>Current Mappings Graph</h3>
+    <div class="mermaid">
+graph LR
+{% for edge in mapping_graph %}
+  {{ edge.from_id }}["{{ edge.from_label }}"] --> {{ edge.to_id }}["{{ edge.to_label }}"]
+{% endfor %}
+    </div>
+    <!-- Mermaid JS -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+  </div>
+{% endif %}
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          {% for blk in mapping_ui %}
+          (function() {
+            const mid = "{{ blk.mappingId }}";
+            const tableSelect = document.getElementById("table-select-" + mid);
+            const placeholderSelects = document.querySelectorAll(".placeholder-" + mid);
+        
+            tableSelect.addEventListener('change', () => {
+              const tbl = tableSelect.value;
+              fetch("{% url 'get_columns' %}?table=" + encodeURIComponent(tbl))
+                .then(r => r.json())
+                .then(data => {
+                  // populate each placeholder select
+                  placeholderSelects.forEach(sel => {
+                    sel.innerHTML = '<option value="">— select column —</option>';
+                    data.columns.forEach(col => {
+                      const o = document.createElement('option');
+                      o.value = col;
+                      o.text = col;
+                      sel.appendChild(o);
+                    });
+                  });
+                });
+            });
+          })();
+          {% endfor %}
+        });
+        </script>            
+    </div>
+  </div>
+{% endblock %}

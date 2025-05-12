@@ -1,0 +1,72 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <img 
+      src="{% static 'myapp/sparql.png' %}" 
+      alt="Logo" 
+      height="40" 
+      class="d-inline-block align-text-center me-2"
+      >
+      <img 
+      src="{% static 'myapp/query.png' %}" 
+      alt="Logo" 
+      height="40" 
+      class="d-inline-block align-text-center me-2"
+      >
+    <h2 class="card-title">Run a SPARQL Query on Ontop VKG</h2>
+    <p class="card-text">
+      Enter a SPARQL SELECT query below and press “Execute” to see the results.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="sparql_query" class="form-label">SPARQL Query</label>
+        <textarea
+          name="sparql_query"
+          id="sparql_query"
+          rows="15"
+          class="form-control"
+        >{{ sparql_query }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Execute SPARQL</button>
+    </form>
+
+    {% if sparql_error %}
+      <div class="alert alert-danger mt-3">
+        <strong>Error:</strong> {{ sparql_error }}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if sparql_results %}
+<div class="card mt-4">
+  <div class="card-body">
+    <h3 class="card-title">SPARQL Results</h3>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            {% for v in sparql_results.vars %}
+              <th>{{ v }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in sparql_results.rows %}
+            <tr>
+              {% for cell in row %}
+                <td>{{ cell }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
