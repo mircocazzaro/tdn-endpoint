@@ -35,7 +35,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
-DEBUG = False  # or whatever your configuration requires
+DEBUG = True  # or whatever your configuration requires
 ALLOWED_HOSTS = ['*']
 ROOT_URLCONF = 'myproject.urls'
 
