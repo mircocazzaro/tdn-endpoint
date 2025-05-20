@@ -535,3 +535,1176 @@ ConnectionResetError: [Errno 104] Connection reset by peer
 [08/May/2025 03:00:43] "GET /ontop/status/ HTTP/1.1" 200 21
 [08/May/2025 03:00:44] "GET /ontop/logs/ HTTP/1.1" 200 24933
 [08/May/2025 03:00:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[14/May/2025 06:02:07] code 400, message Bad request version ('À\x14À')
+[14/May/2025 06:02:07] You're accessing the development server over HTTPS, but it only supports HTTP.
+[14/May/2025 06:34:05] "GET /map-fields/ HTTP/1.1" 200 79370
+[14/May/2025 06:34:06] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 06:34:06] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 06:34:06] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 06:34:06] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 06:34:06] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 06:34:06] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 06:38:41] "GET / HTTP/1.1" 200 9995
+[14/May/2025 06:38:41] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 06:38:41] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 06:38:41] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 06:38:41] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 06:38:41] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 06:38:41] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 06:38:43] "GET /map-fields/ HTTP/1.1" 200 140705
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 05:52:09
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+[14/May/2025 06:39:18] "GET /map-fields/ HTTP/1.1" 200 148121
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 06:39:18
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+[14/May/2025 06:42:14] "GET / HTTP/1.1" 200 9995
+[14/May/2025 06:42:14] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 06:42:14] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 06:42:14] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 06:42:14] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 06:42:14] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 06:42:14] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 06:42:18] "GET /map-fields/ HTTP/1.1" 500 145
+[14/May/2025 06:42:19] "GET /favicon.ico HTTP/1.1" 404 179
+[14/May/2025 07:01:06] "GET / HTTP/1.1" 200 9995
+[14/May/2025 07:01:06] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 07:01:06] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 07:01:06] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 07:01:06] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 07:01:06] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 07:01:06] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 07:01:08] "GET /map-fields/ HTTP/1.1" 500 145
+[14/May/2025 07:07:26] "GET /map-fields/ HTTP/1.1" 500 145
+[14/May/2025 07:14:30,173] - Broken pipe from ('199.45.154.148', 46450)
+[14/May/2025 07:14:30] code 400, message Bad request version ('À\x14À')
+[14/May/2025 07:14:30] You're accessing the development server over HTTPS, but it only supports HTTP.
+[14/May/2025 07:14:34] "GET / HTTP/1.1" 200 9995
+[14/May/2025 07:14:34,358] - Broken pipe from ('199.45.154.148', 46468)
+[14/May/2025 07:14:37] "GET / HTTP/1.1" 200 9995
+[14/May/2025 07:14:38] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[14/May/2025 07:14:39] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[14/May/2025 07:14:40] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[14/May/2025 07:14:41] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[14/May/2025 07:14:42] "GET /favicon.ico HTTP/1.1" 404 179
+[14/May/2025 07:14:42] code 505, message Invalid HTTP version (2.0)
+[14/May/2025 07:14:42] "PRI * HTTP/2.0" 505 -
+[14/May/2025 07:14:46] "GET /favicon.ico HTTP/1.1" 404 179
+[14/May/2025 07:14:46] code 400, message Bad request version ('À\x14À')
+[14/May/2025 07:14:46] You're accessing the development server over HTTPS, but it only supports HTTP.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 06:39:41
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+[14/May/2025 07:22:10] "GET / HTTP/1.1" 200 9995
+[14/May/2025 07:22:10] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 07:22:10] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 07:22:10] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 07:22:10] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 07:22:10] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 07:22:10] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 07:22:12] "GET /map-fields/ HTTP/1.1" 500 145
+[14/May/2025 07:24:21] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[14/May/2025 07:24:21] "  /*à     Cookie: mstshash=Administr" 400 -
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:19:16
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Internal Server Error: /map-fields/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/var/www/my-webapp/myapp/views.py", line 231, in field_mapping_view
+    form = FieldMappingForm(
+  File "/var/www/my-webapp/myapp/views.py", line 144, in __init__
+    label=f"`{var}` →",
+UnboundLocalError: local variable 'var' referenced before assignment
+[14/May/2025 07:44:44] "GET /map-fields/ HTTP/1.1" 500 116566
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:28:30
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Internal Server Error: /map-fields/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/var/www/my-webapp/myapp/views.py", line 232, in field_mapping_view
+    form = FieldMappingForm(
+  File "/var/www/my-webapp/myapp/views.py", line 144, in __init__
+    label=f"`{var}` →",
+UnboundLocalError: local variable 'var' referenced before assignment
+[14/May/2025 07:48:35] "GET /map-fields/ HTTP/1.1" 500 116566
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:48:32
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:48:42
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:50:05
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:50:09
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:50:15
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Internal Server Error: /map-fields/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/var/www/my-webapp/myapp/views.py", line 335, in field_mapping_view
+    return render(request, 'myapp/mapping.html', {
+  File "/usr/local/lib/python3.10/dist-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 523, in parse
+    self.unclosed_block_tag(parse_until)
+  File "/usr/local/lib/python3.10/dist-packages/django/template/base.py", line 590, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Unclosed tag on line 16: 'block'. Looking for one of: endblock.
+[14/May/2025 07:50:34] "GET /map-fields/ HTTP/1.1" 500 239093
+[14/May/2025 07:51:03] "GET /map-fields/ HTTP/1.1" 200 88457
+[14/May/2025 07:51:03] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 07:51:03] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 07:51:03] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 07:51:03] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 07:51:03] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 07:51:03] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 14, 2025 - 07:50:28
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[14/May/2025 07:54:52] "GET /map-fields/ HTTP/1.1" 200 115311
+[14/May/2025 07:54:52] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 07:54:52] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 07:54:52] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 07:54:52] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 07:54:52] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 07:54:52] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:04:08] "GET / HTTP/1.1" 200 9995
+[14/May/2025 08:04:08] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:04:08] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:04:08] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:04:08] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:04:08] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:04:08] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:04:17] "GET /map-fields/ HTTP/1.1" 200 13344
+[14/May/2025 08:04:49] "GET /static/myapp/site.webmanifest HTTP/1.1" 200 436
+[14/May/2025 08:04:54] "GET /map-fields/ HTTP/1.1" 200 13344
+[14/May/2025 08:04:55] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[14/May/2025 08:08:34] "GET /map-fields/ HTTP/1.1" 200 13342
+[14/May/2025 08:08:34] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:08:34] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:08:34] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:08:34] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:08:34] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:08:34] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:14:08] "GET /map-fields/ HTTP/1.1" 200 15484
+[14/May/2025 08:14:08] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:14:08] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:14:08] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:14:08] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:14:08] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:14:08] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:38:41] "GET /map-fields/ HTTP/1.1" 200 15484
+[14/May/2025 08:38:42] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:38:42] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:38:42] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:38:42] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:38:42] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:38:42] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:43:42] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:43:42] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:43:42] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:43:42] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:43:42] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:43:42] "GET /map-fields/ HTTP/1.1" 200 159912
+[14/May/2025 08:43:42] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:44:24] "GET / HTTP/1.1" 200 9995
+[14/May/2025 08:44:28] "GET /map-fields/ HTTP/1.1" 200 159912
+[14/May/2025 08:44:58] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:44:58] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:44:58] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:44:58] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:44:58] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:44:58] "GET /map-fields/ HTTP/1.1" 200 159912
+[14/May/2025 08:44:59] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:46:24] "GET /map-fields/ HTTP/1.1" 200 164378
+[14/May/2025 08:46:24] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:46:24] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:46:24] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:46:24] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:46:24] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:46:24] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:46:53] "GET /map-fields/ HTTP/1.1" 200 164376
+[14/May/2025 08:46:56] "GET /get-columns/?table=Turin_alsfrs HTTP/1.1" 200 148
+[14/May/2025 08:51:08] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:51:08] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:51:08] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:51:08] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:51:08] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:51:08] "GET /map-fields/ HTTP/1.1" 200 174769
+[14/May/2025 08:51:08] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:51:12] "GET /get-columns/?table=Turin_alsfrs HTTP/1.1" 200 148
+[14/May/2025 08:53:04] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[14/May/2025 08:53:20] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:53:20] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:53:20] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:53:20] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:53:20] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:53:20] "GET /map-fields/ HTTP/1.1" 200 174769
+[14/May/2025 08:53:21] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 08:53:27] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[14/May/2025 08:55:33] "GET /map-fields/ HTTP/1.1" 200 174788
+[14/May/2025 08:55:33] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 08:55:33] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 08:55:33] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 08:55:33] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 08:55:33] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 08:55:34] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 09:06:44] "GET /map-fields/ HTTP/1.1" 200 174737
+[14/May/2025 09:06:44] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 09:06:44] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 09:06:44] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 09:06:44] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 09:06:44] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 09:06:44] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 09:06:52] "GET /get-columns/?table=Turin_spiro HTTP/1.1" 200 42
+[14/May/2025 09:12:40] "GET / HTTP/1.1" 200 9996
+[14/May/2025 09:12:41] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 09:12:41] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 09:12:41] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 09:12:41] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 09:12:41] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 09:12:41] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 09:12:43] "GET /map-fields/ HTTP/1.1" 200 174747
+[14/May/2025 09:12:43] code 400, message Bad request version ('À\x14À')
+[14/May/2025 09:12:43] You're accessing the development server over HTTPS, but it only supports HTTP.
+[14/May/2025 09:14:06] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[14/May/2025 09:14:06] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[14/May/2025 09:14:06] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[14/May/2025 09:14:06] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[14/May/2025 09:14:06] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[14/May/2025 09:14:06] "GET /map-fields/ HTTP/1.1" 200 174787
+[14/May/2025 09:14:06] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[14/May/2025 09:15:50,080] - Broken pipe from ('62.240.135.50', 51643)
+[14/May/2025 09:15:50,082] - Broken pipe from ('62.240.135.50', 7904)
+[14/May/2025 09:15:50,082] - Broken pipe from ('62.240.135.50', 5291)
+[14/May/2025 09:15:50,083] - Broken pipe from ('62.240.135.50', 52529)
+[14/May/2025 09:15:50,083] - Broken pipe from ('62.240.135.50', 7478)
+[14/May/2025 09:15:50,084] - Broken pipe from ('62.240.135.50', 3486)
+[14/May/2025 09:18:14] "GET / HTTP/1.1" 200 9996
+[14/May/2025 09:19:33] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[14/May/2025 09:19:33] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[14/May/2025 09:19:33] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[14/May/2025 09:19:33] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+147.185.133.77 - - [14/May/2025 11:52:54] "GET / HTTP/1.1" 404 9
+[14/May/2025 14:05:48,351] - Broken pipe from ('167.94.138.184', 35740)
+[14/May/2025 14:05:49] code 400, message Bad request version ('À\x14À')
+[14/May/2025 14:05:49] You're accessing the development server over HTTPS, but it only supports HTTP.
+[14/May/2025 14:05:52] "GET / HTTP/1.1" 200 9996
+[14/May/2025 14:05:53,239] - Broken pipe from ('167.94.138.184', 35786)
+[14/May/2025 14:06:02] "GET / HTTP/1.1" 200 9996
+[14/May/2025 14:06:03] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[14/May/2025 14:06:05] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[14/May/2025 14:06:08] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[14/May/2025 14:06:09] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[14/May/2025 14:06:10] "GET /favicon.ico HTTP/1.1" 404 5271
+[14/May/2025 14:06:15] code 505, message Invalid HTTP version (2.0)
+[14/May/2025 14:06:15] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[14/May/2025 14:06:23] "GET /favicon.ico HTTP/1.1" 404 5271
+[14/May/2025 14:06:24] code 400, message Bad request version ('À\x14À')
+[14/May/2025 14:06:24] You're accessing the development server over HTTPS, but it only supports HTTP.
+----------------------------------------
+Exception occurred during processing of request from ('199.45.154.156', 52426)
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/socketserver.py", line 316, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 347, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/usr/lib/python3.10/wsgiref/simple_server.py", line 118, in handle
+    self.raw_requestline = self.rfile.readline(65537)
+  File "/usr/lib/python3.10/socket.py", line 705, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+199.45.154.156 - - [14/May/2025 14:08:41] code 400, message Bad request version ('À\\x14À')
+199.45.154.156 - - [14/May/2025 14:08:41] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03Â\x9b.×\x8aôæ\x05RJáyô®&¯,\x0fjü\x0c\x9e\x03j\x9f\x91\x80\x84ÛI\x82® y5çx"NßÇÚ1\x86¤\x1có\x02h½ü¡räÚ\x99\x83.¼tZå\x84\x88ê\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+199.45.154.156 - - [14/May/2025 14:08:45] "GET / HTTP/1.1" 404 9
+199.45.154.156 - - [14/May/2025 14:08:49] "GET / HTTP/1.1" 404 9
+199.45.154.156 - - [14/May/2025 14:08:49] code 505, message Invalid HTTP version (2.0)
+199.45.154.156 - - [14/May/2025 14:08:49] "PRI * HTTP/2.0" 505 -
+199.45.154.156 - - [14/May/2025 14:08:56] "GET /favicon.ico HTTP/1.1" 404 9
+199.45.154.156 - - [14/May/2025 14:08:57] code 400, message Bad request version ('À\\x14À')
+199.45.154.156 - - [14/May/2025 14:08:57] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03ñ*f5\x93y\x1cª`Ûü(®e\x0dY#¬³3\x10ë\x8bÃK+ \x01òDY5 "Õ\x0b'#ÁWð°X­\x9d\x0eËl\x87\x974ðo]\x9cB ½v=ÜÚA¦"\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+20.64.97.78 - - [14/May/2025 14:25:53] code 400, message Bad request syntax ('MGLNDD_176.126.87.152_8084')
+20.64.97.78 - - [14/May/2025 14:25:53] "MGLNDD_176.126.87.152_8084" 400 -
+[14/May/2025 15:04:34] "GET / HTTP/1.0" 200 9996
+Not Found: /aaa9
+[14/May/2025 17:56:53] "GET /aaa9 HTTP/1.1" 404 5250
+Not Found: /aab8
+[14/May/2025 17:56:54] "GET /aab8 HTTP/1.1" 404 5250
+[14/May/2025 17:56:55] "GET / HTTP/1.1" 200 9996
+[14/May/2025 19:47:47] code 400, message Bad request version ('F\x07\x00tsXrcsXYs9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00bbXcsXctst\x00\x00\x00\x00\x00\x00')
+[14/May/2025 19:47:47] "   TZ          0I    ¨À )t F tsXrcsXYs9                      bbXcsXctst      " 400 -
+18.220.154.78 - - [14/May/2025 20:35:20] code 400, message Bad request syntax ('SSH-2.0-Go')
+18.220.154.78 - - [14/May/2025 20:35:20] "SSH-2.0-Go" 400 -
+43.129.41.203 - - [14/May/2025 20:58:25] code 400, message Bad HTTP/0.9 request type ('\\x00')
+43.129.41.203 - - [14/May/2025 20:58:25] "\x00\x1e\x00\x06\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03" 400 -
+43.129.41.203 - - [14/May/2025 20:58:25] "GET / HTTP/1.0" 404 9
+43.129.41.203 - - [14/May/2025 20:58:25] code 400, message Bad request syntax ('\\x16\\x03\\x00\\x00S\\x01\\x00\\x00O\\x03\\x00?G×÷º,îê²`~ó\\x00ý\\x82{¹Õ\\x96Èw\\x9bæÄÛ<=Ûoï\\x10n\\x00\\x00(\\x00\\x16\\x00\\x13\\x00')
+43.129.41.203 - - [14/May/2025 20:58:25] "\x16\x03\x00\x00S\x01\x00\x00O\x03\x00?G×÷º,îê²`~ó\x00ý\x82{¹Õ\x96Èw\x9bæÄÛ<=Ûoï\x10n\x00\x00(\x00\x16\x00\x13\x00" 400 -
+43.129.41.203 - - [14/May/2025 20:58:32] code 400, message Bad request version ('0.12\\x00')
+43.129.41.203 - - [14/May/2025 20:58:32] "\x00\x00\x00¤ÿSMBr\x00\x00\x00\x00\x08\x01@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x06\x00\x00\x01\x00\x00\x81\x00\x02PC NETWORK PROGRAM 1.0\x00\x02MICROSOFT NETWORKS 1.03\x00\x02MICROSOFT NETWORKS 3.0\x00\x02LANMAN1.0\x00\x02LM1.2X002\x00\x02Samba\x00\x02NT LANMAN 1.0\x00\x02NT LM 0.12\x00" 400 -
+43.129.41.203 - - [14/May/2025 20:58:34] code 400, message Bad HTTP/0.9 request type ('l\\x00')
+43.129.41.203 - - [14/May/2025 20:58:34] "l\x00\x0b\x00\x00\x00\x00\x00\x00\x00\x00\x00" 400 -
+43.129.41.203 - - [14/May/2025 20:58:34] code 400, message Bad request version ('RTSP/1.0')
+43.129.41.203 - - [14/May/2025 20:58:34] "OPTIONS / RTSP/1.0" 400 -
+43.129.41.203 - - [14/May/2025 20:58:34] code 400, message Bad request syntax ('{"id":1,"jsonrpc":"2.0","method":"login","params":{}}')
+43.129.41.203 - - [14/May/2025 20:58:34] "{"id":1,"jsonrpc":"2.0","method":"login","params":{}}" 400 -
+43.129.41.203 - - [14/May/2025 20:58:34] code 400, message Bad request syntax ('\\x00\\x00\\x00qj\\x81n0\\x81k¡\\x03\\x02\\x01\\x05¢\\x03\\x02\\x01')
+43.129.41.203 - - [14/May/2025 20:58:34] "\x00\x00\x00qj\x81n0\x81k¡\x03\x02\x01\x05¢\x03\x02\x01" 400 -
+43.129.41.203 - - [14/May/2025 20:58:36] code 400, message Bad request version ('SIP/2.0')
+43.129.41.203 - - [14/May/2025 20:58:36] "OPTIONS sip:nm SIP/2.0" 400 -
+43.129.41.203 - - [14/May/2025 21:16:14] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03ÇjqzR\\x97í\\x8b^7\\x82K=W\\x96\\x07\\x01CÊ\\x07±|Ø\\xadEïP\\x02¦Ò\\x10\\x17\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:16:14] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ÇjqzR\x97í\x8b^7\x82K=W\x96\x07\x01CÊ\x07±|Ø­EïP\x02¦Ò\x10\x17\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:15] code 400, message Bad request version ('·\\x00þ´\\x82\\x81Jö\\x8b\\x7f(')
+43.129.41.203 - - [14/May/2025 21:16:15] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03bÆ^¶òil5Úéö8 ¤H\x94l¶ð_½§;F\x8elkqäñ \x84 ·\x00þ´\x82\x81Jö\x8b\x7f(" 400 -
+43.129.41.203 - - [14/May/2025 21:16:16] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:16] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x18ê\x06àJ\x19H$¢Pî{ÏÚòß\x8d27\x01â\x1c²b±\x93Ð¼1p}é\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:17] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:17] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x8cb5ì\x9epk<½¨Ô±S\x86E\x81\x080z\x02ª½Båñá­¹:ÀåÏ [Ç²äi×~ð5Û 5\x88~O$¨\x9b\x02_\x1dó3\x0c«<Ê \x9f\x82\x15À\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:18] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:18] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x0d\x89ì\x17\x00Ã²Ð\x9cê9\x97²u'®aî\x882jêxÑoýÙîy\x0f¶B\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:24] code 400, message Bad request syntax ('ABCDEFGHVCMD\\x00\\x00')
+43.129.41.203 - - [14/May/2025 21:16:24] "ABCDEFGHVCMD\x00\x00" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request syntax ('32\\x00')
+43.129.41.203 - - [14/May/2025 21:16:28] "32\x00" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request syntax ('\\x11\\x00\\x00\\x00\\x01\\x00\\x00\\x00n\\x00ä!Á~/#u')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x11\x00\x00\x00\x01\x00\x00\x00n\x00ä!Á~/#u" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03O\\x9f\\x00ÀJV÷?m5±ÃÚW\\x94ðàöc\\\\ZEY\\x12+P¾\\x0frà\\x11\\x08\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03O\x9f\x00ÀJV÷?m5±ÃÚW\x94ðàöc\\ZEY\x12+P¾\x0frà\x11\x08\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03øù\\x10ßÔøÏw,\\x10r\\x93\\x94|ÌÂ\\x9d\\x11ÊÈ\\x81´\\x05E\\x9b\\x97QÌ¶tQú\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03øù\x10ßÔøÏw,\x10r\x93\x94|ÌÂ\x9d\x11ÊÈ\x81´\x05E\x9b\x97QÌ¶tQú\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request syntax ('\\x00\\x0e8Z\\x9a}b]\\x82Æ\\x9a\\x00\\x00\\x00\\x00\\x00')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x00\x0e8Z\x9a}b]\x82Æ\x9a\x00\x00\x00\x00\x00" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03k_\x1f5uÏ\x9b\x13G¥:yÊÉ\x88u\x1eÆ~ÊÒk®ïÆ\x13.ôàvW\x84\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03µo\x12;¯²\x8dT¤­\x95xóêo\x98XÖ»ºÏJ\x07ÖªY~\x15<\x87Qò \x82\x18*­­±êÈc\x99Ùn\x08\x10q¾»L\x12\x8bä D±=«ÿ¸«·û_\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ó\x0f]i\x81\x14^ºÿô®YÁm\x8cØ ÀÒë@\x1cª\x8aZm³¶tÙõQ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03o<þÖÖ/Å\x1c\x86\x1dX2\x05P\x0b~sJÊtÑ\x8d\x88°w\x9a\x0cÐ\x9d#âÄ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:28] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:28] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03;FE\x85D²(]Y\x1bUHäawvO&¿Ô\x9a[æ ÌN\x90\x1d\x0eûØ¡\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:29] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:29] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x14\x8b)Ñ\x00\x85\x18\x91$Bèïa7gbªËÑè¦\x81h\x1aSjmßµ\x13°2\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:29] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03\\x18*FáeÖ\\x1b¿$\\x14ç6ØY.\\\\÷@)&]\\x06¯,´Ì\\x08Ã}Æ[e\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:16:29] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x18*FáeÖ\x1b¿$\x14ç6ØY.\\÷@)&]\x06¯,´Ì\x08Ã}Æ[e\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:29] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03Iï£idþ´Q}Ø9®³E·}Â\\x9aó¾\\x037,¶Ë·\\x11åuM\\x9dñ\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:16:29] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03Iï£idþ´Q}Ø9®³E·}Â\x9aó¾\x037,¶Ë·\x11åuM\x9dñ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:29] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:29] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x92h\x03£c¸dåÈ£WE -¹_$\x9cØÙÍD{Ö¤\x06ý\x82\x0c\x91øZ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:39] code 400, message Bad request syntax ('TQ8zyt9Dz3')
+43.129.41.203 - - [14/May/2025 21:16:39] "TQ8zyt9Dz3" 400 -
+43.129.41.203 - - [14/May/2025 21:16:39] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00î\\x01\\x00\\x00ê\\x03\\x03')
+43.129.41.203 - - [14/May/2025 21:16:39] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('(Haswell)\\x04\\x00\\x00\\x80\\x00\\x02\\x00\\x00\\x00·ñ\\x04\\x00\\x00\\x80\\x00\\x05\\x00\\x00\\x00½ðÉ½/')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x9f\x00\x00\x00\x05\x00\x00\x00\x04\x00\x00\x80\x00\x08\x00\x00\x00ÓÃ»§½øÈë\x04\x00\x00\x80\x00\x1d\x00\x00\x00DESKTOP-9YRLE7||106.75.18.238\x04\x00\x00\x80\x00B\x00\x00\x007/26 ¶Ü£ºÎÞ È¨ÏÞ£º¸ß Windows 10 6GB Intel Core Processor (Haswell)\x04\x00\x00\x80\x00\x02\x00\x00\x00·ñ\x04\x00\x00\x80\x00\x05\x00\x00\x00½ðÉ½/" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03l¬N04Þ\x1dÐñ\x0b\x99t\x1c\x89®ñ³ïxQ\x15\x9b>\x9b\x8dÊ*²Ì\x00\x05Ê Å£º\x06\x97\x18\x1fµÈý³\x7fÓ\x01Fá\x91ÊonÔºCYr¾\x8eÉ\x9d\x81\x90}\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x9d«Áw+8\x995o\x90PÃc\x14¨\x94C¾¶|Pgâ_\x93\x1b\x15ì\x90\x9fít \x04\x00\x1e¯Â]ec.\x8f\x15>\x8f¦AíÈò\x10®â"Ò\x05\x1d&\x8e\x1f\x7f\x82è'\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03¬\x0dÜ*\x97¦¸ð¬Y³¿\x8dÊÖU£y÷\x88\x01¡:·røF\x09\x1f\x93ñ\x7f\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03å ÙÐï\x93\x08@¥RlÏ_õ¦}©Íö\x00mÔ\x01\x87;¾r´wµbG \x10¹¶g×¨<\x8e¾·"åf ij?tÎÖL\x1c\x905\x11¼uf\x9f\x89\x05"\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00î\\x01\\x00\\x00ê\\x03\\x03¢m^¬')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03¢m^¬\x1e4Ø\x00%ï\x12'\x89g\x17Î\\Dg¸3þ\x95\x16" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03fø[Û\x8eÅxÈ\x85\x11æP\x9d\x96\x15íaZï\x9a|ÃÉsdâþ4=\x9f\x89j\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03m´v\x86a,ÓÇ\x16y©)ÉÕ¿\x9eû³\x14\x8aý66\x88\x0d\x94\x1e\x06\x8fUt4 Ì  ªñ IdKs\x824Þ¾\x85_é\x9ft.Aj¡ý¸\x82fSë×Fâ\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03t _Gÿc"\x8bÈû´ª_\x155s©?D\x87k\x09Ägü\x0b6É.~JÎ ¡Ø(D(_é~s»\x08*\x88`Ô\x180Ký\x1c1Jé\x83á?ã\x0e\x9e^ \x09\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:40] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03¯"õ\\P¿©\x90Î\x14Ó5\x8cØ÷  ý³ã\x9bcË\x9fß\x01FmÔ@;¶\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:50] code 400, message Bad request version ('=')
+43.129.41.203 - - [14/May/2025 21:16:50] "\x96\x00\x00\x00\x99\x01\x00\x00\x8e\x00\x00\x00x\x9ccd \x00\\\\\x83½Cü\x03tÃL\x8dý¼ÝBKR\x8bK\x18\x10\\°\x12. f\x04â\x09ÿe\x0cf\x9f¼\x01b2x2ä1\x940¤2ä0h0\x041h2(0X0\x181\x982\x983\x980ø\x00yî\x0c\x99\x0cé\x0c\x89\x0cI@º\x04È÷\x03ª-a(gÈg(bÈ\x06ò\x9d\x81¬< LeH\x06\x8ag\x82y$\x01\x1eM\x81«E\x0c\x0c\x07V\x1ck@\x97b$Í¤\x81\x01\x00\x04ò\x1f=" 400 -
+43.129.41.203 - - [14/May/2025 21:16:50] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00î\\x01\\x00\\x00ê\\x03\\x03ÐóN,²µ_ì¡¹\\x11\\x80égXý')
+43.129.41.203 - - [14/May/2025 21:16:50] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03ÐóN,²µ_ì¡¹\x11\x80égXý g_\x04\x08ØÛ®C]S3tïu" 400 -
+43.129.41.203 - - [14/May/2025 21:16:50] code 400, message Bad HTTP/0.9 request type ("\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03ú/\\x89bïN?Á¸\\x08\\x04\\x02ÖëA\\x17~9rÖ\\x8aÒ¶\\x9fÕpW\\x84¢'*.\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À")
+43.129.41.203 - - [14/May/2025 21:16:50] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ú/\x89bïN?Á¸\x08\x04\x02ÖëA\x17~9rÖ\x8aÒ¶\x9fÕpW\x84¢'*.\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:50] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:50] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03L¨\x01\x01\x86ª?\x12m!R\x02ª,b\x87½0é\x84\x94úÝs\x13³\x0b!­\x7f¼ú\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:51] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:51] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x09\x0fj7\x95»Å\x9b\x01v\x94:\x1b\x1b\x86_P\x8c\x10Ãµ_ÌJâ³@ÄÙô°¾\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:51] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03\\x06èÕ¡ÑíÃ\\x10&\\x96û\\x9a²!¹')
+43.129.41.203 - - [14/May/2025 21:16:51] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x06èÕ¡ÑíÃ\x10&\x96û\x9a²!¹\x1fÉd\x9eá\x9c\x8eVÌæhGÔò\x80S" 400 -
+43.129.41.203 - - [14/May/2025 21:16:51] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:51] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x9b÷%ú\x1d\x96­\x1eÁ\x10(Kýw\x96-N°\x19ÿ¤ñk³ÓE\x93öa\x16\x03\x1a\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:16:51] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:16:51] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x05¦UÛê´\x06ßuQ\x0b\x14¾\x09EZo\x89\x19Èk3ÓðiK\x9fº\x88\x83PÁ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad request syntax ('\\x10\\x00\\x00\\x00\\x02±×\\x02\\x00\\x00\\x00\\x00Ê\\x00<9')
+43.129.41.203 - - [14/May/2025 21:17:01] "\x10\x00\x00\x00\x02±×\x02\x00\x00\x00\x00Ê\x00<9" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:01] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03oÑ\x9b\x12µùdtu\x17·"aê\x06Ðcÿ rë]ò´\x8f)\x0e\x8d£\x11¶\x05 ³x\x8fÕUÝºq,Í§Ý\x9aª\x83o"öV0\x04\x9f£ªD\x9a"¹AL9\x06\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:01] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03F¨º°\x07¦Â¶°²²a\x074Á\x17P\x0dêcûL\x0c\x9b_È&Ëº\x10ÏM\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:01] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03×\x04«ðÛ\\B\x861K\x94a\x89Ð*[\x900)X¹¶ÄAê\\¯O&ÐÐ\x0b '¹l\x94Ò.ÁýÀW½§±¨9**¸ç[,&¦bw\x9añ!z\x84\x15C\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad HTTP/0.9 request type ("\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03ëY3V¿\\x8fa×Áú\\x88âe¸\\x92\\x88\\x14_\\x99Ë3ë-Y\\x9eð\\x95\\x9b*'0i\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À")
+43.129.41.203 - - [14/May/2025 21:17:01] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ëY3V¿\x8fa×Áú\x88âe¸\x92\x88\x14_\x99Ë3ë-Y\x9eð\x95\x9b*'0i\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03\\x0e§\\\\\\x7fS\\x92\\x8füv\\x8e*·\\x96q\\x12·àÛGß\\x02ð,#\\x11,v\\x8f3´')
+43.129.41.203 - - [14/May/2025 21:17:01] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x0e§\\\x7fS\x92\x8füv\x8e*·\x96q\x12·àÛGß\x02ð,#\x11,v\x8f3´" 400 -
+43.129.41.203 - - [14/May/2025 21:17:01] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03\\x8b\\x16Ðø\\x08óï¡\\x05ñe\\x93ß8ÞÌ=mîWw~(\\x81R\\x9d7\\x1b\\x9dÍÀ\\x8a\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:17:01] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x8b\x16Ðø\x08óï¡\x05ñe\x93ß8ÞÌ=mîWw~(\x81R\x9d7\x1b\x9dÍÀ\x8a\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03¬\x89«^ ÍÚþ\x95³Ãsº\x1fV\x9aí6e\x85µ\x91ø\x12é\x18\x88Þeñ8ß ÙEÔ\x94¼âÛ\x17ïf)VP\x14\x89&\x16r\x06mí\x17\x0b \x04[\x0c#[øç³\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03Á4¢\x8e"ÿµaV\x88ø1ñJzU\x17åju¿3\x9få´\x9fÆ.¤\x8d]\x1f \x9dÕc\x90ÃÕ\x18_\x1aîj\x11îoÕ\x0b²i\x87©úä{Úvhré\x07\x86µ6\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03âÑP`Éµ\x9b¨t\x8a\x12ú\x87±FJlE\x9b\x8a\x9bwåã\x9dc\x1c°pÖªl\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('£°1')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03CÉ;½Nø\x1c\x18êµìæ_ôÅ\x91U\x1e£°1" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03©9)=½\\x0f§[_þÒ\\x15O\\x0f\\x8b¦ãÍ.\\x17/\\x0e=R*üó\\x87r\\x1a')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03©9)=½\x0f§[_þÒ\x15O\x0f\x8b¦ãÍ.\x17/\x0e=R*üó\x87r\x1a" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03Ð?íø+\x9c'\x8c>\x10Uó'\x80ª.B»Ö\x938\x89Àûx­\x1e¨Z´\x8bQ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\\g×t1ö\x85B\x98&z]omi\x12¯áÓü\x92Äã»i\x83è\x15sÃ\x0b½\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('\\x8e`(wl7¹j&v\\x98Ý\\x13x\\x9eÞ\\x8b$B!:_pÛ\\x99\\x13¥')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x90\x8a ¶~)N\x9dsdè\x86¡ÌiÁI \x1e7$Ð\x84\x19.B\x8cù¦&\x0d³ \x8e`(wl7¹j&v\x98Ý\x13x\x9eÞ\x8b$B!:_pÛ\x99\x13¥" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03eêÈ·½\x96èL\x8d\x13&\x94½\x19òå¡mfL\x16R\x1dì82\x95«ÐÈ\x88b\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('\\x81>÷l´\\x82àÝ·wx\\x0e\\x028}m*^\\x0eÒ\\x82\\x07\\x82\\x84«µ')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03æm0Y?\x91\x14°K«Ó\x1b©I$0Rç§´\x8b5lx\x0bÀ®\x045&\x82Ù \x81>÷l´\x82àÝ·wx\x0e\x028}m*^\x0eÒ\x82\x07\x82\x84«µ" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03²\\x14\\x9a\\x08e¨Ñò\\x08NNªËõmvGÜ=I÷ä©®§§\\x8fÈTá~\\x91\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03²\x14\x9a\x08e¨Ñò\x08NNªËõmvGÜ=I÷ä©®§§\x8fÈTá~\x91\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03úØ©\x9d`øÐ÷P\x1dôî\x9d\x98\x13b×«oI&G\x98ð¶\x98\x86Ô~iëì\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:21] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03\\x89Û\\x12r|§\\xad.Q\\x88(')
+43.129.41.203 - - [14/May/2025 21:17:21] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x89Û\x12r|§­.Q\x88(" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03¶}þu¥+¢ëen]Æ\x8bWÛ®{%o\x01ï©êÌµ\x03Üä8\x92³· :òÜÃ8\x06\x98\x1a\x1e$/)®\x87\x08\x99Ï}\x9fË|Ópëq\x0dk7!¦þ-\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03-\x85ÿ\x8c.4¼ËÈc<ãîÇ\x13ï\x82\x9f\x8fD¢\x1e\x9dAT÷b\x1d\x8f ÁÂ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x94\x9fQQ\x1a\x0fÚí\x98®ä\x9eÏù\x1eî+&\x98H\x16A!êÞí¡ªl½Å5\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x98¦jé\x01e÷à+3ÔüS#©bÒ\x1f:¿f¿\x05ì(ë\x91/³©L\x13 §?p\x09:aÛ7±\x8d.O(nj;\x07\x13à÷#s\x9c\x9dY\x8d5 h#\x10æ\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ÔZiÍ¯JÄ¾\x15LÞÐ\x1df+Ó¤È|ù"\x7fé\x9bí\x08\x15æO<§V\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03jF\x82~ì\x06\x94\x821\x1aº\x1f°@Ò?QFõK\x9f\x98¾hzÄÐ\x9c\\\x0dV,\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request syntax ("\\x16\\x03\\x01\\x00î\\x01\\x00\\x00ê\\x03\\x03Õ3TÍë\\x08S?«p·eq\\x9c'áà\\x11b$(<\\x91\\\\òl\\x0c")
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03Õ3TÍë\x08S?«p·eq\x9c'áà\x11b$(<\x91\\òl\x0c" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ÒG¯W}»òÐuµ\x85\x7f\x8bwãÑÔI#3\x1fåcÃ\x99m\x8aB\x00ú\x80\x8a\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03ý]\\x9aV;§²D\\x98"A´c')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ý]\x9aV;§²D\x98"A´c" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00î\\x01\\x00\\x00ê\\x03\\x03ûí\\x8e%')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03ûí\x8e%" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03U¡Û\x9fI\x1b,\x99\x1b\x1b¹}z¯½\x86eúÆ\x92b7e'x!\x84«\x90¡¥ \x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x9b{¨ÚÒ\x0bP\x07m\x9a©\x1f3\x08\x08×½`ÕO*xË\x1c\x85þaz\x16>\x97½ n'¶óH$°¨kp\x05\x8eëf\x04Rú£»-Û\x1b\x07GîôV\x14\x82u}\x10\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x80§V<¿\x83çùå|ìKsëXD\x0cã:\x99H-û)\x0dx)è½ñÞÚ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('1(\\x97R')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03¢Ä\x87\x19¸ðª¢\x0bãþ\x851(\x97R" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x8aöûØÀ¸5¾§%Ù¨·3xÄð<\x02Yj0sÉð\x13\x19H°ýðy ÙÅÿÙ\x16o\x00É\x86\x98w],\x9b\x98³\x1aÝ\x14Aã¤&\x15Ü¡E^u,\x14¡\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03µg\x82lþ ü9B\x12\x16\x9cähù¿\x9e¨\x99\x91\x93Vç\x05õw\x8aDÓsìl «\x92{\x90²\x8eO*\x13ÔUá'ÖâÅÅûG\x07a\x9aö!\x19Z\x8f_®N|#\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:22] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:22] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03I\x80°(--\x07T\x87\x8eßTB\x8bOo\x08ºd\x81@c\x04^ÃðÃ\x1fz\x81j.\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:23] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:23] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x85°\x0e\x7f\x99t\x0b\x9bö.k8_\x12L\x07}\x997¸)\x1am²\x0e\x9fO`¸h\x15\x18\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:23] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03I')
+43.129.41.203 - - [14/May/2025 21:17:23] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03I" 400 -
+43.129.41.203 - - [14/May/2025 21:17:23] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:23] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03­A»\x8b\x16îü¡jý(Ù\x8b®}³m\x90³»ºçá\x98\x80æ§ðbäï> HU<2\x05\x90Cü»\x14öQ\x15%È*\x80h*çñòr§8\x82\x8a\x114f )\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:23] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:23] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x9f{¼WAÆ,\x9faO4òÿ\x9f>y\x16\x92XoPSZ6~ï\x8eÃ/¨îc "[\x03hÑ·ö¯\x19\x87i\x95B\x160"\x17\x9e3þ \x07Ï£\\:mÒyö\x9bâ\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:23] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:23] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03\x93÷·MË>s\x0b\x9b\x1a\x14\x8f\x85\x8b»7\x19¦\x97\x8f{·\x85\x8dú\x03§(\x7f¡¶÷\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:40] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03Úº~Y\x1d\x02G\x9d0*'}x\x19÷\x15³S®\x07\x9eÞë\x05ÒiôÈlüç\x93\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03b±¹ÞmÎ\x02k\x16\x83\x0eë\x99\x1b\x8dö@\x9e\x13ÁVNMä%+\x7f=£{¬\x19 R. \x91\x010Vo\x8fR§VYH\x05Ô(X\x14\x198]ëH\x93^¿Ý`O\x9dô\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x9cU3GvÒ\x1d\x17¿N \x06Ôo°\x00\x1elÿ\x1eÿê\x85\x18ù}@\x9eê\x80à\x0c  ÙÐ- \x88\x8aT\x9a\x07\x19¤Jzß\x855ïMÜÓä¡Ê°W\x11E>â\x92É\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:40] "GET /login HTTP/1.1" 404 9
+43.129.41.203 - - [14/May/2025 21:17:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03Ë\x87\x09A\x18Ëw\x0f\x0d;LÞíh\x080»c`\x94K\x18NN\x17ê\x0fYQÆ\x05| /\x876r)g\x911Å®\x1b\x06\x92é[C­GSÉkN\x14\x12a&Àehnôñ\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:40] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03È^×³\\x9ddÐøà\\x11\\x84\\x03\\x84,\\x03à\\x9cÚå%j&Ï\\x15XÉ\\x98!\\x0e¾ÃÄ\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:17:40] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03È^×³\x9ddÐøà\x11\x84\x03\x84,\x03à\x9cÚå%j&Ï\x15XÉ\x98!\x0e¾ÃÄ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:40] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:40] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03Æü³§é*\x8f\x1cÐkÕDU!\x97\x8e\x84\x9eÓû#.µe¦~\x16ûh\x88\x14\x96 {n"\x9a\x00}\x1eÇj\x8bÎEßHs:\x7fH\x8eð%\x05\x99vëø\x1e{l·þî\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:47] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:47] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03O\x93ãu\x01\x7f>\x9aþ \x99¨Ý/nÃ\x97\x82¡\x0d(s\x16&\x90\x10Þ ¯mÀ\x95 \x1dñ\\Ë]\x1c¼G\x91\x91|\x9b\x97Ýôt\x0bÎ!\x0e§;°Åm\x08w\x99}\x00\x93å\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:48] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ã\\x01\\x00\\x00¿\\x03\\x03ó\\xadäÁø\\x8c¯\\x9a\\x18n\\x8a/»}Ü*×\\x8e\\x84Ö\\x9b\\x93XÆkF:Òö_(_\\x00\\x00\\x1aÀ/À+À\\x11À\\x07À\\x13À')
+43.129.41.203 - - [14/May/2025 21:17:48] "\x16\x03\x01\x00Ã\x01\x00\x00¿\x03\x03ó­äÁø\x8c¯\x9a\x18n\x8a/»}Ü*×\x8e\x84Ö\x9b\x93XÆkF:Òö_(_\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:50] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:50] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03*8Ð\x19æ\x00T\x0eK'\x0f\x98ãmÃf\x91\x08\x9f¹I8Üt°À\x92¤r\x96Åþ Ä\x95\x1d\x88þ8\x97\x8eÎSêïXÛÐcò\x93g¸4\x05!\x1e!¢ÅéB\x88Iå\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+43.129.41.203 - - [14/May/2025 21:17:50] code 400, message Bad request version ('À\\x14À')
+43.129.41.203 - - [14/May/2025 21:17:50] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03Þ\x0dê\x96E\x95\\\x92\x0dgF\x97\x95^\x019\x91\x82÷Iò"ý\x1c\x0bå +ó\x0fV\x13 \x91\x0eùsü®#\x1eÜÿy\x9e\x97ñî\x1bá÷V@\x96oÒpTØÁ92\x9b\x94©\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+[14/May/2025 21:32:35] "GET / HTTP/1.1" 200 9996
+147.185.133.47 - - [14/May/2025 22:53:30] "GET / HTTP/1.1" 404 9
+Not Found: /example.com:443
+[14/May/2025 22:56:37] "CONNECT example.com:443 HTTP/1.1" 404 1850
+[14/May/2025 23:05:31] code 400, message Bad request version ('À\x13À')
+[14/May/2025 23:05:31] You're accessing the development server over HTTPS, but it only supports HTTP.
+[14/May/2025 23:05:31] code 400, message Bad request version ('À(À$À\x14À')
+[14/May/2025 23:05:31] You're accessing the development server over HTTPS, but it only supports HTTP.
+[14/May/2025 23:16:09] "GET / HTTP/1.1" 200 9996
+[14/May/2025 23:36:55] code 400, message Bad request syntax ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03EZè\x1aYU>ÕÔ\x9e\x19\x04%¡\x7fÍ«Ç£ù')
+[14/May/2025 23:36:55] You're accessing the development server over HTTPS, but it only supports HTTP.
+147.185.132.168 - - [15/May/2025 00:46:32] code 400, message Bad request version ('2ë¸\\x9aª"ycwØ\\x05Bí\\x17\\x8b\\x15bÆëLÝm¾Ç¢µ«t\\x94è')
+147.185.132.168 - - [15/May/2025 00:46:32] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03c\x07µ\x9ca\x0d\x9f\x16\x92¶ð¦{\x97ôIìºÒ\x1cO\x14ä<z#\x15­ê½\x11\x18 2ë¸\x9aª"ycwØ\x05Bí\x17\x8b\x15bÆëLÝm¾Ç¢µ«t\x94è" 400 -
+147.185.132.168 - - [15/May/2025 00:46:32] code 400, message Bad HTTP/0.9 request type ("\\x16\\x03\\x01\\x00Ê\\x01\\x00\\x00Æ\\x03\\x03N\\x95#b6ÎÏ\\x98)(õX\\x01rI/©^m¯8Þ°q2òf\\x05\\x81\\x9a¼¼\\x00\\x00hÌ\\x14Ì\\x13À/À+À0À,À\\x11À\\x07À'À#À\\x13À")
+147.185.132.168 - - [15/May/2025 00:46:32] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03N\x95#b6ÎÏ\x98)(õX\x01rI/©^m¯8Þ°q2òf\x05\x81\x9a¼¼\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+[15/May/2025 02:02:33,790] - Broken pipe from ('45.56.79.53', 47614)
+[15/May/2025 02:02:34] "GET / HTTP/1.1" 200 9996
+[15/May/2025 02:02:34,440] - Broken pipe from ('45.56.79.53', 47615)
+[15/May/2025 02:05:04] "GET / HTTP/1.0" 200 9996
+[15/May/2025 02:13:44] code 400, message Bad request syntax ('\x05\x02\x00\x02')
+[15/May/2025 02:13:44] " " 400 -
+----------------------------------------
+Exception occurred during processing of request from ('45.79.115.59', 32996)
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/socketserver.py", line 316, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 347, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/usr/lib/python3.10/wsgiref/simple_server.py", line 118, in handle
+    self.raw_requestline = self.rfile.readline(65537)
+  File "/usr/lib/python3.10/socket.py", line 705, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+45.79.115.59 - - [15/May/2025 03:43:20] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [15/May/2025 06:11:19] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [15/May/2025 06:11:20] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [15/May/2025 06:11:20] "GET /favicon.ico HTTP/1.1" 404 9
+[15/May/2025 08:20:52] "GET / HTTP/1.1" 200 9996
+Not Found: /favicon.ico
+[15/May/2025 08:22:04] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[15/May/2025 08:22:26] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[15/May/2025 08:22:48] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+[15/May/2025 10:22:17] "GET / HTTP/1.1" 200 9996
+[15/May/2025 10:22:17,333] - Broken pipe from ('3.137.73.221', 59250)
+[15/May/2025 10:24:30] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03&È¶TÅu\x8c\x10çTv<5\x81b\x13½.\x8aF\x93¿4\x94ñ\x8a\x10\x96ï\x97Ðg\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+[15/May/2025 10:24:30] You're accessing the development server over HTTPS, but it only supports HTTP.
+[15/May/2025 10:26:55] code 400, message Bad request syntax ('SSH-2.0-Go')
+[15/May/2025 10:26:55] "SSH-2.0-Go" 400 -
+[15/May/2025 10:27:47] code 400, message Bad request version ('À\x14À')
+[15/May/2025 10:27:47] You're accessing the development server over HTTPS, but it only supports HTTP.
+[15/May/2025 10:29:18] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03g5þúâ\x16\x11sP³\x81Bíø5¹\x8dÑòA¯!2¿ù¼mx¸ô\x9aI\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+[15/May/2025 10:29:18] You're accessing the development server over HTTPS, but it only supports HTTP.
+147.185.133.180 - - [15/May/2025 11:11:47] "GET / HTTP/1.1" 404 9
+[15/May/2025 11:14:59] "GET / HTTP/1.1" 200 9996
+[15/May/2025 11:26:58] "GET / HTTP/1.1" 200 9996
+[15/May/2025 11:26:58] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[15/May/2025 11:26:58] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[15/May/2025 11:26:58] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[15/May/2025 11:26:58] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[15/May/2025 11:26:58] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[15/May/2025 11:26:58] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[15/May/2025 11:27:07] "POST /set-level/ HTTP/1.1" 302 0
+[15/May/2025 11:27:07] "GET / HTTP/1.1" 200 10297
+[15/May/2025 11:27:19] "POST /set-level/ HTTP/1.1" 302 0
+[15/May/2025 11:27:19] "GET / HTTP/1.1" 200 10271
+[15/May/2025 11:27:49] "POST /set-level/ HTTP/1.1" 302 0
+[15/May/2025 11:27:49] "GET / HTTP/1.1" 200 10274
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:28:43] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:30:06] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:30:30] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:30:46] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:30:54] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:33:18] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:35:07] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:37:45] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:38:19] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:38:28] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:39:13] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:40:31] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:42:18] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:42:43] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:42:44] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:42:45] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:42:45] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:43:33] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:46:25] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:46:26] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:46:29] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:46:46] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:47:02] "GET /sparql-protected/ HTTP/1.1" 405 22
+Bad Gateway: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:47:37] "POST /sparql-protected/ HTTP/1.1" 502 284
+[15/May/2025 11:47:47] "POST /set-level/ HTTP/1.1" 302 0
+[15/May/2025 11:47:47] "GET / HTTP/1.1" 200 10271
+[15/May/2025 11:47:47] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[15/May/2025 11:47:47] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[15/May/2025 11:47:47] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[15/May/2025 11:47:47] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[15/May/2025 11:47:47] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[15/May/2025 11:47:47] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[15/May/2025 11:47:52] "POST /set-level/ HTTP/1.1" 302 0
+[15/May/2025 11:47:53] "GET / HTTP/1.1" 200 10297
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:17] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:22] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:22] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:25] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:25] "GET /sparql-protected/ HTTP/1.1" 405 22
+Bad Gateway: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:36] "POST /sparql-protected/ HTTP/1.1" 502 284
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:50] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:50] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:48:59] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:49:00] "GET /sparql-protected/ HTTP/1.1" 405 22
+Bad Gateway: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:49:09] "POST /sparql-protected/ HTTP/1.1" 502 284
+Bad Gateway: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:49:38] "POST /sparql-protected/ HTTP/1.1" 502 284
+[15/May/2025 11:50:16] "GET / HTTP/1.1" 200 9996
+[15/May/2025 11:50:16] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[15/May/2025 11:50:16] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[15/May/2025 11:50:16] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[15/May/2025 11:50:16] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[15/May/2025 11:50:16] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[15/May/2025 11:50:16] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /ontop-control/ HTTP/1.1" 200 8050
+[15/May/2025 11:51:28] "GET /static/myapp/csv.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /static/myapp/logo.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /static/myapp/sparql.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /static/myapp/mind-map.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /static/myapp/ontop-small.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 304 0
+[15/May/2025 11:51:28] "GET /static/myapp/ontop.png HTTP/1.1" 304 0
+[15/May/2025 11:51:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:31] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[15/May/2025 11:51:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:34] "GET /ontop/logs/ HTTP/1.1" 200 13
+[15/May/2025 11:51:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:35] "POST /ontop-control/ HTTP/1.1" 302 0
+[15/May/2025 11:51:35] "GET /ontop-control/ HTTP/1.1" 200 8050
+[15/May/2025 11:51:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:37] "GET /ontop/logs/ HTTP/1.1" 200 829
+[15/May/2025 11:51:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:40] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[15/May/2025 11:51:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:43] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[15/May/2025 11:51:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:47] "GET /ontop/logs/ HTTP/1.1" 200 24446
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:51:48] "GET /sparql-protected/ HTTP/1.1" 405 22
+[15/May/2025 11:51:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:50] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:51:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:53] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:51:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:56] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:51:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:51:59] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:51:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:02] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:05] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:08] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:09] "GET /ontop/status/ HTTP/1.1" 200 21
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:52:09] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:52:09] "GET /sparql-protected/ HTTP/1.1" 405 22
+[15/May/2025 11:52:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:11] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:13] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:17] "GET /ontop/logs/ HTTP/1.1" 200 24936
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:52:17] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:52:17] "GET /sparql-protected/ HTTP/1.1" 405 22
+[15/May/2025 11:52:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:20] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:23] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:26] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[15/May/2025 11:52:27] "GET /ontop/status/ HTTP/1.1" 200 21
+173.249.8.223 - - [15/May/2025 11:52:28] "POST /sparql-protected/ HTTP/1.1" 200 513
+[15/May/2025 11:52:29] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:29] "GET /ontop/status/ HTTP/1.1" 200 21
+173.249.8.223 - - [15/May/2025 11:52:29] "POST /sparql-protected/ HTTP/1.1" 200 513
+[15/May/2025 11:52:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:32] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:35] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:38] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:41] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:44] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:47] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:50] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:53] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:56] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:52:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:52:59] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:53:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:02] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:53:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:05] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:53:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:08] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:53:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:53:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:53:14] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:53:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:54:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:54:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:55:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:55:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:56:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:56:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:57:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:57:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:58:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:58:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:58:19] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [15/May/2025 11:58:19] "GET /sparql-protected/ HTTP/1.1" 405 22
+[15/May/2025 11:58:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:58:51] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:58:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:58:52] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:58:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:58:56] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:58:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:58:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:58:59] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:02] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:05] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:08] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:14] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:17] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:20] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:23] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:26] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:29] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:32] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:35] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:38] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:41] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:44] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:47] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 11:59:50] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 11:59:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:00:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:00:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:01:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:01:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:02:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:02:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:03:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:03:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:04:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:04:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:05:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:05:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:06:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:06:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:07:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:07:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:07:23] "GET / HTTP/1.1" 200 9996
+[15/May/2025 12:08:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[15/May/2025 12:08:11] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[15/May/2025 12:08:50,216] - Broken pipe from ('147.162.171.192', 34999)
+[15/May/2025 12:08:50,226] - Broken pipe from ('147.162.171.192', 19673)
+172.104.11.34 - - [15/May/2025 12:47:12] "GET / HTTP/1.1" 404 9
+[15/May/2025 12:50:20] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[15/May/2025 12:50:20] "  /*à     Cookie: mstshash=Administr" 400 -
+----------------------------------------
+Exception occurred during processing of request from ('167.94.145.107', 39384)
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/socketserver.py", line 316, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 347, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/usr/lib/python3.10/wsgiref/simple_server.py", line 118, in handle
+    self.raw_requestline = self.rfile.readline(65537)
+  File "/usr/lib/python3.10/socket.py", line 705, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+167.94.145.107 - - [15/May/2025 14:16:16] code 400, message Bad request version ('À\\x14À')
+167.94.145.107 - - [15/May/2025 14:16:16] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03xÙ\x8f¡ð>â&v\x04«$\x03_å\x17i\x14!\x00kR·\x1f\x14óÝM'×ÐÑ \x93{\x8c×áIs#\x97Kk·hJ?JÞ[µÏvðÒ6q5Ñ¾\x1e\x8býY\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+167.94.145.107 - - [15/May/2025 14:16:20] "GET / HTTP/1.1" 404 9
+167.94.145.107 - - [15/May/2025 14:16:24] "GET / HTTP/1.1" 404 9
+167.94.145.107 - - [15/May/2025 14:16:24] code 505, message Invalid HTTP version (2.0)
+167.94.145.107 - - [15/May/2025 14:16:24] "PRI * HTTP/2.0" 505 -
+167.94.145.107 - - [15/May/2025 14:16:29] "GET /favicon.ico HTTP/1.1" 404 9
+167.94.145.107 - - [15/May/2025 14:16:30] code 400, message Bad request version ('À\\x14À')
+167.94.145.107 - - [15/May/2025 14:16:30] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03 ¿ÏÖ÷"#ms\x1a7 \x7f\x9e:\x00E¡\x7f \x00ãù9çMZ\x86ý¥Ù½ ¸ðÐÅ\x1cÈ,\x96c: ÅF-òÉyx½\x87½H j\x85Ý\x84\x84ï7:\x81\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+[15/May/2025 15:03:23] code 400, message Bad request version ('À\x14À')
+[15/May/2025 15:03:23] You're accessing the development server over HTTPS, but it only supports HTTP.
+[15/May/2025 15:03:27] "GET / HTTP/1.1" 200 9996
+[15/May/2025 15:03:28,264] - Broken pipe from ('167.94.138.194', 56770)
+[15/May/2025 15:03:33] "GET / HTTP/1.1" 200 9996
+[15/May/2025 15:03:34] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[15/May/2025 15:03:36] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[15/May/2025 15:03:37] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[15/May/2025 15:03:42] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[15/May/2025 15:03:43] "GET /favicon.ico HTTP/1.1" 404 5271
+[15/May/2025 15:03:45] code 505, message Invalid HTTP version (2.0)
+[15/May/2025 15:03:45] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[15/May/2025 15:03:52] "GET /favicon.ico HTTP/1.1" 404 5271
+[15/May/2025 15:03:55] code 400, message Bad request version ('À\x14À')
+[15/May/2025 15:03:55] You're accessing the development server over HTTPS, but it only supports HTTP.
+[15/May/2025 15:45:25] "GET / HTTP/1.1" 200 9996
+[15/May/2025 16:22:20] "GET / HTTP/1.1" 200 9996
+[15/May/2025 16:22:20] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[15/May/2025 16:22:20] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[15/May/2025 16:22:20] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[15/May/2025 16:22:20] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[15/May/2025 16:49:08,775] - Broken pipe from ('167.94.138.198', 46080)
+[15/May/2025 16:49:09] code 400, message Bad request version ('À\x14À')
+[15/May/2025 16:49:09] You're accessing the development server over HTTPS, but it only supports HTTP.
+[15/May/2025 16:49:15] "GET / HTTP/1.1" 200 9996
+[15/May/2025 16:49:15,647] - Broken pipe from ('167.94.138.198', 46166)
+[15/May/2025 16:49:20] "GET / HTTP/1.1" 200 9996
+[15/May/2025 16:49:22] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[15/May/2025 16:49:26] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[15/May/2025 16:49:27] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[15/May/2025 16:49:27] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[15/May/2025 16:49:28] "GET /favicon.ico HTTP/1.1" 404 5271
+[15/May/2025 16:49:29] code 505, message Invalid HTTP version (2.0)
+[15/May/2025 16:49:29] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[15/May/2025 16:49:37] "GET /favicon.ico HTTP/1.1" 404 5271
+[15/May/2025 16:49:38] code 400, message Bad request version ('À\x14À')
+[15/May/2025 16:49:38] You're accessing the development server over HTTPS, but it only supports HTTP.
+147.185.132.61 - - [15/May/2025 23:18:09] code 400, message Bad request version ('À\\x13À')
+147.185.132.61 - - [15/May/2025 23:18:09] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03ì\x94µ÷ÛÒ\x09·\x04¨7uï¦Ær_$öÃ`\x82\x0cõ\x1eÁ'nË\x12\x9cm êúA\x04\x14\x0f3­\x93¬I%(µ\x19IË\x95´\x9f±SãÐ¤á<\x9d¿ÄU\x03\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+147.185.132.61 - - [15/May/2025 23:18:09] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ê\\x01\\x00\\x00Æ\\x03\\x03´O\\x9cW¢çÎõÅ"Ò´N\\x92\\x83|Ô&þ}Xx§\\x8c\\x07wôù\\x01\\x820û\\x00\\x00hÌ\\x14Ì\\x13À/À+À0À,À\\x11À\\x07À\\'À#À\\x13À')
+147.185.132.61 - - [15/May/2025 23:18:09] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03´O\x9cW¢çÎõÅ"Ò´N\x92\x83|Ô&þ}Xx§\x8c\x07wôù\x01\x820û\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+[15/May/2025 23:19:26] "GET / HTTP/1.1" 200 9996
+[16/May/2025 00:12:00] "GET / HTTP/1.1" 200 9996
+[16/May/2025 00:12:00] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+35.203.211.93 - - [16/May/2025 00:26:23] "GET / HTTP/1.1" 404 9
+20.127.220.21 - - [16/May/2025 00:28:13] code 400, message Bad request syntax ('MGLNDD_176.126.87.152_8084')
+20.127.220.21 - - [16/May/2025 00:28:13] "MGLNDD_176.126.87.152_8084" 400 -
+[16/May/2025 01:03:07] code 400, message Bad request version ('À#À¬À®À+À')
+[16/May/2025 01:03:07] You're accessing the development server over HTTPS, but it only supports HTTP.
+[16/May/2025 01:03:11] "GET / HTTP/1.1" 200 9996
+[16/May/2025 01:17:40] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[16/May/2025 01:19:42] "GET / HTTP/1.1" 200 9996
+[16/May/2025 04:11:23] "GET / HTTP/1.0" 200 9996
+[16/May/2025 04:11:24] "GET / HTTP/1.0" 200 9996
+167.99.190.122 - - [16/May/2025 05:04:10] "GET / HTTP/1.1" 404 9
+[16/May/2025 05:23:24] code 400, message Bad request version ('À\x14À')
+[16/May/2025 05:23:24] You're accessing the development server over HTTPS, but it only supports HTTP.
+[16/May/2025 05:34:23] "GET / HTTP/1.1" 200 9996
+Not Found: /favicon.ico
+[16/May/2025 05:34:35] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[16/May/2025 05:34:38] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[16/May/2025 05:34:40] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+147.185.132.191 - - [16/May/2025 11:51:48] "GET / HTTP/1.1" 404 9
+[16/May/2025 12:13:42] "GET / HTTP/1.1" 200 9996
+[16/May/2025 12:18:41] code 400, message Bad request version ('À\x14À')
+[16/May/2025 12:18:41] You're accessing the development server over HTTPS, but it only supports HTTP.
+[16/May/2025 12:21:57] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03´\x95ç~Sqq\x11ß')
+[16/May/2025 12:21:57] You're accessing the development server over HTTPS, but it only supports HTTP.
+[16/May/2025 13:00:18] code 400, message Bad request version ('À\x14À')
+[16/May/2025 13:00:18] You're accessing the development server over HTTPS, but it only supports HTTP.
+115.231.78.11 - - [16/May/2025 15:12:43] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [16/May/2025 15:12:44] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [16/May/2025 15:12:44] "GET /favicon.ico HTTP/1.1" 404 9
+[16/May/2025 19:34:35] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03QÉÃZ2\x9c.øOnú\x8a\x04^\x9fíw\x18¶ômàßr1?pªº]L\x17\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+[16/May/2025 19:34:35] You're accessing the development server over HTTPS, but it only supports HTTP.
+91.196.152.16 - - [16/May/2025 19:40:34] code 400, message Bad request version ('À#À¬À®À+À')
+91.196.152.16 - - [16/May/2025 19:40:34] "\x16\x03\x03\x01§\x01\x00\x01£\x03\x03ðëaÉ\x9br\x13è<82\x9a1l¦Ò33\x9c\x18\x99ã4$ó /\x88¢3=à ß§á\x04\x08°K=?\x82sìÌÓÛ6»«,m®\x8daþ\x19ßÙ(\x09ý$é\x00\x8a\x00\x16\x003\x00gÀ\x9eÀ¢\x00\x9e\x009\x00kÀ\x9fÀ£\x00\x9f\x00E\x00¾\x00\x88\x00Ä\x00\x9aÀ\x08À\x09À#À¬À®À+À" 400 -
+91.196.152.17 - - [16/May/2025 19:40:41] "GET / HTTP/1.1" 404 9
+91.196.152.31 - - [16/May/2025 19:52:32] "GET /favicon.ico HTTP/1.1" 404 9
+3.149.59.26 - - [16/May/2025 21:47:51] "GET / HTTP/1.1" 404 9
+3.149.59.26 - - [16/May/2025 21:50:26] "GET / HTTP/1.1" 404 9
+3.149.59.26 - - [16/May/2025 21:52:43] code 400, message Bad request version ('À\\x14À')
+3.149.59.26 - - [16/May/2025 21:52:43] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03\x8eÁß-\x90!\x1dcMÅ%ö#ú\x96\x01¢EÓê\x7f\x14¶á\x89!?\x98Ñ9)L\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+91.238.181.94 - - [16/May/2025 21:53:50] code 400, message Bad HTTP/0.9 request type ('\\x03\\x00\\x00/*à\\x00\\x00\\x00\\x00\\x00Cookie:')
+91.238.181.94 - - [16/May/2025 21:53:50] "\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie: mstshash=Administr" 400 -
+3.149.59.26 - - [16/May/2025 21:54:52] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.149.59.26 - - [16/May/2025 21:54:52] "SSH-2.0-Go" 400 -
+[16/May/2025 22:20:37] "GET / HTTP/1.1" 200 9996
+[16/May/2025 22:20:40] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[16/May/2025 22:20:43] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[16/May/2025 22:20:47] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[16/May/2025 22:20:48] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[16/May/2025 22:20:50] "GET /favicon.ico HTTP/1.1" 404 5271
+[16/May/2025 22:20:51] code 505, message Invalid HTTP version (2.0)
+[16/May/2025 22:20:51] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[16/May/2025 22:21:00] "GET /favicon.ico HTTP/1.1" 404 5271
+[16/May/2025 22:21:03] code 400, message Bad request version ('À\x14À')
+[16/May/2025 22:21:03] You're accessing the development server over HTTPS, but it only supports HTTP.
+167.94.138.61 - - [16/May/2025 22:22:43] "GET / HTTP/1.1" 404 9
+167.94.138.61 - - [16/May/2025 22:22:49] code 505, message Invalid HTTP version (2.0)
+167.94.138.61 - - [16/May/2025 22:22:49] "PRI * HTTP/2.0" 505 -
+167.94.138.61 - - [16/May/2025 22:23:24] "GET /favicon.ico HTTP/1.1" 404 9
+167.94.138.61 - - [16/May/2025 22:23:28] code 400, message Bad request version ('À\\x14À')
+167.94.138.61 - - [16/May/2025 22:23:28] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03+[pá\x1fÀ×\x8bCÄ\x9d©\x93D\x80aÖ»>¶Ò\x95Å~mI6â^3éº u\x14ÞZ\x92ôËi,yÎ\x0fH\x80\x1fþFê!ß\x012üóH\x13ãqM\x0eå^\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+198.235.24.236 - - [16/May/2025 23:06:11] code 400, message Bad request version ('À\\x13À')
+198.235.24.236 - - [16/May/2025 23:06:11] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x11\x9c\x8fú?\x96\x8c\x7f{kåºòRÅ^zÇ|[ûÚK@\x80\x0emjþ"¾¥ ³V#«\x1cþ#D\x8aV*ªâ\x05%(ÚkÎþ\x18ÉÈ1h(ÝeGÄ`\x98\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+198.235.24.236 - - [16/May/2025 23:06:11] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00Ê\\x01\\x00\\x00Æ\\x03\\x03\\x0f')
+198.235.24.236 - - [16/May/2025 23:06:11] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03\x0f" 400 -
+[16/May/2025 23:08:02] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[16/May/2025 23:08:02] "  /*à     Cookie: mstshash=Administr" 400 -
+[17/May/2025 00:35:39] "GET / HTTP/1.1" 200 9996
+Not Found: /favicon.ico
+[17/May/2025 00:35:53] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[17/May/2025 00:35:56] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[17/May/2025 00:35:58] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+147.185.133.55 - - [17/May/2025 03:00:17] "GET / HTTP/1.1" 404 9

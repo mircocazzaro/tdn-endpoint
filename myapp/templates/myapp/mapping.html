@@ -1,85 +1,148 @@
 {% extends 'myapp/base.html' %}
 {% load static %}
 {% block content %}
-  <div class="card">
-    <div class="card-body">
-      <img 
-      src="{% static 'myapp/mind-map.png' %}" 
-      alt="Logo" 
-      height="40" 
-      class="d-inline-block align-text-center me-2"
-      >
-      <h2>Map CSV → OBDA</h2>
-      <form method="post">
-        {% csrf_token %}
+<div class="container py-4">
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body d-flex align-items-center">
+      <img src="{% static 'myapp/mind-map.png' %}" alt="Logo" height="40" class="me-2">
+      <h2 class="mb-0">Map CSV → OBDA</h2>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <!-- Carousel for mappings -->
+    <div id="mappingCarousel" class="carousel slide mb-5">
+      <div class="carousel-inner">
         {% for blk in mapping_ui %}
-          <div class="card mb-4">
-            <div class="card-header">
-              Mapping <b>{{ blk.mappingId }}</b>
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+          <div class="card shadow-sm" id="mapping-card-{{ blk.mappingId }}">
+            <div class="card-header bg-white">
+              <h5 class="mb-0">{{ blk.mappingLabel }}</h5>
             </div>
             <div class="card-body">
-              <div class="mb-3">
-                Select DuckDB table for mapping <b>{{ blk.table_field.label_tag }}</b><br>
-                {{ blk.table_field }}
-              </div>
-              {% for field in blk.placeholder_fields %}
-                <div class="mb-3">
-                  Map placeholder <b>{{ field.label_tag }}</b><br>
-                  {{ field }}
+              <div class="row">
+                <!-- Table selector -->
+                <div class="col-md-4">
+                  <label for="{{ blk.table_field.auto_id }}" class="form-label fw-bold">Select DuckDB Table</label>
+                  {{ blk.table_field }}
                 </div>
-              {% endfor %}
+                <!-- Click-to-map area -->
+                <div class="col-md-8">
+                  <div class="row" style="min-height: 200px; position: relative;" id="area-{{ blk.mappingId }}">
+                    <div class="col-6">
+                      <h6 class="text-secondary">Placeholders</h6>
+                      <ul class="list-group" id="placeholders-{{ blk.mappingId }}">
+                        {% for field in blk.placeholder_fields %}
+                          <li class="list-group-item placeholder-click p-2 mb-2 bg-white rounded" data-id="{{ field.name }}">
+                            {{ field.label_tag }}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    <div class="col-6">
+                      <h6 class="text-secondary">Columns</h6>
+                      <ul class="list-group column-click-list" id="columns-{{ blk.mappingId }}"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Hidden inputs to capture connections -->
+              <input type="hidden" name="connections_{{ blk.mappingId }}" id="connections-{{ blk.mappingId }}">
             </div>
           </div>
+        </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary">
-          Generate OBDA File
-        </button>
-      </form>
-{% if mapping_graph %}
-  <div class="mt-5">
-    <h3>Current Mappings Graph</h3>
-    <div class="mermaid">
-graph LR
-{% for edge in mapping_graph %}
-  {{ edge.from_id }}["{{ edge.from_label }}"] --> {{ edge.to_id }}["{{ edge.to_label }}"]
-{% endfor %}
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#mappingCarousel" data-bs-slide="prev" style="width:auto;">
+        <i class="bi bi-chevron-left fs-3 text-primary" aria-hidden="true"></i>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#mappingCarousel" data-bs-slide="next" style="width:auto;">
+        <i class="bi bi-chevron-right fs-3 text-primary" aria-hidden="true"></i>
+        <span class="visually-hidden">Next</span>
+      </button>
     </div>
-    <!-- Mermaid JS -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-      mermaid.initialize({ startOnLoad: true });
-    </script>
-  </div>
-{% endif %}
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          {% for blk in mapping_ui %}
-          (function() {
-            const mid = "{{ blk.mappingId }}";
-            const tableSelect = document.getElementById("table-select-" + mid);
-            const placeholderSelects = document.querySelectorAll(".placeholder-" + mid);
-        
-            tableSelect.addEventListener('change', () => {
-              const tbl = tableSelect.value;
-              fetch("{% url 'get_columns' %}?table=" + encodeURIComponent(tbl))
-                .then(r => r.json())
-                .then(data => {
-                  // populate each placeholder select
-                  placeholderSelects.forEach(sel => {
-                    sel.innerHTML = '<option value="">— select column —</option>';
-                    data.columns.forEach(col => {
-                      const o = document.createElement('option');
-                      o.value = col;
-                      o.text = col;
-                      sel.appendChild(o);
-                    });
-                  });
+
+    <div class="text-center mb-5">
+      <button type="submit" class="btn btn-primary px-5">Generate OBDA File</button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsplumb@2.15.6/dist/js/jsplumb.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const instance = jsPlumb.getInstance({
+      Connector: ['Straight'],
+      PaintStyle: { stroke: '#0d6efd', strokeWidth: 2 },
+      Endpoint: ['Dot', { radius: 5 }],
+      EndpointStyle: { fill: '#0d6efd' }
+    });
+
+    {% for blk in mapping_ui %}
+    (function() {
+      const mid = '{{ blk.mappingId }}';
+      const card = document.getElementById('mapping-card-' + mid);
+      const tableSelect = card.querySelector('select[name="{{ blk.table_field.name }}"]');
+      const placeholders = Array.from(card.querySelectorAll('.placeholder-click'));
+      const columnList = card.querySelector('#columns-' + mid);
+      const connInput = document.getElementById('connections-' + mid);
+
+      let activePlaceholder = null;
+      const connections = {};
+
+      // Load columns on table change
+      if (tableSelect) {
+        tableSelect.addEventListener('change', () => {
+          activePlaceholder = null;
+          instance.reset();
+          columnList.innerHTML = '';
+          Object.keys(connections).forEach(k => delete connections[k]);
+          connInput.value = '';
+          if (!tableSelect.value) return;
+          fetch(`{% url 'get_columns' %}?table=${encodeURIComponent(tableSelect.value)}`)
+            .then(r => r.json())
+            .then(data => {
+              data.columns.forEach(col => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item column-click p-2 mb-2 bg-white rounded';
+                li.textContent = col;
+                li.dataset.name = col;
+                li.style.cursor = 'pointer';
+                columnList.appendChild(li);
+              });
+
+              placeholders.forEach(ph => {
+                ph.style.cursor = 'pointer';
+                ph.addEventListener('click', () => {
+                  placeholders.forEach(p => p.classList.remove('active-bg'));
+                  ph.classList.add('active-bg');
+                  activePlaceholder = ph;
                 });
+              });
+
+              card.querySelectorAll('.column-click').forEach(colEl => {
+                colEl.addEventListener('click', () => {
+                  if (!activePlaceholder) return;
+                  const phId = activePlaceholder.dataset.id;
+                  const colName = colEl.dataset.name;
+                  instance.connect({ source: activePlaceholder, target: colEl, anchors: ['Right', 'Left'] });
+                  connections[phId] = colName;
+                  connInput.value = JSON.stringify(connections);
+                  activePlaceholder.classList.remove('active-bg');
+                  activePlaceholder = null;
+                });
+              });
             });
-          })();
-          {% endfor %}
         });
-        </script>            
-    </div>
-  </div>
+      }
+    })();
+    {% endfor %}
+  });
+</script>
+
+<style>
+  .active-bg { background-color: #e7f1ff !important; }
+</style>
 {% endblock %}
