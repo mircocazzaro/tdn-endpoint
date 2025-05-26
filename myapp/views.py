@@ -221,7 +221,7 @@ def field_mapping_view(request):
         src = re.search(r'source\s+(.*)', txt, re.S).group(1).strip()
         default_table = (re.search(r'FROM\s+"([^"]+)"', src) or [None, None])[1]
         # placeholders as list for stable indexing
-        vars_ = list(re.findall(r'\{(\w+)\}', tgt))
+        vars_ = list(dict.fromkeys(re.findall(r'\{(\w+)\}', tgt)))
 
         mapping_blocks.append({
             'mappingId':     mid,
@@ -242,6 +242,7 @@ def field_mapping_view(request):
 
     # 3) Parse existing OBDA mappings, extract var→column pairs
     existing = {}
+    existing_placeholders = {}
     if os.path.exists(OBDA_FILE):
         raw_obda = open(OBDA_FILE, 'r', encoding='utf-8').read()
         try:
@@ -254,42 +255,89 @@ def field_mapping_view(request):
                 if not blk_txt.startswith('mappingId'):
                     blk_txt = 'mappingId ' + blk_txt
 
-                mid = re.search(r'mappingId\s+(\S+)', blk_txt).group(1)
-                src_line = re.search(r'source\s+(.*)', blk_txt, re.S).group(1).strip()
+                mid       = re.search(r'mappingId\s+(\S+)', blk_txt).group(1)
+                # pull out exactly what placeholders appeared *in the saved target*
+                tgt_exist = re.search(r'target\s+(.*?)\n', blk_txt, re.S).group(1).strip()
+                saved_vars = list(dict.fromkeys(
+                    re.findall(r'\{(\w+)\}', tgt_exist)
+                ))
+                existing_placeholders[mid] = saved_vars
+                src_line  = re.search(r'source\s+(.*)', blk_txt, re.S).group(1).strip()
                 tbl = (re.search(r'FROM\s+"([^"]+)"', src_line) or [None, None])[1]
 
+                # first try to detect any explicit AS-alias or bare appearances
                 ph_map = {}
-                # find each placeholder mapping in the source line
                 for blk in mapping_blocks:
                     if blk['mappingId'] != mid:
                         continue
                     for var in blk['placeholders']:
+                        # SELECT foo AS var
                         m = re.search(rf"([^\s,]+)\s+AS\s+{re.escape(var)}\b", src_line)
                         if m:
                             ph_map[var] = m.group(1).strip("'\"")
+                        # SELECT var
                         elif re.search(rf"\b{re.escape(var)}\b", src_line):
                             ph_map[var] = var
+                    # if some vars never showed up, but the saved target had
+                    # exactly the same count of placeholders, assume a
+                    # positional mapping template→saved
+                    missing = [v for v in blk['placeholders'] if v not in ph_map]
+                    if missing and len(saved_vars)==len(blk['placeholders']):
+                        for i, orig in enumerate(blk['placeholders']):
+                            ph_map[orig] = saved_vars[i]
                     break
 
                 existing[mid] = {'table': tbl, 'placeholders': ph_map}
         except Exception:
             existing = {}
-
+            
+    
     # 4) Build positional mapping_connections for the UI
     mapping_connections = {}
     for blk in mapping_blocks:
-        mid = blk['mappingId']
-        phs = blk['placeholders']
-        info = existing.get(mid, {})
-        if not info.get('placeholders'):
-            continue
-        tbl = info['table']
-        cols = tables_columns.get(tbl, [])
-        pos_map = {}
+        mid         = blk['mappingId']
+        phs         = blk['placeholders']
+        info        = existing.get(mid, {})
+        #if not info.get('placeholders'):
+        #    continue
+        tbl     = info.get('table')
+        cols    = tables_columns.get(tbl, [])
+        pos_map     = {}
+
+        # saved_vars is the list of placeholders in the *saved* target,
+        # in the same order as blk['placeholders']
+        saved_vars = existing_placeholders.get(mid, [])
         for idx, var in enumerate(phs):
+            # if they aliased explicitly, use that; otherwise fall back
+            # to the saved_vars positional fill
             col = info['placeholders'].get(var)
+            if col is None and idx < len(saved_vars):
+                col = saved_vars[idx]
+            if not col:
+                continue
+
+            match_idx = None
+            # 1) exact match
             if col in cols:
-                pos_map[idx] = cols.index(col)
+                match_idx = cols.index(col)
+            else:
+                # 2) case‐insensitive match
+                lc = col.lower()
+                for j, c in enumerate(cols):
+                    if c.lower() == lc:
+                        match_idx = j
+                        break
+            # 3) slugified (ignore hyphens/underscores)
+            if match_idx is None:
+                norm = slugify(col).replace('-', '_')
+                for j, c in enumerate(cols):
+                    if slugify(c).replace('-', '_') == norm:
+                        match_idx = j
+                        break
+
+            if match_idx is not None:
+                pos_map[idx] = match_idx
+
         mapping_connections[mid] = pos_map
 
     # 5) Prepare initial data for the Django form
@@ -314,11 +362,12 @@ def field_mapping_view(request):
     # 7) Handle POST: rebuild OBDA using numeric positional maps
     if request.method == 'POST' and form.is_valid():
         data = form.cleaned_data
-        lines = [header.strip(), '[MappingDeclaration] @collection [[']
+        lines = [header.strip(), '\n[MappingDeclaration] @collection [[']
 
         for blk in mapping_blocks:
             mid = blk['mappingId']
             src = blk['source_tpl']
+            tgt_inst = blk['target']
             tbl = data[f"{mid}__table"]
             src = re.sub(r'FROM\s+"[^"]+"', f'FROM "{tbl}"', src)
 
@@ -336,15 +385,17 @@ def field_mapping_view(request):
                     var_name, col_name = key, val
                 conn_map[var_name] = col_name
 
-            # substitute each variable placeholder in the SQL source
+            # substitute each placeholder *everywhere* in target & source
             for var, col in conn_map.items():
-                tbl = re.sub(rf'(?<=\{{){var}(?=\}})', col, tbl)
-                src = re.sub(rf"\b{var}\b", col, src)
+                # replace every occurrence of {var} (including the braces)
+                tgt_inst = tgt_inst.replace(f'{{{var}}}', '{' + col + '}')
+                src = src.replace(var, col)
 
             lines += [
                 f"mappingId\t{mid}",
-                f"target\t{blk['target']}",
-                f"source\t{src}",
+                # now write out the instantiated target
+                f"target\t\t{tgt_inst} ",
+                f"source\t\t{src}",
                 ""
             ]
 
