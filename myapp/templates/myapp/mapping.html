@@ -67,7 +67,7 @@
                 type="hidden"
                 name="connections_{{ blk.mappingId }}"
                 id="connections-{{ blk.mappingId }}"
-                value='{{ mapping_connections|default:"{}"|safe }}'
+                value='{{ blk.connections_json|default:"{}"|safe }}'
               >
             </div>
           </div>
