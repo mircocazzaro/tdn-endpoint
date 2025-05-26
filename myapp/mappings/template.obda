@@ -155,10 +155,10 @@ source		SELECT patient FROM "PATIENTS GENERAL DATA" WHERE primary_neoplasm = Tru
 
 mappingId	MAPID-7eef74030c03400c91bb972e6e9b0e80
 target		bto:Patient{patient} bto:undergo bto:e_spiro{patient}{date} . bto:e_spiro{patient}{date} bto:consists bto:spiro{patient}{date} . bto:spiro{patient}{date} a bto:PulmonaryFunctionTest ; bto:procedureStart {date}^^xsd:datetime ; bto:pulmonaryFVCRel {fvcRel}^^xsd:float . 
-source		SELECT * FROM "SPIRO VISITS"
+source		SELECT patient, date, fvcRel FROM "SPIRO VISITS"
 
 mappingId	MAPID-4d671e8c9cff4cab84eb4acba87f21f7
 target		bto:Patient{patient} bto:undergo bto:e_alsfrs{patient}{date} . bto:e_alsfrs{patient}{date} bto:consists bto:alsfrs{patient}{date} . bto:alsfrs{patient}{date} a bto:ALSFRS ; bto:procedureStart {date}^^xsd:datetime ; bto:revisedALSFRS {tot}^^xsd:integer ; bto:bulbarSubscore {bulbar}^^xsd:integer ; bto:motorSubscore {motor}^^xsd:integer ; bto:respiratorySubscore {respiratory}^^xsd:integer ; bto:alsfrs1 {q1}^^xsd:integer ; bto:alsfrs2 {q2}^^xsd:integer ; bto:alsfrs3 {q3}^^xsd:integer ; bto:alsfrs4 {q4}^^xsd:integer ; bto:alsfrs5 {q5}^^xsd:integer ; bto:alsfrs6 {q6}^^xsd:integer ; bto:alsfrs7 {q7}^^xsd:integer ; bto:alsfrs8 {q8}^^xsd:integer ; bto:alsfrs9 {q9}^^xsd:integer ; bto:alsfrs10 {q10}^^xsd:integer ; bto:alsfrs11 {q11}^^xsd:integer ; bto:alsfrs12 {q12}^^xsd:integer . 
-source		SELECT * FROM "ALS FUNCTIONAL RATING SCALE"
+source		SELECT patient, date, toto, bulbar, motor, respiratory, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12 FROM "ALS FUNCTIONAL RATING SCALE"
 ]]
 
