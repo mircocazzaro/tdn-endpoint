@@ -14,8 +14,8 @@ BTO_resource:	https://w3id.org/brainteaser/ontology/resource/
 
 [MappingDeclaration] @collection [[
 mappingId	MAPID-f062db0588088c0b8729a3de2f6482fa
-target		bto:Patient{patient} a bto:Patient ; bto:hasDisease NCIT:{disease} .
-source		SELECT patient, 'C34373' AS disease FROM "Turin_static_vars"
+target		bto:Patient{weight_before_onset} a bto:Patient ; bto:hasDisease NCIT:{disease} . 
+source		SELECT weight_before_onset, 'C34373' AS disease FROM "Turin_static_vars"
 
 mappingId	MAPID-f24debb89dc84f73a47acdf763ec0b4f
 target		bto:Patient{patient} bto:alive {alive}^^xsd:boolean . 
@@ -104,20 +104,20 @@ target		bto:Patient{patient} bto:undergo bto:ewm2{patient} . bto:ewm2{patient} a
 source		SELECT patient,  moreThan10PercentWeightloss, height, weight FROM "Turin_static_vars" WHERE moreThan10PercentWeightloss IS NOT NULL AND (NOT isnan(height) OR NOT isnan(weight))
 
 mappingId	MAPID-4bd3033217454f09bd39e216a68135d2
-target		bto:testing{gene}{patient} a bto:GeneticTesting ; bto:hasMutation {has_mutation}^^xsd:boolean ; bto:mutationType {mutation_type}^^rdf:PlainLiteral . bto:Patient{patient} bto:tested bto:testing{gene}{patient} . 
-source		SELECT patient, gene, has_mutation, mutation_type FROM (SELECT patient, 'FUS' AS gene, FUS AS has_mutation, FUS_mutation AS mutation_type
+target		bto:testing{FUS}{patient} a bto:GeneticTesting ; bto:hasMutation {FUS}^^xsd:boolean ; bto:mutationType {FUS_mutation}^^rdf:PlainLiteral . bto:Patient{patient} bto:tested bto:testing{FUS}{patient} . 
+source		SELECT patient, FUS, FUS, FUS_mutation FROM (SELECT patient, 'FUS' AS FUS, FUS AS FUS, FUS_mutation AS FUS_mutation
 			FROM "Turin_static_vars"
 			WHERE FUS IS NOT NULL
 			UNION
-			SELECT patient, 'SOD1' AS gene, SOD1 AS has_mutation, SOD1_mutation AS mutation_type
+			SELECT patient, 'SOD1' AS FUS, SOD1 AS FUS, SOD1_mutation AS FUS_mutation
 			FROM "Turin_static_vars"
 			WHERE SOD1 IS NOT NULL
 			UNION
-			SELECT patient, 'C9orf72' AS gene, C9orf72 AS has_mutation, C9orf72_mutation AS mutation_type
+			SELECT patient, 'C9orf72' AS FUS, C9orf72 AS FUS, C9orf72_mutation AS FUS_mutation
 			FROM "Turin_static_vars"
 			WHERE C9orf72 IS NOT NULL
 			UNION
-			SELECT patient, 'TARDBP' AS gene, TARDBP AS has_mutation, TARDBP_mutation AS mutation_type
+			SELECT patient, 'TARDBP' AS FUS, TARDBP AS FUS, TARDBP_mutation AS FUS_mutation
 			FROM "Turin_static_vars"
 			WHERE TARDBP IS NOT NULL) AS subquery
 
@@ -160,5 +160,5 @@ source		SELECT patient, date, fvcRel FROM "Turin_spiro"
 mappingId	MAPID-4d671e8c9cff4cab84eb4acba87f21f7
 target		bto:Patient{patient} bto:undergo bto:e_alsfrs{patient}{date} . bto:e_alsfrs{patient}{date} bto:consists bto:alsfrs{patient}{date} . bto:alsfrs{patient}{date} a bto:ALSFRS ; bto:procedureStart {date}^^xsd:datetime ; bto:revisedALSFRS {tot}^^xsd:integer ; bto:bulbarSubscore {bulbar}^^xsd:integer ; bto:motorSubscore {motor}^^xsd:integer ; bto:respiratorySubscore {respiratory}^^xsd:integer ; bto:alsfrs1 {q1}^^xsd:integer ; bto:alsfrs2 {q2}^^xsd:integer ; bto:alsfrs3 {q3}^^xsd:integer ; bto:alsfrs4 {q4}^^xsd:integer ; bto:alsfrs5 {q5}^^xsd:integer ; bto:alsfrs6 {q6}^^xsd:integer ; bto:alsfrs7 {q7}^^xsd:integer ; bto:alsfrs8 {q8}^^xsd:integer ; bto:alsfrs9 {q9}^^xsd:integer ; bto:alsfrs10 {q10}^^xsd:integer ; bto:alsfrs11 {q11}^^xsd:integer ; bto:alsfrs12 {q12}^^xsd:integer . 
 source		SELECT patient, date, tot, bulbar, motor, respiratory, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12 FROM "Turin_alsfrs"
-]]
 
+]]
