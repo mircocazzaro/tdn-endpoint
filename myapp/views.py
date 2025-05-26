@@ -674,3 +674,17 @@ def protected_sparql(request):
     except Exception as e:
         return JsonResponse({'error':f'Ontop query error: {e}'}, status=502)
 
+@require_POST
+def delete_table_view(request, table_name):
+    """
+    Deletes the given table from the DuckDB database if it exists.
+    """
+    # Basic safety: only drop known tables
+    with duckdb.connect(DUCKDB_PATH) as conn:
+        existing = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
+        if table_name in existing:
+            conn.execute(f'DROP TABLE "{table_name}"')
+            messages.success(request, f"✅ Table `{table_name}` deleted.")
+        else:
+            messages.error(request, f"Table `{table_name}` does not exist.")
+    return redirect('home')

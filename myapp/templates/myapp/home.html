@@ -30,28 +30,46 @@
       <a href="{% url 'query' %}" class="btn btn-secondary ms-2">Go to Query Page</a>
       <a href="{% url 'map_fields' %}" class="btn btn-secondary ms-2">Map Fields &rarr;</a>
     </form>
-    {% if tables_columns %}
-    <div class="mt-5">
-      <h3>Physical Schema Diagram</h3>
-      <div class="mermaid">
-  erDiagram
-  {% for table, cols in tables_columns.items %}
-      {{ table }} {
-  {% for col in cols %}
-          string {{ col }}
-  {% endfor %}
-      }
-  {% endfor %}
-      </div>
-  
-      <!-- Mermaid JS -->
-      <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          mermaid.initialize({ startOnLoad: true });
-        });
-      </script>
+  {% if tables_columns %}
+  <div class="mt-5">
+    <h3>Physical Schema Diagram</h3>
+    <ul class="list-group mb-4">
+      {% for table, cols in tables_columns.items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <strong>{{ table }}</strong>
+          <form 
+            method="post" 
+            action="{% url 'delete_table' table_name=table %}" 
+            onsubmit="return confirm('Really delete table {{ table }}? This cannot be undone.');"
+          >
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger">
+              Delete
+            </button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="mermaid">
+      erDiagram
+      {% for table, cols in tables_columns.items %}
+        {{ table }} {
+          {% for col in cols %}
+            string {{ col }}
+          {% endfor %}
+        }
+      {% endfor %}
     </div>
-  {% endif %}
+     <!-- Mermaid JS -->
+     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+     <script>
+       document.addEventListener('DOMContentLoaded', () => {
+         mermaid.initialize({ startOnLoad: true });
+       });
+     </script>
+  </div>
+{% endif %}
+
   
 {% endblock %}
