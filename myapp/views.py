@@ -30,7 +30,7 @@ TEMPLATE_OBDA = os.path.join(
 ONTOP_DIR   = os.path.join(os.path.dirname(__file__), 'obda')
 ONTOP_CMD   = os.path.join(ONTOP_DIR, 'ontop')  # or "./ontop" if that’s the executable
 OBDA_FILE   = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
-TTL_FILE    = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.ttl')
+TTL_FILE    = os.path.join(ONTOP_DIR, 'hero_clinical.ttl')
 PROPS_FILE  = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
 PID_FILE    = os.path.join(ONTOP_DIR, 'ontop.pid')
 LOG_FILE    = os.path.join(ONTOP_DIR, 'ontop.log')
@@ -94,6 +94,7 @@ def upload_csv_view(request):
                 #     SELECT * FROM read_csv_auto('{saved_file_path}');
                 # """
                 # conn.execute(insert_sql)
+                os.remove(os.path.join(settings.MEDIA_ROOT, filename))
         messages.success(request, "✅ CSV files correctly uploaded and ingested")
         return redirect('home')  # after success, go back to home or wherever
     return render(request, 'myapp/home.html', {'error': 'No files uploaded'})
@@ -192,11 +193,11 @@ import requests
 import pandas as pd
 
 # Constants for paths
-DUCKDB_PATH   = os.path.join(settings.MEDIA_ROOT, 'mydatabase.duckdb')
+DUCKDB_PATH   = os.path.join(ONTOP_DIR, 'mydatabase.duckdb')
 TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
 ONTOP_DIR     = os.path.join(os.path.dirname(__file__), 'obda')
 OBDA_FILE     = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
-TTL_FILE      = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.ttl')
+TTL_FILE      = os.path.join(ONTOP_DIR, 'hero_clinical.ttl')
 PROPS_FILE    = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
 PID_FILE      = os.path.join(ONTOP_DIR, 'ontop.pid')
 LOG_FILE      = os.path.join(ONTOP_DIR, 'ontop.log')
@@ -271,10 +272,16 @@ def field_mapping_view(request):
                     if blk['mappingId'] != mid:
                         continue
                     for var in blk['placeholders']:
-                        # SELECT foo AS var
+                        # SELECT something AS var
                         m = re.search(rf"([^\s,]+)\s+AS\s+{re.escape(var)}\b", src_line)
                         if m:
-                            ph_map[var] = m.group(1).strip("'\"")
+                            raw_token = m.group(1).strip()
+                            # if it's a quoted literal, ignore it
+                            if not ((raw_token.startswith("'") and raw_token.endswith("'"))
+                                    or (raw_token.startswith('"') and raw_token.endswith('"'))):
+                                ph_map[var] = raw_token.strip("'\"")
+                            # otherwise skip—leave var un-mapped so it remains exactly as in template
+                            continue
                         # SELECT var
                         elif re.search(rf"\b{re.escape(var)}\b", src_line):
                             ph_map[var] = var
