@@ -1708,3 +1708,1249 @@ Not Found: /http:/api.ipify.org/
 Not Found: /www.shadowserver.org:443
 [17/May/2025 00:35:58] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
 147.185.133.55 - - [17/May/2025 03:00:17] "GET / HTTP/1.1" 404 9
+Watching for file changes with StatReloader
+[22/May/2025 03:27:29] "GET / HTTP/1.1" 200 9998
+[22/May/2025 03:27:29] "GET /static/myapp/csv.png HTTP/1.1" 200 15128
+[22/May/2025 03:27:29] "GET /static/myapp/ontop-small.png HTTP/1.1" 200 7922
+[22/May/2025 03:27:29] "GET /static/myapp/mind-map.png HTTP/1.1" 200 7214
+[22/May/2025 03:27:29] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 200 5406
+[22/May/2025 03:27:29] "GET /static/myapp/sparql.png HTTP/1.1" 200 30214
+[22/May/2025 03:27:29] "GET /static/myapp/logo.png HTTP/1.1" 200 723089
+[22/May/2025 03:27:36] "GET / HTTP/1.1" 200 9998
+[22/May/2025 03:27:40] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:27:40] "GET /static/myapp/ontop.png HTTP/1.1" 200 3736
+[22/May/2025 03:27:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:43] "POST /ontop-control/ HTTP/1.1" 302 0
+[22/May/2025 03:27:43] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:27:43] "GET /ontop/logs/ HTTP/1.1" 200 13
+[22/May/2025 03:27:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:47] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[22/May/2025 03:27:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:50] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[22/May/2025 03:27:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:53] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:27:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:56] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:27:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:27:59] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:02] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:05] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:08] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:11] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:14] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:17] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:20] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:23] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:26] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:29] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:32] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:35] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:38] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:41] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:44] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:47] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:28:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:28:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:29:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:29:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:30:27] code 400, message Bad request version ('À\x14À')
+[22/May/2025 03:30:27] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 03:30:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:30:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:31:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:31:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:32:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:32:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:33:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:33:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:34:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:34:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:35:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:35:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:36:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:36:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:37:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:37:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:38:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:38:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:39:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:39:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:40:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:40:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:41:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:41:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:42:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:42:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:43:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:43:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:44:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:44:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:45:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:45:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:46:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:46:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:47:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:47:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:48:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:48:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:49:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:49:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:50:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:50:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:51:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:51:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:52:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:52:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:53:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:53:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:54:00] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 03:54:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:54:51] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:54:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:54:53] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:54:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:54:56] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:54:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:54:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:54:59] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:02] "GET /ontop/logs/ HTTP/1.1" 200 92236
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:55:02] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 03:55:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:05] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:07] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:10] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:14] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:17] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:20] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:23] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:25] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:28] "POST /ontop-control/ HTTP/1.1" 302 0
+[22/May/2025 03:55:28] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:55:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:28] "GET /ontop/logs/ HTTP/1.1" 200 92236
+[22/May/2025 03:55:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:31] "GET /ontop/logs/ HTTP/1.1" 200 13
+[22/May/2025 03:55:31] "POST /ontop-control/ HTTP/1.1" 302 0
+[22/May/2025 03:55:31] "POST /ontop-control/ HTTP/1.1" 302 0
+[22/May/2025 03:55:31] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:55:31] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:55:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:34] "GET /ontop/logs/ HTTP/1.1" 200 828
+[22/May/2025 03:55:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:37] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[22/May/2025 03:55:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:40] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[22/May/2025 03:55:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:43] "GET /ontop/logs/ HTTP/1.1" 200 24195
+[22/May/2025 03:55:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:46] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:55:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:49] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:55:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:52] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:55:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:55] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:55:56] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:55:58] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:01] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:04] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:07] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:10] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:13] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:16] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:19] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:22] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:25] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:28] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:31] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:34] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:37] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:41] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:43] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:44] "GET /ontop/status/ HTTP/1.1" 200 21
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:56:46] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 03:56:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:47] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:50] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:51] "GET /ontop/status/ HTTP/1.1" 200 21
+Bad Gateway: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:56:51] "POST /sparql-protected/ HTTP/1.1" 502 284
+[22/May/2025 03:56:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:53] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:56] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:56:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:56:59] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:02] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:05] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:08] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:11] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:14] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:17] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:20] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:21] "GET /ontop/status/ HTTP/1.1" 200 21
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:57:21] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 03:57:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:23] "GET /ontop/logs/ HTTP/1.1" 200 92424
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:57:24] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 03:57:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:26] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:28] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:31] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:34] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:38] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:41] "GET /ontop/logs/ HTTP/1.1" 200 92424
+Bad Gateway: /sparql-protected/
+173.249.8.223 - - [22/May/2025 03:57:41] "POST /sparql-protected/ HTTP/1.1" 502 284
+[22/May/2025 03:57:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:44] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:47] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:50] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:53] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:56] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:57:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:57:59] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:02] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:05] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:08] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:11] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:14] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:16] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:19] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:22] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:25] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:28] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:31] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:34] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:37] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:40] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:58:43] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:58:44] "GET /query/ HTTP/1.1" 200 7318
+[22/May/2025 03:58:44] "GET /static/myapp/query.png HTTP/1.1" 200 36749
+[22/May/2025 03:58:47] "POST /query/ HTTP/1.1" 200 7818
+[22/May/2025 03:59:06] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:59:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:09] "GET /ontop/logs/ HTTP/1.1" 200 92424
+[22/May/2025 03:59:10] "POST /ontop-control/ HTTP/1.1" 302 0
+[22/May/2025 03:59:10] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:59:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:12] "POST /ontop-control/ HTTP/1.1" 302 0
+[22/May/2025 03:59:12] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 03:59:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:12] "GET /ontop/logs/ HTTP/1.1" 200 13
+[22/May/2025 03:59:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:15] "GET /ontop/logs/ HTTP/1.1" 200 935
+[22/May/2025 03:59:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:18] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[22/May/2025 03:59:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:21] "GET /ontop/logs/ HTTP/1.1" 200 24195
+[22/May/2025 03:59:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:24] "GET /ontop/logs/ HTTP/1.1" 200 24195
+[22/May/2025 03:59:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:27] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:30] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:33] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:36] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:39] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:42] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:45] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:48] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:51] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:54] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 03:59:58] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[22/May/2025 03:59:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:01] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:01] "GET /ontop/status/ HTTP/1.1" 200 21
+173.249.8.223 - - [22/May/2025 04:00:01] "POST /sparql-protected/ HTTP/1.1" 200 307
+[22/May/2025 04:00:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:04] "GET /ontop/logs/ HTTP/1.1" 200 25257
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 04:00:04] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 04:00:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:07] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:10] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:13] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:16] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:19] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:22] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:25] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:25] "GET /ontop/status/ HTTP/1.1" 200 21
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 04:00:26] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 04:00:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:28] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:31] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:34] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:37] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:40] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:43] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:46] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:49] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:52] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:00:55] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:00:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:01:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:01:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:02:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:02:51] "GET /ontop/status/ HTTP/1.1" 200 21
+173.249.8.223 - - [22/May/2025 04:03:22] "POST /sparql-protected/ HTTP/1.1" 200 307
+[22/May/2025 04:03:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:03:51] "GET /ontop/status/ HTTP/1.1" 200 21
+173.249.8.223 - - [22/May/2025 04:04:29] "POST /sparql-protected/ HTTP/1.1" 200 158
+[22/May/2025 04:04:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:04:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:05:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:05:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+173.249.8.223 - - [22/May/2025 04:06:42] "POST /sparql-protected/ HTTP/1.1" 200 158
+[22/May/2025 04:06:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:06:51] "GET /ontop/status/ HTTP/1.1" 200 21
+173.249.8.223 - - [22/May/2025 04:06:57] "POST /sparql-protected/ HTTP/1.1" 200 167
+[22/May/2025 04:07:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:28] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:31] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:34] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:37] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:40] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:43] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:46] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:49] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:52] "GET /ontop/logs/ HTTP/1.1" 200 25257
+173.249.8.223 - - [22/May/2025 04:07:52] "POST /sparql-protected/ HTTP/1.1" 200 167
+[22/May/2025 04:07:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:55] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:07:58] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:07:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:01] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:04] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:07] "GET /ontop/logs/ HTTP/1.1" 200 25257
+173.249.8.223 - - [22/May/2025 04:08:08] "POST /sparql-protected/ HTTP/1.1" 200 158
+[22/May/2025 04:08:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:10] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:13] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:16] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:19] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:22] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:25] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:28] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:08:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:08:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 04:09:28] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 04:09:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:09:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 04:10:06] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 04:10:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:14] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:16] "GET /ontop/logs/ HTTP/1.1" 200 25257
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 04:10:16] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 04:10:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:19] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:22] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:25] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:28] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:31] "GET /ontop/logs/ HTTP/1.1" 200 25257
+173.249.8.223 - - [22/May/2025 04:10:31] "POST /sparql-protected/ HTTP/1.1" 200 158
+[22/May/2025 04:10:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:34] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:37] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:40] "GET /ontop/logs/ HTTP/1.1" 200 25257
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 04:10:40] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 04:10:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:43] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:46] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:49] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:52] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:55] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:10:58] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:10:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:01] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:11:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:04] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:11:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:07] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:11:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:10] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:11:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:13] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:11:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:11:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:12:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:12:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:13:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:13:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:14:51] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[22/May/2025 04:14:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:15:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:15:51] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:42] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:46] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:49] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:52] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:55] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:16:58] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:16:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:01] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:04] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:07] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:10] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:12] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:15] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 04:17:18] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 04:17:21] "GET /map-fields/ HTTP/1.1" 200 375752
+[22/May/2025 04:17:21] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 04:30:51] "GET /map-fields/ HTTP/1.1" 200 375752
+[22/May/2025 04:30:51] "GET /static/myapp/csv.png HTTP/1.1" 200 15128
+[22/May/2025 04:30:51] "GET /static/myapp/mind-map.png HTTP/1.1" 200 7214
+[22/May/2025 04:30:51] "GET /static/myapp/logo.png HTTP/1.1" 200 723089
+[22/May/2025 04:30:51] "GET /static/myapp/ontop-small.png HTTP/1.1" 200 7922
+[22/May/2025 04:30:51] "GET /static/myapp/duckdb-logo.png HTTP/1.1" 200 5406
+[22/May/2025 04:30:51] "GET /static/myapp/sparql.png HTTP/1.1" 200 30214
+173.249.8.223 - - [22/May/2025 05:04:45] "POST /sparql-protected/ HTTP/1.1" 200 341
+173.249.8.223 - - [22/May/2025 05:06:46] "POST /sparql-protected/ HTTP/1.1" 200 158
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [22/May/2025 05:08:27] "GET /sparql-protected/ HTTP/1.1" 405 22
+[22/May/2025 05:10:01] "GET / HTTP/1.1" 200 9998
+[22/May/2025 05:10:10] "POST /set-level/ HTTP/1.1" 302 0
+[22/May/2025 05:10:10] "GET / HTTP/1.1" 200 10276
+[22/May/2025 05:10:13] "POST /set-level/ HTTP/1.1" 302 0
+[22/May/2025 05:10:13] "GET / HTTP/1.1" 200 10280
+[22/May/2025 05:10:17] "GET / HTTP/1.1" 200 9998
+[22/May/2025 05:10:24] "GET /ontop-control/ HTTP/1.1" 200 8052
+[22/May/2025 05:10:24] "GET /static/myapp/ontop.png HTTP/1.1" 200 3736
+[22/May/2025 05:10:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:27] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:30] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:33] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:36] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:39] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:42] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:45] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[22/May/2025 05:10:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[22/May/2025 05:10:48] "GET /map-fields/ HTTP/1.1" 200 375752
+[22/May/2025 05:10:48] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:10:55] "GET /get-columns/?table=Turin_alsfrs HTTP/1.1" 200 148
+[22/May/2025 05:11:19] "GET /get-columns/?table=Turin_spiro HTTP/1.1" 200 42
+[22/May/2025 05:11:20] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:22] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:24] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:26] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:27] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:29] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:30] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:31] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:34] "GET /map-fields/ HTTP/1.1" 200 375752
+[22/May/2025 05:11:35] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:11:54] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:12:18] "GET /map-fields/ HTTP/1.1" 200 375752
+[22/May/2025 05:12:18] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:15:02] "GET /get-columns/?table=Turin_alsfrs HTTP/1.1" 200 148
+[22/May/2025 05:15:03] "GET /get-columns/?table=Turin_spiro HTTP/1.1" 200 42
+[22/May/2025 05:15:05] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[22/May/2025 05:29:11] "GET / HTTP/1.1" 200 9998
+[22/May/2025 06:03:52] "GET / HTTP/1.1" 200 9998
+Not Found: /favicon.ico
+[22/May/2025 06:04:10] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[22/May/2025 06:04:14] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[22/May/2025 06:04:16] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+3.137.73.221 - - [22/May/2025 06:37:40] "GET / HTTP/1.1" 404 9
+3.137.73.221 - - [22/May/2025 06:41:09] "GET / HTTP/1.1" 404 9
+3.137.73.221 - - [22/May/2025 06:44:46] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.137.73.221 - - [22/May/2025 06:44:46] "SSH-2.0-Go" 400 -
+[22/May/2025 06:44:47] "GET / HTTP/1.1" 200 9998
+3.137.73.221 - - [22/May/2025 06:46:24] code 400, message Bad request version ('À\\x14À')
+3.137.73.221 - - [22/May/2025 06:46:24] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03ê4\x1d\x9aéí\x002\x97\x17\x0b¬\x18¨\x06d\x90Á­ÒA\x088ç\x83ëG\x80"Ql\x0e\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+[22/May/2025 07:40:05] code 400, message Bad request version ('À\x13À')
+[22/May/2025 07:40:05] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 07:40:05] code 400, message Bad HTTP/0.9 request type ("\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03¦\\E\x80ßbåþ²iq\x86I\x81ØSçÃ\x9dé\x88á\x923Ô××N;?\x9cn\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À")
+[22/May/2025 07:40:05] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 09:00:28] code 400, message Bad request version ('À\x13À')
+[22/May/2025 09:00:28] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 09:00:38] "GET / HTTP/1.1" 200 9998
+[22/May/2025 09:00:38,729] - Broken pipe from ('8.211.46.74', 11534)
+[22/May/2025 09:01:02] "GET / HTTP/1.1" 200 9998
+[22/May/2025 09:01:03] "GET / HTTP/1.1" 200 9998
+[22/May/2025 09:01:03] "GET / HTTP/1.1" 200 9998
+[22/May/2025 09:01:04] "GET / HTTP/1.1" 200 9998
+[22/May/2025 09:01:08] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[22/May/2025 09:01:17] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[22/May/2025 09:11:00] "GET / HTTP/1.1" 200 9998
+Not Found: /console
+[22/May/2025 09:11:23] "GET /console HTTP/1.1" 404 5259
+Not Found: /showLogin.cc
+[22/May/2025 09:11:47] "GET /showLogin.cc HTTP/1.1" 404 5274
+147.185.133.213 - - [22/May/2025 10:43:31] "GET / HTTP/1.1" 404 9
+[22/May/2025 11:37:03,424] - Broken pipe from ('206.168.34.80', 59548)
+206.168.34.80 - - [22/May/2025 11:37:06] "GET / HTTP/1.1" 404 9
+[22/May/2025 11:37:09] "GET / HTTP/1.1" 200 9998
+[22/May/2025 11:37:10,991] - Broken pipe from ('206.168.34.80', 59584)
+206.168.34.80 - - [22/May/2025 11:37:13] "GET / HTTP/1.1" 404 9
+206.168.34.80 - - [22/May/2025 11:37:15] code 505, message Invalid HTTP version (2.0)
+206.168.34.80 - - [22/May/2025 11:37:15] "PRI * HTTP/2.0" 505 -
+[22/May/2025 11:37:16] "GET / HTTP/1.1" 200 9998
+[22/May/2025 11:37:18] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[22/May/2025 11:37:25] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+206.168.34.80 - - [22/May/2025 11:37:25] "GET /favicon.ico HTTP/1.1" 404 9
+[22/May/2025 11:37:27] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+206.168.34.80 - - [22/May/2025 11:37:27] code 400, message Bad request version ('À\\x14À')
+206.168.34.80 - - [22/May/2025 11:37:27] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03cÉ©ö+4¦]=àw\x04\x07b3ìX\x09¨uoõ;½.ãà\x80ØèOb "\x0c8g¯pùY\x85¨©Ò\x1dö4´W\x87Ô¢\x96Ã\x97\x88Û\x12rÂ}¢\x00¤\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+[22/May/2025 11:37:29] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[22/May/2025 11:37:36] "GET /favicon.ico HTTP/1.1" 404 5271
+[22/May/2025 11:37:38] code 505, message Invalid HTTP version (2.0)
+[22/May/2025 11:37:38] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[22/May/2025 11:37:52] "GET /favicon.ico HTTP/1.1" 404 5271
+[22/May/2025 11:37:53] code 400, message Bad request version ('Ä\x9d_wÃÛBgÓ\x9d\x92erñæÝìÆL÷Õ¦ë²')
+[22/May/2025 11:37:53] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 14:02:05] code 400, message Bad request version ('À\x14À')
+[22/May/2025 14:02:05] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 15:04:00] "GET / HTTP/1.1" 200 9998
+[22/May/2025 15:04:00] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[22/May/2025 15:04:00] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[22/May/2025 15:04:00] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[22/May/2025 15:04:00] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[22/May/2025 17:07:03] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[22/May/2025 17:07:03] "  /*à     Cookie: mstshash=Administr" 400 -
+[22/May/2025 21:13:36] "GET / HTTP/1.0" 200 9998
+[22/May/2025 21:50:12] code 400, message Bad request version ('À\x14À')
+[22/May/2025 21:50:12] You're accessing the development server over HTTPS, but it only supports HTTP.
+[22/May/2025 21:57:47] "GET / HTTP/1.1" 200 9998
+[22/May/2025 21:57:47] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[23/May/2025 01:58:29] code 400, message Bad request version ('F\x07\x00tsXrcsXYs9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00bbXcsXctst\x00\x00\x00\x00\x00\x00')
+[23/May/2025 01:58:29] "   TZ          0I    ¨À )t F tsXrcsXYs9                      bbXcsXctst      " 400 -
+Exception in thread Thread-1 (run_sparql_server):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/var/www/my-webapp/myapp/apps.py", line 28, in run_sparql_server
+    httpd = make_server('', 8084, sparql_only_app)
+  File "/usr/lib/python3.10/wsgiref/simple_server.py", line 154, in make_server
+    server = server_class((host, port), handler_class)
+  File "/usr/lib/python3.10/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/usr/lib/python3.10/wsgiref/simple_server.py", line 50, in server_bind
+    HTTPServer.server_bind(self)
+  File "/usr/lib/python3.10/http/server.py", line 137, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/lib/python3.10/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Watching for file changes with StatReloader
+Error: That port is already in use.
+[23/May/2025 04:15:50] "GET / HTTP/1.1" 200 9998
+Watching for file changes with StatReloader
+Bad Request: /sparql-protected/
+62.240.135.5 - - [23/May/2025 04:18:42] "POST /sparql-protected/?query=a&template=b HTTP/1.1" 400 46
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:18:52] "GET /sparql-protected/ HTTP/1.1" 405 22
+[23/May/2025 04:18:58] "GET /ontop-control/ HTTP/1.1" 200 8052
+[23/May/2025 04:19:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:02] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[23/May/2025 04:19:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:05] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[23/May/2025 04:19:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:07] "POST /ontop-control/ HTTP/1.1" 302 0
+[23/May/2025 04:19:08] "GET /ontop/logs/ HTTP/1.1" 200 26582
+[23/May/2025 04:19:08] "GET /ontop-control/ HTTP/1.1" 200 8052
+[23/May/2025 04:19:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:10] "POST /ontop-control/ HTTP/1.1" 302 0
+[23/May/2025 04:19:10] "GET /ontop-control/ HTTP/1.1" 200 8052
+[23/May/2025 04:19:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:11] "GET /ontop/logs/ HTTP/1.1" 200 13
+[23/May/2025 04:19:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:14] "GET /ontop/logs/ HTTP/1.1" 200 828
+[23/May/2025 04:19:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:17] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[23/May/2025 04:19:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:20] "GET /ontop/logs/ HTTP/1.1" 200 1503
+[23/May/2025 04:19:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:23] "GET /ontop/logs/ HTTP/1.1" 200 24195
+[23/May/2025 04:19:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:26] "GET /ontop/logs/ HTTP/1.1" 200 24195
+[23/May/2025 04:19:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:29] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:32] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:35] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:38] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:41] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:44] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:47] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:49] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:53] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:56] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:19:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:19:59] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:02] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:05] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:08] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:11] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:14] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:17] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:20] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:23] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:26] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:29] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:32] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:35] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:38] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:41] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:44] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:47] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:20:50] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[23/May/2025 04:20:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:21:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:21:15] "GET /ontop/logs/ HTTP/1.1" 200 25257
+173.249.8.223 - - [23/May/2025 04:21:16] "POST /sparql-protected/ HTTP/1.1" 200 311
+173.249.8.223 - - [23/May/2025 04:22:02] "POST /sparql-protected/ HTTP/1.1" 200 311
+[23/May/2025 04:22:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:22:15] "GET /ontop/logs/ HTTP/1.1" 200 25257
+173.249.8.223 - - [23/May/2025 04:23:14] "POST /sparql-protected/ HTTP/1.1" 200 307
+[23/May/2025 04:23:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:23:15] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[23/May/2025 04:23:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[23/May/2025 04:23:17] "GET /sparql/ HTTP/1.1" 200 7318
+[23/May/2025 04:23:17] "GET /ontop/logs/ HTTP/1.1" 200 25257
+[23/May/2025 04:23:17] "GET /static/myapp/query.png HTTP/1.1" 200 36749
+[23/May/2025 04:23:35] "POST /sparql/ HTTP/1.1" 200 10865
+[23/May/2025 04:27:33] "GET /map-fields/ HTTP/1.1" 200 375752
+[23/May/2025 04:27:33] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[23/May/2025 04:27:36] "GET / HTTP/1.1" 200 9998
+165.154.51.225 - - [23/May/2025 04:45:39] "GET / HTTP/1.1" 404 9
+165.154.51.225 - - [23/May/2025 04:45:40] code 400, message Bad request version ('À\\x13À')
+165.154.51.225 - - [23/May/2025 04:45:40] "\x16\x03\x01\x00ò\x01\x00\x00î\x03\x03<\x0b\x87DCÕ%gÅïO¿+³\x81\x06'Þ@\x010û\x8f0¤mÏÇoËq\x00 ¥Ñ¿þáìjr\x11&¶å» K\x05ÝÎp\x01öH\x04;\x16\x13\x01fÅb\x11Ç\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+165.154.51.225 - - [23/May/2025 04:45:40] code 400, message Bad HTTP/0.9 request type ('t3')
+165.154.51.225 - - [23/May/2025 04:45:40] "t3 12.1.2" 400 -
+165.154.135.215 - - [23/May/2025 04:45:58] "GET / HTTP/1.1" 404 9
+165.154.135.215 - - [23/May/2025 04:45:59] "GET /favicon.ico HTTP/1.1" 404 9
+165.154.135.215 - - [23/May/2025 04:45:59] "GET /robots.txt HTTP/1.1" 404 9
+165.154.135.215 - - [23/May/2025 04:45:59] "GET /sitemap.xml HTTP/1.1" 404 9
+[23/May/2025 04:46:08] "GET /query/ HTTP/1.1" 200 7318
+[23/May/2025 04:46:09] "GET /sparql/ HTTP/1.1" 200 7318
+[23/May/2025 04:46:18] "POST /sparql/ HTTP/1.1" 200 10865
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:46:35] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:47:45] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:47:49] "GET /sparql-protected/ HTTP/1.1" 405 22
+173.249.8.223 - - [23/May/2025 04:47:59] "POST /sparql-protected/ HTTP/1.1" 200 311
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:54:38] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:54:57] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:55:01] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:55:03] "GET /sparql-protected/ HTTP/1.1" 405 22
+Method Not Allowed: /sparql-protected/
+173.249.8.223 - - [23/May/2025 04:58:54] "GET /sparql-protected/ HTTP/1.1" 405 22
+173.249.8.223 - - [23/May/2025 04:59:05] "POST /sparql-protected/ HTTP/1.1" 200 311
+173.249.8.223 - - [23/May/2025 05:00:40] "POST /sparql-protected/ HTTP/1.1" 200 513
+173.249.8.223 - - [23/May/2025 05:32:53] "POST /sparql-protected/ HTTP/1.1" 200 326
+[23/May/2025 05:33:56] "GET /map-fields/ HTTP/1.1" 200 375752
+[23/May/2025 05:33:56] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[23/May/2025 05:33:59] "GET /get-columns/?table=Turin_alsfrs HTTP/1.1" 200 148
+[23/May/2025 05:34:05] "GET /get-columns/?table=Turin_spiro HTTP/1.1" 200 42
+[23/May/2025 05:34:07] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[23/May/2025 05:34:10] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[23/May/2025 05:34:15] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[23/May/2025 05:34:20] "GET /get-columns/?table=Turin_spiro HTTP/1.1" 200 42
+173.249.8.223 - - [23/May/2025 05:36:09] "POST /sparql-protected/ HTTP/1.1" 200 513
+[23/May/2025 05:45:47] "GET /query/ HTTP/1.1" 200 7318
+[23/May/2025 05:46:24] "POST /query/ HTTP/1.1" 200 344759
+[23/May/2025 05:46:48] "POST /query/ HTTP/1.1" 200 7903
+[23/May/2025 05:47:06] "POST /query/ HTTP/1.1" 200 344760
+[23/May/2025 07:19:43] "GET / HTTP/1.1" 200 9998
+Not Found: /favicon.ico
+[23/May/2025 07:20:02] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[23/May/2025 07:20:05] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[23/May/2025 07:20:07] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+45.79.73.230 - - [23/May/2025 07:47:32] "GET / HTTP/1.0" 404 9
+[23/May/2025 08:01:27] "GET / HTTP/1.1" 200 9998
+173.249.8.223 - - [23/May/2025 08:42:42] "POST /sparql-protected/ HTTP/1.1" 200 513
+173.249.8.223 - - [23/May/2025 08:42:52] "POST /sparql-protected/ HTTP/1.1" 200 513
+173.249.8.223 - - [23/May/2025 08:47:42] "POST /sparql-protected/ HTTP/1.1" 200 513
+173.249.8.223 - - [23/May/2025 08:51:24] "POST /sparql-protected/ HTTP/1.1" 200 513
+[23/May/2025 10:19:04,042] - Broken pipe from ('199.45.154.118', 41996)
+[23/May/2025 10:19:04] code 400, message Bad request version ('À\x14À')
+[23/May/2025 10:19:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+[23/May/2025 10:19:08] "GET / HTTP/1.1" 200 9998
+[23/May/2025 10:19:08,436] - Broken pipe from ('199.45.154.118', 42018)
+[23/May/2025 10:19:11] "GET / HTTP/1.1" 200 9998
+[23/May/2025 10:19:12] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[23/May/2025 10:19:14] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[23/May/2025 10:19:15] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[23/May/2025 10:19:16] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[23/May/2025 10:19:17] "GET /favicon.ico HTTP/1.1" 404 5271
+[23/May/2025 10:19:17] code 505, message Invalid HTTP version (2.0)
+[23/May/2025 10:19:17] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[23/May/2025 10:19:21] "GET /favicon.ico HTTP/1.1" 404 5271
+[23/May/2025 10:19:22] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03\x14îé\x91aàçË]\x17\x10÷q;\x87X{¾')
+[23/May/2025 10:19:22] You're accessing the development server over HTTPS, but it only supports HTTP.
+35.203.211.172 - - [23/May/2025 10:32:10] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [23/May/2025 12:21:22] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [23/May/2025 12:21:23] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [23/May/2025 12:21:23] "GET /favicon.ico HTTP/1.1" 404 9
+115.231.78.11 - - [23/May/2025 12:21:24] "GET /robots.txt HTTP/1.1" 404 9
+45.227.254.152 - - [23/May/2025 16:20:05] code 400, message Bad HTTP/0.9 request type ('\\x03\\x00\\x00/*à\\x00\\x00\\x00\\x00\\x00Cookie:')
+45.227.254.152 - - [23/May/2025 16:20:05] "\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie: mstshash=Administr" 400 -
+[23/May/2025 16:42:54] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[23/May/2025 16:42:54] "  /*à     Cookie: mstshash=Administr" 400 -
+45.142.193.91 - - [23/May/2025 16:45:23] code 400, message Bad request version ('À')
+45.142.193.91 - - [23/May/2025 16:45:23] "\x16\x03\x01\x00Á\x01\x00\x00½\x03\x03\x97å`PÄ¥Jà¹\x01u\x151#'h\x87Ü=fì\x07Ü å\x1f\x1f¡?Iøü\x00\x00<À+Ì©À,À\x09À" 400 -
+165.154.182.221 - - [23/May/2025 17:06:50] code 400, message Bad request version ('\\x7fûO§U¹QUv*?³j¶JØ\\x86\\x04\\x98Û\\x14bÿ')
+165.154.182.221 - - [23/May/2025 17:06:50] "\x16\x03\x01\x01\x17\x01\x00\x01\x13\x03\x03u\x8b,Ø(\x13©"Ä\x02xyvYÚ2\x8e5Ë?\x1bGL\x0b\x1bO\x90¾\x84wY[ \x7fûO§U¹QUv*?³j¶JØ\x86\x04\x98Û\x14bÿ" 400 -
+165.154.182.221 - - [23/May/2025 17:07:00] "GET / HTTP/1.1" 404 9
+165.154.182.221 - - [23/May/2025 17:07:00] "GET /favicon.ico HTTP/1.1" 404 9
+165.154.182.221 - - [23/May/2025 17:07:01] "GET /robots.txt HTTP/1.1" 404 9
+165.154.182.221 - - [23/May/2025 17:07:01] "GET /sitemap.xml HTTP/1.1" 404 9
+51.91.174.246 - - [23/May/2025 19:09:14] code 400, message Bad request version ('À#À¬À®À+À')
+51.91.174.246 - - [23/May/2025 19:09:14] "\x16\x03\x03\x01§\x01\x00\x01£\x03\x03¿D\x09&)<\x15\x01#\x0fì2ßÓº¤KYé.\x8fÛÎ²[³üÈ  è\x88 -9>ÉÂ\x83ßLÙWü\x06\x14÷Á\x18ðr-\x0f\x82\x8d?$:}\x06ó \x1fËÀ\x00\x8a\x00\x16\x003\x00gÀ\x9eÀ¢\x00\x9e\x009\x00kÀ\x9fÀ£\x00\x9f\x00E\x00¾\x00\x88\x00Ä\x00\x9aÀ\x08À\x09À#À¬À®À+À" 400 -
+51.91.174.241 - - [23/May/2025 19:09:18] "GET / HTTP/1.1" 404 9
+91.196.152.33 - - [23/May/2025 19:22:36] "GET /favicon.ico HTTP/1.1" 404 9
+[23/May/2025 20:42:50] code 400, message Bad request version ('À\x14À')
+[23/May/2025 20:42:50] You're accessing the development server over HTTPS, but it only supports HTTP.
+206.168.34.77 - - [23/May/2025 20:48:26] "GET / HTTP/1.1" 404 9
+206.168.34.77 - - [23/May/2025 20:48:30] code 505, message Invalid HTTP version (2.0)
+206.168.34.77 - - [23/May/2025 20:48:30] "PRI * HTTP/2.0" 505 -
+206.168.34.77 - - [23/May/2025 20:48:50] "GET /favicon.ico HTTP/1.1" 404 9
+206.168.34.77 - - [23/May/2025 20:48:53] code 400, message Bad request version ('À\\x14À')
+206.168.34.77 - - [23/May/2025 20:48:53] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03Ül¯Ü»=[Jÿ\x122Çßz\x90?\x16ØÞ\x88Ö÷°%\x91§´]ï\\ù÷ \x8cF¯Åæ)n»è\x89ú¥kÇ\x9ew \x03D®9\x06\x0b÷Ó¥\x07"\x9dÃ\x0d\x82\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+35.203.210.203 - - [24/May/2025 01:04:19] "GET / HTTP/1.1" 404 9
+[24/May/2025 01:10:52] "GET / HTTP/1.1" 200 9998
+[24/May/2025 01:10:52,481] - Broken pipe from ('3.137.73.221', 47596)
+[24/May/2025 01:12:26] "GET / HTTP/1.1" 200 9998
+[24/May/2025 01:14:48] code 400, message Bad request version ('À\x14À')
+[24/May/2025 01:14:48] You're accessing the development server over HTTPS, but it only supports HTTP.
+[24/May/2025 01:15:32] code 400, message Bad request syntax ('SSH-2.0-Go')
+[24/May/2025 01:15:32] "SSH-2.0-Go" 400 -
+Not Found: /aaa9
+[24/May/2025 01:15:53] "GET /aaa9 HTTP/1.1" 404 5250
+Not Found: /aab8
+[24/May/2025 01:15:53] "GET /aab8 HTTP/1.1" 404 5250
+[24/May/2025 01:15:53] "GET / HTTP/1.1" 200 9998
+[24/May/2025 01:16:45] code 400, message Bad request version ('À\x14À')
+[24/May/2025 01:16:45] You're accessing the development server over HTTPS, but it only supports HTTP.
+165.227.40.199 - - [24/May/2025 01:17:30] "GET / HTTP/1.1" 404 9
+[24/May/2025 01:37:44] code 400, message Bad request syntax ('\x16\x03\x01\x01')
+[24/May/2025 01:37:44] You're accessing the development server over HTTPS, but it only supports HTTP.
+[24/May/2025 01:37:44] code 400, message Bad request syntax ('\x16\x03\x01\x01')
+[24/May/2025 01:37:44] You're accessing the development server over HTTPS, but it only supports HTTP.
+[24/May/2025 01:44:11] "GET / HTTP/1.1" 200 9998
+[24/May/2025 01:44:11] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[24/May/2025 01:44:11] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+147.185.132.204 - - [24/May/2025 04:02:10] code 400, message Bad request version ('OGâ\\x8a_È:z¬\\x16\\x9c\\x82¾å*ÈäQ\\x93\\x9d7EÙ+\\x96')
+147.185.132.204 - - [24/May/2025 04:02:10] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03O=HE?\x0b{Ùùè­xñûµ\x11ãfºÉ`s\x91\x85\\X\x1aU\x01\x8bo\x9d OGâ\x8a_È:z¬\x16\x9c\x82¾å*ÈäQ\x93\x9d7EÙ+\x96" 400 -
+147.185.132.204 - - [24/May/2025 04:02:10] code 400, message Bad request version ('À(À$À\\x14À')
+147.185.132.204 - - [24/May/2025 04:02:10] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03\x18ü\x0bÔH¿mËH\x09\x17¼Ìs\x94\x9fÕ\x00O\x82\x9b&Dkæb¤\x9eûçR¾\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+[24/May/2025 04:35:00] code 400, message Bad request syntax ('\x03\x00\x00\x13\x0eà\x00\x00\x00\x00\x00\x01\x00\x08\x00\x02\x00\x00\x00')
+[24/May/2025 04:35:00] "  à          " 400 -
+89.248.163.54 - - [24/May/2025 04:35:00] code 400, message Bad request syntax ('\\x03\\x00\\x00\\x13\\x0eà\\x00\\x00\\x00\\x00\\x00\\x01\\x00\\x08\\x00\\x02\\x00\\x00\\x00')
+89.248.163.54 - - [24/May/2025 04:35:00] "\x03\x00\x00\x13\x0eà\x00\x00\x00\x00\x00\x01\x00\x08\x00\x02\x00\x00\x00" 400 -
+[24/May/2025 05:35:36] "GET / HTTP/1.1" 200 9998
+[24/May/2025 06:20:38] code 400, message Bad request version ('À\x14À')
+[24/May/2025 06:20:38] You're accessing the development server over HTTPS, but it only supports HTTP.
+[24/May/2025 06:25:18] "GET / HTTP/1.1" 200 9998
+Not Found: /favicon.ico
+[24/May/2025 06:25:30] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[24/May/2025 06:25:32] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[24/May/2025 06:25:35] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+[24/May/2025 10:59:15] code 400, message Bad request version ('F\x07\x00tsXrcsXYs9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00bbXcsXctst\x00\x00\x00\x00\x00\x00')
+[24/May/2025 10:59:15] "   TZ          0I    ¨À )t F tsXrcsXYs9                      bbXcsXctst      " 400 -
+35.203.211.70 - - [24/May/2025 11:07:32] "GET / HTTP/1.1" 404 9
+[24/May/2025 12:13:58] "GET / HTTP/1.1" 200 9998
+[24/May/2025 12:13:59] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[24/May/2025 12:13:59] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[24/May/2025 12:13:59] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[24/May/2025 12:13:59] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+194.165.16.163 - - [24/May/2025 14:59:31] code 400, message Bad HTTP/0.9 request type ('\\x03\\x00\\x00/*à\\x00\\x00\\x00\\x00\\x00Cookie:')
+194.165.16.163 - - [24/May/2025 14:59:31] "\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie: mstshash=Administr" 400 -
+91.238.181.91 - - [24/May/2025 15:02:49] code 400, message Bad HTTP/0.9 request type ('\\x03\\x00\\x00/*à\\x00\\x00\\x00\\x00\\x00Cookie:')
+91.238.181.91 - - [24/May/2025 15:02:49] "\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie: mstshash=Administr" 400 -
+35.203.210.20 - - [24/May/2025 15:05:47] "GET / HTTP/1.1" 404 9
+[24/May/2025 15:37:12] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[24/May/2025 15:37:12] "  /*à     Cookie: mstshash=Administr" 400 -
+115.231.78.11 - - [24/May/2025 21:22:33] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [24/May/2025 21:22:33] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [24/May/2025 21:22:34] "GET /favicon.ico HTTP/1.1" 404 9
+115.231.78.11 - - [24/May/2025 21:22:34] "GET /robots.txt HTTP/1.1" 404 9
+[24/May/2025 21:33:01] "GET / HTTP/1.1" 200 9998
+[24/May/2025 21:33:03] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[24/May/2025 21:33:07] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[24/May/2025 21:33:13] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[24/May/2025 21:33:20] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+Not Found: /favicon.ico
+[24/May/2025 21:33:26] "GET /favicon.ico HTTP/1.1" 404 5271
+[24/May/2025 21:33:30] code 505, message Invalid HTTP version (2.0)
+[24/May/2025 21:33:30] "PRI * HTTP/2.0" 505 -
+Not Found: /favicon.ico
+[24/May/2025 21:33:56] "GET /favicon.ico HTTP/1.1" 404 5271
+[24/May/2025 21:34:12] code 400, message Bad request version ('À\x14À')
+[24/May/2025 21:34:12] You're accessing the development server over HTTPS, but it only supports HTTP.
+147.185.133.19 - - [24/May/2025 22:59:40] "GET / HTTP/1.1" 404 9
+[24/May/2025 23:16:17] "GET / HTTP/1.1" 200 9998
+[24/May/2025 23:16:18] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[24/May/2025 23:16:18] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[24/May/2025 23:16:18] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[24/May/2025 23:16:18] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+[24/May/2025 23:47:48,523] - Broken pipe from ('206.168.34.85', 54790)
+[24/May/2025 23:48:13] code 400, message Bad request syntax ('\x00\x00\x00\x08\x04Ò\x16/')
+[24/May/2025 23:48:13] "   Ò/" 400 -
+[24/May/2025 23:48:34] code 400, message Bad HTTP/0.9 request type ('\x06\x00ÿ\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[24/May/2025 23:48:34] " ÿ         	 È 8µ" 400 -
+[25/May/2025 00:14:50] code 400, message Bad request version ('À#À¬À®À+À')
+[25/May/2025 00:14:50] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 00:14:53] "GET / HTTP/1.1" 200 9998
+[25/May/2025 00:25:06] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+20.84.152.213 - - [25/May/2025 01:21:59] code 400, message Bad request syntax ('MGLNDD_176.126.87.152_8084')
+20.84.152.213 - - [25/May/2025 01:21:59] "MGLNDD_176.126.87.152_8084" 400 -
+205.210.31.92 - - [25/May/2025 02:40:28] code 400, message Bad request version ('À\\x13À')
+205.210.31.92 - - [25/May/2025 02:40:28] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03\x9bTi\x8c}=Vr\x82\x06³\x8e\x87Ý\x0cQ}QVc\x9bø>Ð¯\x18\x96ØlRôø à)ÒkÂ´\x9eåª\x0dðGâ\x02«°C\x9aHÒªÆÉü³Ð÷¡Ñ\x96ï6\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+205.210.31.92 - - [25/May/2025 02:40:28] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x00Ê\\x01\\x00\\x00Æ\\x03\\x03É®Ü£q\\x8bß\\x82Z\\x11ò\\x01Æ=ÿ"\\x06»`IO\\x9fÇ\\x13¸Úw\\x12<Ð\\x98n\\x00\\x00hÌ\\x14Ì\\x13À/À+À0À,À\\x11À\\x07À\\'À#À\\x13À')
+205.210.31.92 - - [25/May/2025 02:40:28] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03É®Ü£q\x8bß\x82Z\x11ò\x01Æ=ÿ"\x06»`IO\x9fÇ\x13¸Úw\x12<Ð\x98n\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+[25/May/2025 03:21:02] code 400, message Bad request version ('À\x14À')
+[25/May/2025 03:21:02] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 04:25:45] "GET / HTTP/1.1" 200 9998
+[25/May/2025 04:27:55] "GET / HTTP/1.1" 200 9998
+[25/May/2025 04:27:55,443] - Broken pipe from ('3.137.73.221', 49132)
+[25/May/2025 04:29:45] code 400, message Bad request version ('À\x14À')
+[25/May/2025 04:29:45] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 04:31:28] code 400, message Bad request syntax ('SSH-2.0-Go')
+[25/May/2025 04:31:28] "SSH-2.0-Go" 400 -
+[25/May/2025 04:33:28] code 400, message Bad request version ('À\x14À')
+[25/May/2025 04:33:28] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 06:25:19] code 400, message Bad request version ('\x00\x9eÌ¨Ìª\x003\x00=\x00\x16À')
+[25/May/2025 06:25:19] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 06:25:30] "GET / HTTP/1.1" 200 9998
+[25/May/2025 06:25:49] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+Not Found: /robots.txt
+[25/May/2025 06:25:50] "GET /robots.txt HTTP/1.1" 404 5268
+Not Found: /sitemap.xml
+[25/May/2025 06:25:50] "GET /sitemap.xml HTTP/1.1" 404 5271
+Not Found: /config.json
+[25/May/2025 06:25:51] "GET /config.json HTTP/1.1" 404 5271
+[25/May/2025 06:25:51,360] - Broken pipe from ('152.32.245.93', 36342)
+[25/May/2025 06:46:05] code 400, message Bad request version ('}')
+[25/May/2025 06:46:05] "ÿ             ñ%   { "Ret" : 100, "SessionID" : "0x0" }" 400 -
+[25/May/2025 06:52:42] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03\x92xt¢¾{\x8cÿ\x8e´*6ßV¦3"ã\x08ÑA\\Ñ-mÐÄñ=^%V\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+[25/May/2025 06:52:42] You're accessing the development server over HTTPS, but it only supports HTTP.
+104.156.155.30 - - [25/May/2025 08:01:51] "GET / HTTP/1.0" 404 9
+[25/May/2025 08:01:51] "GET / HTTP/1.0" 200 9998
+Not Found: /nice ports,/Trinity.txt.bak
+[25/May/2025 08:01:52] "GET /nice%20ports%2C/Tri%6Eity.txt%2ebak HTTP/1.0" 404 5335
+[25/May/2025 08:01:53] "OPTIONS / HTTP/1.0" 200 9998
+[25/May/2025 08:01:53] code 400, message Bad request version ('RTSP/1.0')
+[25/May/2025 08:01:53] "OPTIONS / RTSP/1.0" 400 -
+[25/May/2025 08:01:58] code 400, message Bad request version ('\x00\x01\x97|\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[25/May/2025 08:01:58] "  (rþ          |                    " 400 -
+[25/May/2025 08:02:04] code 400, message Bad HTTP/0.9 request type ('\x00')
+[25/May/2025 08:02:04] "          versionbind   " 400 -
+[25/May/2025 08:02:04] code 400, message Bad request syntax ('HELP')
+[25/May/2025 08:02:04] "HELP" 400 -
+[25/May/2025 08:02:04] code 400, message Bad request syntax ('\x16\x03\x00\x00S\x01\x00\x00O\x03\x00?G×÷º,îê²`~ó\x00ý\x82{¹Õ\x96Èw\x9bæÄÛ<=Ûoï\x10n\x00\x00(\x00\x16\x00\x13\x00')
+[25/May/2025 08:02:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 08:02:04] code 400, message Bad request version ('\x00/\x00')
+[25/May/2025 08:02:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 08:02:05] code 400, message Bad request syntax ('\x00\x00\x00qj\x81n0\x81k¡\x03\x02\x01\x05¢\x03\x02\x01')
+[25/May/2025 08:02:05] "   qjn0k¡¢" 400 -
+[25/May/2025 08:02:10] code 400, message Bad request version ('0.12\x00')
+[25/May/2025 08:02:10] "   ¤ÿSMBr    @              @     PC NETWORK PROGRAM 1.0 MICROSOFT NETWORKS 1.03 MICROSOFT NETWORKS 3.0 LANMAN1.0 LM1.2X002 Samba NT LANMAN 1.0 NT LM 0.12 " 400 -
+[25/May/2025 08:02:15] code 400, message Bad HTTP/0.9 request type ('l\x00')
+[25/May/2025 08:02:15] "l          " 400 -
+[25/May/2025 08:02:16] code 400, message Bad request version ('SIP/2.0')
+[25/May/2025 08:02:16] "OPTIONS sip:nm SIP/2.0" 400 -
+[25/May/2025 08:02:21] code 400, message Bad HTTP/0.9 request type ('AMQP\x00\x00')
+[25/May/2025 08:02:21] "AMQP  	" 400 -
+Not Found: /devicedesc.xml
+[25/May/2025 08:02:21] "GET /devicedesc.xml HTTP/1.1" 404 5294
+104.156.155.30 - - [25/May/2025 08:02:22] "GET /Portal0000.htm HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:23] "GET /__Additional HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:23] "GET /nmaplowercheck1748178141 HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:23] "GET /health HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:24] "GET /CSS/Miniweb.css HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:24] "GET /rest/applinks/1.0/manifest HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:24] "GET /HNAP1 HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:24] "GET /confluence/rest/applinks/1.0/manifest HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:26] "HEAD / HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:27] "GET / HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:27] "GET /login.php HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:28] "GET /dniapi/userInfos HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:28] "GET /api/v2/about HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:28] "GET /.git/HEAD HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:28] "POST /sdk HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:29] "GET /webui HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:29] "GET /user HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:29] "GET / HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:30] "GET /human.aspx?arg12=infotech HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:30] "GET /Portal/Portal.mwsl HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:30] "GET /dana-cached/hc/HostCheckerInstaller.osx HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:30] "GET /docs/cplugError.html/ HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:31] "GET /dana-na/nc/nc_gina_ver.txt HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:31] "GET /+CSCOE+/logon.html HTTP/1.1" 404 9
+104.156.155.30 - - [25/May/2025 08:02:32] "GET /CFIDE/componentutils/ HTTP/1.1" 404 9
+[25/May/2025 08:02:32] code 400, message Bad request syntax ('\x0e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00bbbb0100000001')
+[25/May/2025 08:02:32] "               bbbb0100000001" 400 -
+104.156.155.30 - - [25/May/2025 08:02:32] "GET / HTTP/1.0" 404 9
+104.156.155.30 - - [25/May/2025 08:02:33] "GET / HTTP/1.1" 404 9
+206.168.34.94 - - [25/May/2025 09:42:23] "GET / HTTP/1.1" 404 9
+206.168.34.94 - - [25/May/2025 09:42:28] code 505, message Invalid HTTP version (2.0)
+206.168.34.94 - - [25/May/2025 09:42:28] "PRI * HTTP/2.0" 505 -
+206.168.34.94 - - [25/May/2025 09:42:48] "GET /favicon.ico HTTP/1.1" 404 9
+206.168.34.94 - - [25/May/2025 09:42:50] code 400, message Bad request version ('8È\\x10õ\\x89/Á\\x87^qA\\x9a©ÄÇÙÜ$\\x89ý\\x14>ÝÖïnæ\\x8d\\x96')
+206.168.34.94 - - [25/May/2025 09:42:50] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03Þ\x84ÐIMë£iUàs\x1d\x04â\x03^på IvÁ×\x0e\x97\x00Dû@ê\x12\x90 8È\x10õ\x89/Á\x87^qA\x9a©ÄÇÙÜ$\x89ý\x14>ÝÖïnæ\x8d\x96" 400 -
+[25/May/2025 09:54:46] "GET / HTTP/1.1" 200 9998
+Not Found: /favicon.ico
+[25/May/2025 09:54:59] "GET /favicon.ico HTTP/1.1" 404 5271
+Not Found: /http:/api.ipify.org/
+[25/May/2025 09:55:02] "GET http://api.ipify.org/?format=json HTTP/1.1" 404 1873
+Not Found: /www.shadowserver.org:443
+[25/May/2025 09:55:04] "CONNECT www.shadowserver.org:443 HTTP/1.1" 404 1882
+[25/May/2025 11:04:46] code 400, message Bad request version ('À\x14À')
+[25/May/2025 11:04:46] You're accessing the development server over HTTPS, but it only supports HTTP.
+147.185.132.131 - - [25/May/2025 11:57:25] "GET / HTTP/1.1" 404 9
+[25/May/2025 15:19:17] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:17] "   TZ          0I    YN*äM»m tsXrcsXYs9                      bbXcsXctst      " 400 -
+[25/May/2025 15:19:17,572] - Broken pipe from ('159.89.13.17', 56956)
+[25/May/2025 15:19:22] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:22] "   TZ          0I    YN*äM»m tsXrcsXYs9                      sXXst9sst       " 400 -
+[25/May/2025 15:19:27] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:27] "   TZ          0I    YN*äM»m tsXrcsXYs9                      btXcccbtXY      " 400 -
+[25/May/2025 15:19:32] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:32] "   TZ          0I    YN*äM»m tsXrcsXYs9                      sX99ct99Xb      " 400 -
+[25/May/2025 15:19:37] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:37] "   TZ          0I    YN*äM»m tsXrcsXYs9                      trsXbsYt9       " 400 -
+[25/May/2025 15:19:42] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:42] "   TZ          0I    YN*äM»m tsXrcsXYs9                      bcc9rt9cYt      " 400 -
+[25/May/2025 15:19:47] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:47] "   TZ          0I    YN*äM»m tsXrcsXYs9                      ssXcrstsYs      " 400 -
+[25/May/2025 15:19:52] code 400, message Bad HTTP/0.9 request type ('\x00\x00\x00TZ\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x04\x010I\x00\x00\x00\x00\x11')
+[25/May/2025 15:19:52] "   TZ          0I    YN*äM»m tsXrcsXYs9                      ctXsbtsbXb      " 400 -
+[25/May/2025 15:24:30] "GET / HTTP/1.0" 200 9998
+[25/May/2025 15:36:58] "GET / HTTP/1.1" 200 9998
+[25/May/2025 15:36:58] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+45.227.254.152 - - [25/May/2025 16:26:12] code 400, message Bad HTTP/0.9 request type ('\\x03\\x00\\x00/*à\\x00\\x00\\x00\\x00\\x00Cookie:')
+45.227.254.152 - - [25/May/2025 16:26:12] "\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie: mstshash=Administr" 400 -
+[25/May/2025 17:12:27] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00/*à\x00\x00\x00\x00\x00Cookie:')
+[25/May/2025 17:12:27] "  /*à     Cookie: mstshash=Administr" 400 -
+[25/May/2025 19:26:12] "GET / HTTP/1.1" 200 9998
+[25/May/2025 20:03:48] code 400, message Bad request version ('F\x07\x00tsXrcsXYs9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00bbXcsXctst\x00\x00\x00\x00\x00\x00')
+[25/May/2025 20:03:48] "   TZ          0I    ¨À )t F tsXrcsXYs9                      bbXcsXctst      " 400 -
+198.235.24.219 - - [25/May/2025 20:31:43] code 400, message Bad request version ('À\\x13À')
+198.235.24.219 - - [25/May/2025 20:31:43] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03¦ôáL\x06 \x14Ky(ý@\x07\x18\x96\x0e°Î\x08yæ£?OÔ¦¯æWY\x1d\x09 Þ\x87Ó`S-«õ\x14¨¢f{v\x19Ð?õ.ªh\x84p\x8dé)<\x17\x92}¶V\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+198.235.24.219 - - [25/May/2025 20:31:43] code 400, message Bad request version ('À(À$À\\x14À')
+198.235.24.219 - - [25/May/2025 20:31:43] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03aèV\x0e\x97'"K£¯<QDæ§\x1e<lÞ6\x16\x17\x9cÃ½«\x8c\x08Qäò\x08\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+[25/May/2025 20:52:28] code 400, message Bad request version ('\x1a\x1a\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x00{\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
+[25/May/2025 20:52:28] You're accessing the development server over HTTPS, but it only supports HTTP.
+[25/May/2025 21:07:53] "GET / HTTP/1.1" 200 9998
+[25/May/2025 21:08:15] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[25/May/2025 21:23:18] code 400, message Bad request version ('À\x14À')
+[25/May/2025 21:23:18] You're accessing the development server over HTTPS, but it only supports HTTP.
+35.203.211.250 - - [25/May/2025 22:38:54] "GET / HTTP/1.1" 404 9
+[26/May/2025 00:53:35] code 400, message Bad request version ('n\x815')
+[26/May/2025 00:53:35] You're accessing the development server over HTTPS, but it only supports HTTP.
+[26/May/2025 01:05:51] "GET / HTTP/1.1" 200 9998
+[26/May/2025 01:05:51] "GET /static/myapp/favicon.ico HTTP/1.1" 200 15086
+[26/May/2025 01:05:51] "GET /static/myapp/apple-touch-icon.png HTTP/1.1" 200 39199
+[26/May/2025 01:05:51] "GET /static/myapp/favicon-96x96.png HTTP/1.1" 200 12965
+[26/May/2025 01:05:51] "GET /static/myapp/favicon.svg HTTP/1.1" 200 303767
+3.149.59.26 - - [26/May/2025 01:14:10] "GET / HTTP/1.1" 404 9
+3.149.59.26 - - [26/May/2025 01:16:26] "GET / HTTP/1.1" 404 9
+3.149.59.26 - - [26/May/2025 01:16:56] code 400, message Bad request version ('À\\x14À')
+3.149.59.26 - - [26/May/2025 01:16:56] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03\x0eZgKq5\x82­>o\\I¦\x92-7a\x97®\x85\x0b\x95\x9dZî?\x054G\x05Ê¦\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+3.149.59.26 - - [26/May/2025 01:19:20] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.149.59.26 - - [26/May/2025 01:19:20] "SSH-2.0-Go" 400 -
+3.149.59.26 - - [26/May/2025 01:20:02] code 400, message Bad request version ('À\\x14À')
+3.149.59.26 - - [26/May/2025 01:20:02] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03ó\x0b\x9as¼q\x8d\x86}\x92ÓhçÜðÎÖKür\x8d\x95\x05tz¹\x97)!(æ\x14\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+66.228.53.46 - - [26/May/2025 03:17:11] "GET / HTTP/1.1" 404 9
+[26/May/2025 03:17:13] "GET / HTTP/1.1" 200 9998

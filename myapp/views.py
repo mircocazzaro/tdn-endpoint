@@ -6,20 +6,19 @@ import duckdb
 import subprocess
 import signal
 import time
+import hashlib
+import requests
+import pandas as pd
+
 from django import forms
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from django.utils.text import slugify 
-import requests
-import hashlib
-import pandas as pd
-
+from django.utils.text import slugify
 
 # Path to the DuckDB file we’re going to create/use
 DUCKDB_PATH = os.path.join(settings.MEDIA_ROOT, 'mydatabase.duckdb')
@@ -129,211 +128,255 @@ def query_view(request):
 
 class FieldMappingForm(forms.Form):
     """
-    2‑stage form:
-      - Always has one <mappingId>__table field per block.
-      - Only when bound does it add <mappingId>__<var> fields, required=True.
+    Two-stage form:
+      - One <mappingId>__table per block
+      - One <mappingId>__<var> per placeholder, choices filled in __init__
     """
     def __init__(self, *args, mapping_blocks=None, tables_columns=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Step 1 fields: pick a real table for each mapping block
+        # Step 1: table selectors
         for blk in mapping_blocks:
             mid = blk['mappingId']
-            name = f"{mid}__table"
-            self.fields[name] = forms.ChoiceField(
-                label=f"{mid}",
-                choices=[("", "— select table —")] + [(t, t) for t in tables_columns],
-                widget=forms.Select(attrs={'id': f'table-select-{mid}', 'class': 'form-select mb-3'}),
+            self.fields[f"{mid}__table"] = forms.ChoiceField(
+                label=mid,
+                choices=[("", "— select table —")] +
+                        [(t, t) for t in tables_columns],
+                widget=forms.Select(attrs={
+                    'id': f'table-select-{mid}',
+                    'class': 'form-select mb-3'
+                }),
             )
 
-        # Step 2 fields: always create the placeholder selects (initially empty)
+        # Step 2: placeholder selectors (empty at first)
         for blk in mapping_blocks:
             mid = blk['mappingId']
             for var in blk['placeholders']:
-                fname = f"{mid}__{var}"
-                self.fields[fname] = forms.ChoiceField(
+                self.fields[f"{mid}__{var}"] = forms.ChoiceField(
                     label=f"`{var}` →",
-                    choices=[("", "— select column —")],  # will be replaced below
-                    required=True,
+                    choices=[("", "— select column —")],
+                    required=False,
                     widget=forms.Select(attrs={
                         'class': f'form-select placeholder-{mid} mb-3'
                     }),
                 )
-        
-        # ----------------------------
-        # 3) ON POST: rebuild each placeholder’s choices from the chosen table
+
+        # Step 3: if bound (POST), refill placeholder choices
         if self.is_bound:
             for blk in mapping_blocks:
                 mid = blk['mappingId']
-                table_field = f"{mid}__table"
-                chosen_table = self.data.get(table_field)
-                cols = tables_columns.get(chosen_table, [])
+                tbl = self.data.get(f"{mid}__table", "")
+                cols = tables_columns.get(tbl, [])
                 opts = [("", "— select column —")] + [(c, c) for c in cols]
-
-                # overwrite each placeholder field’s choices
                 for var in blk['placeholders']:
-                    pf = f"{mid}__{var}"
-                    self.fields[pf].choices = opts
-        # ----------------------------
+                    self.fields[f"{mid}__{var}"].choices = opts
 
+
+from django import forms
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+import os
+import re
+import json
+import duckdb
+import subprocess
+import signal
+import time
+import requests
+import pandas as pd
+
+# Constants for paths
+DUCKDB_PATH   = os.path.join(settings.MEDIA_ROOT, 'mydatabase.duckdb')
+TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
+ONTOP_DIR     = os.path.join(os.path.dirname(__file__), 'obda')
+OBDA_FILE     = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
+TTL_FILE      = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.ttl')
+PROPS_FILE    = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
+PID_FILE      = os.path.join(ONTOP_DIR, 'ontop.pid')
+LOG_FILE      = os.path.join(ONTOP_DIR, 'ontop.log')
 
 
 def field_mapping_view(request):
-    # 1) load and split the template into header + raw mapping blocks
-    full = open(TEMPLATE_OBDA, 'r').read()
-    header, rest = full.split('[MappingDeclaration]', 1)
-    # extract just inside the [[ … ]]
+    # 1) Parse the OBDA template into header + mapping blocks
+    tpl = open(TEMPLATE_OBDA, 'r', encoding='utf-8').read()
+    header, rest = tpl.split('[MappingDeclaration]', 1)
     inner = re.search(r'@collection\s*\[\[(.*)\]\]', rest, re.S).group(1)
 
-    # 2) parse each mapping block
-    raw_blocks = re.split(r'\n\s*\nmappingId', inner.strip())
     mapping_blocks = []
-    for raw in raw_blocks:
-        text = raw.strip()
-        if not text:
+    for raw in re.split(r'\n\s*\nmappingId', inner.strip()):
+        txt = raw.strip()
+        if not txt:
             continue
-        if not text.startswith('mappingId'):
-            text = 'mappingId ' + text
+        if not txt.startswith('mappingId'):
+            txt = 'mappingId ' + txt
 
-        # pull out mappingId, target, source
-        mid = re.search(r'mappingId\s+(\S+)', text).group(1)
-        tgt = re.search(r'target\s+(.*?)\nsource', text, re.S).group(1).strip()
-        src = re.search(r'source\s+(.*)', text, re.S).group(1).strip()
+        mid = re.search(r'mappingId\s+(\S+)', txt).group(1)
+        tgt = re.search(r'target\s+(.*?)\nsource', txt, re.S).group(1).strip()
+        src = re.search(r'source\s+(.*)', txt, re.S).group(1).strip()
+        default_table = (re.search(r'FROM\s+"([^"]+)"', src) or [None, None])[1]
+        # placeholders as list for stable indexing
+        vars_ = list(re.findall(r'\{(\w+)\}', tgt))
 
-        # find the table name in FROM "…"
-        m = re.search(r'FROM\s+"([^"]+)"', src)
-        table = m.group(1) if m else None
-
-        # find placeholders in the *target* (we use these as our variables)
-        vars_ = set(re.findall(r'\{(\w+)\}', tgt))
         mapping_blocks.append({
-            'mappingId': mid,
-            'target': tgt,
-            'source': src,
-            'table': table,
-            'placeholders': vars_,
+            'mappingId':     mid,
+            'mappingLabel':  mid,
+            'target':        tgt,
+            'source_tpl':    src,
+            'table_default': default_table,
+            'placeholders':  vars_,
         })
 
-    # 3) introspect DuckDB for tables + columns
-    conn = duckdb.connect(DUCKDB_PATH)
-    tables = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
-    tables_columns = {}
-    for t in tables:
-        info = conn.execute(f"PRAGMA table_info('{t}')").fetchall()
-        # PRAGMA table_info returns (cid, name, type, …)
-        tables_columns[t] = [col[1] for col in info]
-    conn.close()
+    # 2) Introspect DuckDB for tables and columns
+    with duckdb.connect(DUCKDB_PATH) as conn:
+        tables = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
+        tables_columns = {
+            t: [c[1] for c in conn.execute(f"PRAGMA table_info('{t}')").fetchall()]
+            for t in tables
+        }
 
+    # 3) Parse existing OBDA mappings, extract var→column pairs
+    existing = {}
+    if os.path.exists(OBDA_FILE):
+        raw_obda = open(OBDA_FILE, 'r', encoding='utf-8').read()
+        try:
+            _, body = raw_obda.split('[MappingDeclaration]', 1)
+            inner_existing = re.search(r'@collection\s*\[\[(.*)\]\]', body, re.S).group(1)
+            for chunk in re.split(r'\n\s*\nmappingId', inner_existing.strip()):
+                blk_txt = chunk.strip()
+                if not blk_txt:
+                    continue
+                if not blk_txt.startswith('mappingId'):
+                    blk_txt = 'mappingId ' + blk_txt
+
+                mid = re.search(r'mappingId\s+(\S+)', blk_txt).group(1)
+                src_line = re.search(r'source\s+(.*)', blk_txt, re.S).group(1).strip()
+                tbl = (re.search(r'FROM\s+"([^"]+)"', src_line) or [None, None])[1]
+
+                ph_map = {}
+                # find each placeholder mapping in the source line
+                for blk in mapping_blocks:
+                    if blk['mappingId'] != mid:
+                        continue
+                    for var in blk['placeholders']:
+                        m = re.search(rf"([^\s,]+)\s+AS\s+{re.escape(var)}\b", src_line)
+                        if m:
+                            ph_map[var] = m.group(1).strip("'\"")
+                        elif re.search(rf"\b{re.escape(var)}\b", src_line):
+                            ph_map[var] = var
+                    break
+
+                existing[mid] = {'table': tbl, 'placeholders': ph_map}
+        except Exception:
+            existing = {}
+
+    # 4) Build positional mapping_connections for the UI
+    mapping_connections = {}
+    for blk in mapping_blocks:
+        mid = blk['mappingId']
+        phs = blk['placeholders']
+        info = existing.get(mid, {})
+        if not info.get('placeholders'):
+            continue
+        tbl = info['table']
+        cols = tables_columns.get(tbl, [])
+        pos_map = {}
+        for idx, var in enumerate(phs):
+            col = info['placeholders'].get(var)
+            if col in cols:
+                pos_map[idx] = cols.index(col)
+        mapping_connections[mid] = pos_map
+
+    # 5) Prepare initial data for the Django form
+    initial = {}
+    for blk in mapping_blocks:
+        mid = blk['mappingId']
+        info = existing.get(mid, {})
+        if info.get('table'):
+            initial[f"{mid}__table"] = info['table']
+        for var in blk['placeholders']:
+            if var in info.get('placeholders', {}):
+                initial[f"{mid}__{var}"] = info['placeholders'][var]
+
+    # 6) Instantiate the form with mapping_blocks and tables_columns
     form = FieldMappingForm(
         request.POST or None,
         mapping_blocks=mapping_blocks,
-        tables_columns=tables_columns
+        tables_columns=tables_columns,
+        initial=initial
     )
 
-    # Only when POST *and* valid do we generate the file:
+    # 7) Handle POST: rebuild OBDA using numeric positional maps
     if request.method == 'POST' and form.is_valid():
         data = form.cleaned_data
-        form = FieldMappingForm(request.POST,
-                                 mapping_blocks=mapping_blocks,
-                                 tables_columns=tables_columns)
-        if form.is_valid():
-            data = form.cleaned_data
+        lines = [header.strip(), '[MappingDeclaration] @collection [[']
 
-            # rebuild .obda
-            out = [header.strip(), '[MappingDeclaration] @collection [[']
-            for blk in mapping_blocks:
-                src = blk['source']
-                mid = blk['mappingId']
-                # 1) table substitution for this block
-                chosen_table = data[f"{mid}__table"]
-                # replace whatever FROM "..." was in the template with the user‑picked table
-                src = re.sub(
-                    r'FROM\s+"[^"]+"',
-                    f'FROM "{chosen_table}"',
-                    src
-                )
-                # for each placeholder in this block, do a two‐step replace
-                for var in blk['placeholders']:
-                # use the mapping ID prefix (same as your form field names)
-                    key = f"{blk['mappingId']}__{var}"
-                    chosen = data[key]
-                    # 1) swap every bare var → chosen
-                    src = re.sub(rf'\b{var}\b', chosen, src)
-                    # 2) revert the alias: “AS chosen” → “AS var”
-                    src = re.sub(rf'\bAS\s+{chosen}\b', f'AS {var}', src)
+        for blk in mapping_blocks:
+            mid = blk['mappingId']
+            src = blk['source_tpl']
+            tbl = data[f"{mid}__table"]
+            src = re.sub(r'FROM\s+"[^"]+"', f'FROM "{tbl}"', src)
 
-                out.append(f"mappingId\t{blk['mappingId']}")
-                out.append(f"target\t{blk['target']}")
-                out.append(f"source\t{src}")
-                out.append("")  # blank line
+            raw = request.POST.get(f"connections_{mid}", '{}')
+            parsed = json.loads(raw)
+            cols = tables_columns.get(tbl, [])
+            conn_map = {}
+            for key, val in parsed.items():
+                try:
+                    ph_idx  = int(key)
+                    col_idx = int(val)
+                    var_name = blk['placeholders'][ph_idx]
+                    col_name = cols[col_idx]
+                except Exception:
+                    var_name, col_name = key, val
+                conn_map[var_name] = col_name
 
-            out.append("]]")
-            final_text = "\n".join(out)
+            # substitute each variable placeholder in the SQL source
+            for var, col in conn_map.items():
+                tbl = re.sub(rf'(?<=\{{){var}(?=\}})', col, tbl)
+                src = re.sub(rf"\b{var}\b", col, src)
 
-            obda_dir = os.path.join(os.path.dirname(__file__), 'obda')
-            os.makedirs(obda_dir, exist_ok=True)
-            obda_path = os.path.join(obda_dir, 'hereditary_ontology_2.obda')
-            with open(obda_path, 'w', encoding='utf-8') as f:
-                 f.write(final_text)
+            lines += [
+                f"mappingId\t{mid}",
+                f"target\t{blk['target']}",
+                f"source\t{src}",
+                ""
+            ]
 
-            messages.success(request, "✅ Mappings written to hereditary_ontology_2.obda")
-            # Redirect back (or to home) with a success message if you like:
-            return redirect('map_fields')
+        lines.append(']]')
+        os.makedirs(ONTOP_DIR, exist_ok=True)
+        with open(OBDA_FILE, 'w', encoding='utf-8') as f:
+            f.write("\n".join(lines))
 
-    else:
-        form = FieldMappingForm(mapping_blocks=mapping_blocks,
-                                tables_columns=tables_columns)
+        messages.success(request, "✅ Mappings definition stored!")
+        return redirect('map_fields')
 
-     # … after form = FieldMappingForm(…) …
-    # build a list of UI blocks, each with its table‐field and placeholder fields
+    # 8) Build mapping_ui with per-block JSON for the hidden inputs
     mapping_ui = []
     for blk in mapping_blocks:
         mid = blk['mappingId']
-        table_field = form[f"{mid}__table"]
-        # always render them, even on GET
-        placeholder_fields = [
-            form[f"{mid}__{var}"]
-            for var in blk['placeholders']
-        ]
         mapping_ui.append({
-            'mappingId': mid,
-            'table_field': table_field,
-            'placeholder_fields': placeholder_fields,
+            'mappingId':       mid,
+            'mappingLabel':    blk['mappingLabel'],
+            'table_field':     form[f"{mid}__table"],
+            'placeholder_fields': [form[f"{mid}__{v}"] for v in blk['placeholders']],
+            'connections_json': json.dumps(mapping_connections.get(mid, {})),
         })
-        
-    mapping_graph = []
-    for blk in mapping_blocks:
-        mid = blk['mappingId']
-        # which table? either user‐picked (POST) or template default (GET)
-        table_sel = (form.cleaned_data.get(f"{mid}__table")
-                    if form.is_bound and form.is_valid()
-                    else blk['table'])
-        for var in blk['placeholders']:
-            # which column? either user‐picked or var fallback
-            sel = (form.cleaned_data.get(f"{mid}__{var}")
-                if form.is_bound and form.is_valid()
-                else var)
-            # extract the ontology property IRI (e.g. "bto:alive") from target
-            m = re.search(r'(\w+:\w+)\s*\{\s*' + re.escape(var) + r'\s*\}', blk['target'])
-            prop = m.group(1) if m else var
 
-            # slugify into safe Mermaid IDs
-            from_id = slugify(f"{table_sel}_{sel}")
-            to_id   = slugify(prop)
-
-            mapping_graph.append({
-                'from_id':    from_id,
-                'from_label': f"{table_sel}.{sel}",
-                'to_id':      to_id,
-                'to_label':   prop,
-            })
-
+    # 9) Render the template, passing global JSON for reload and per-block JSON for POST
     return render(request, 'myapp/mapping.html', {
-        'mapping_ui':         mapping_ui,
-        'tables_columns_json': json.dumps(tables_columns),
-        'mapping_graph':      mapping_graph,
+        'mapping_ui':               mapping_ui,
+        'tables_columns_json':      json.dumps(tables_columns),
+        'mapping_connections_json': json.dumps(mapping_connections),
+        'form':                     form,
     })
-    
+
+
 @require_GET
 def get_columns(request):
     """
@@ -560,12 +603,11 @@ def protected_sparql(request):
             "SELECT value FROM options WHERE key='level'"
         ).fetchone()
         con.close()
-        user_level = int(lvl_row[0].lstrip('L')) if lvl_row else 0
+        user_level = int(lvl_row[0][1]) if lvl_row else 0
     except Exception:
         user_level = 0
 
-    if allowed_level <= user_level:
-        print("qui")
+    if allowed_level > user_level:
         return JsonResponse({'results':[]})
 
     # 6) Forward the **instantiated** query to Ontop
