@@ -104,20 +104,20 @@ target		bto:Patient{patient} bto:undergo bto:ewm2{patient} . bto:ewm2{patient} a
 source		SELECT patient,  moreThan10PercentWeightloss, height, weight FROM "Turin_static_vars" WHERE moreThan10PercentWeightloss IS NOT NULL AND (NOT isnan(height) OR NOT isnan(weight))
 
 mappingId	MAPID-4bd3033217454f09bd39e216a68135d2
-target		bto:testing{FUS}{patient} a bto:GeneticTesting ; bto:hasMutation {FUS}^^xsd:boolean ; bto:mutationType {FUS_mutation}^^rdf:PlainLiteral . bto:Patient{patient} bto:tested bto:testing{FUS}{patient} . 
-source		SELECT patient, FUS, FUS, FUS_mutation FROM (SELECT patient, 'FUS' AS FUS, FUS AS FUS, FUS_mutation AS FUS_mutation
+target		bto:testing{gene}{patient} a bto:GeneticTesting ; bto:hasMutation {has_mutation}^^xsd:boolean ; bto:mutationType {mutation_type}^^rdf:PlainLiteral . bto:Patient{patient} bto:tested bto:testing{gene}{patient} . 
+source		SELECT patient, gene, has_mutation, mutation_type FROM (SELECT patient, 'FUS' AS gene, FUS AS has_mutation, FUS_mutation AS mutation_type
 			FROM "Turin_static_vars"
 			WHERE FUS IS NOT NULL
 			UNION
-			SELECT patient, 'SOD1' AS FUS, SOD1 AS FUS, SOD1_mutation AS FUS_mutation
+			SELECT patient, 'SOD1' AS gene, SOD1 AS has_mutation, SOD1_mutation AS mutation_type
 			FROM "Turin_static_vars"
 			WHERE SOD1 IS NOT NULL
 			UNION
-			SELECT patient, 'C9orf72' AS FUS, C9orf72 AS FUS, C9orf72_mutation AS FUS_mutation
+			SELECT patient, 'C9orf72' AS gene, C9orf72 AS has_mutation, C9orf72_mutation AS mutation_type
 			FROM "Turin_static_vars"
 			WHERE C9orf72 IS NOT NULL
 			UNION
-			SELECT patient, 'TARDBP' AS FUS, TARDBP AS FUS, TARDBP_mutation AS FUS_mutation
+			SELECT patient, 'TARDBP' AS gene, TARDBP AS has_mutation, TARDBP_mutation AS mutation_type
 			FROM "Turin_static_vars"
 			WHERE TARDBP IS NOT NULL) AS subquery
 

@@ -4904,3 +4904,739 @@ Watching for file changes with StatReloader
 [26/May/2025 06:07:24] "GET /ontop/logs/ HTTP/1.1" 200 29108
 [26/May/2025 06:08:24] "GET /ontop/status/ HTTP/1.1" 200 21
 [26/May/2025 06:08:24] "GET /ontop/logs/ HTTP/1.1" 200 29108
+[26/May/2025 06:09:24] "GET /ontop/logs/ HTTP/1.1" 200 29108
+[26/May/2025 06:09:24] "GET /ontop/status/ HTTP/1.1" 200 21
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 26, 2025 - 05:56:38
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[26/May/2025 06:10:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:10:24] "GET /ontop/logs/ HTTP/1.1" 200 29108
+[26/May/2025 06:10:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:10:53] "GET /ontop/logs/ HTTP/1.1" 200 29108
+[26/May/2025 06:10:53] "GET /ontop/logs/ HTTP/1.1" 200 29108
+[26/May/2025 06:10:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:10:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:10:56] "GET /ontop/logs/ HTTP/1.1" 200 29108
+[26/May/2025 06:10:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:10:58] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:10:58] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:10:59] "GET /ontop/logs/ HTTP/1.1" 200 829
+[26/May/2025 06:10:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:02] "GET /ontop/logs/ HTTP/1.1" 200 936
+[26/May/2025 06:11:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:05] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:11:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:08] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:11:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:11] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:11:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:14] "GET /ontop/logs/ HTTP/1.1" 200 24446
+[26/May/2025 06:11:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:11:17] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:11:18] "GET /map-fields/ HTTP/1.1" 200 332879
+[26/May/2025 06:11:18] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[26/May/2025 06:11:39] "GET /map-fields/ HTTP/1.1" 200 332879
+[26/May/2025 06:11:40] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+104.131.58.111 - - [26/May/2025 06:11:59] code 400, message Bad request version ('À\\x14À')
+104.131.58.111 - - [26/May/2025 06:11:59] "\x16\x03\x01\x00u\x01\x00\x00q\x03\x03\x81oZ^D3ÃA\x1e<Æ\x07ÊF\x1d3fé\x1aCZ\x17À¾\x1f¹\x89«Â¿¡ \x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+[26/May/2025 06:12:16] "GET /map-fields/ HTTP/1.1" 200 332879
+[26/May/2025 06:12:17] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[26/May/2025 06:12:18] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:12:20] "GET / HTTP/1.1" 200 12635
+[26/May/2025 06:12:22] "POST /delete-table/Turin_alsfrs_afDiDky/ HTTP/1.1" 302 0
+[26/May/2025 06:12:23] "GET / HTTP/1.1" 200 11604
+[26/May/2025 06:12:38] "POST /upload-csv/ HTTP/1.1" 302 0
+[26/May/2025 06:12:39] "GET / HTTP/1.1" 200 12893
+[26/May/2025 06:12:42] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:12:44] "GET /map-fields/ HTTP/1.1" 200 332888
+[26/May/2025 06:12:44] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[26/May/2025 06:12:51] "POST /map-fields/ HTTP/1.1" 302 0
+[26/May/2025 06:12:51] "GET /map-fields/ HTTP/1.1" 200 333164
+[26/May/2025 06:12:51] "GET /get-columns/?table=Turin_static_vars HTTP/1.1" 200 787
+[26/May/2025 06:13:05] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:13:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:08] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:13:09] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:13:09] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:13:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:11] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:13:13] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:13:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:13] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:13:14] "GET /ontop/logs/ HTTP/1.1" 200 13
+[26/May/2025 06:13:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:17] "GET /ontop/logs/ HTTP/1.1" 200 1249
+[26/May/2025 06:13:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:20] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:13:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:23] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:13:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:26] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:13:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:29] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:32] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:35] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:38] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:41] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:44] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:47] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:50] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:53] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:56] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:13:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:13:59] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:02] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:05] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:08] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:11] "GET /ontop/logs/ HTTP/1.1" 200 24935
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 26, 2025 - 06:10:11
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[26/May/2025 06:14:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:14] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:17] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:20] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:14:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:14:22] "GET / HTTP/1.1" 200 12603
+[26/May/2025 06:14:26] "POST /delete-table/Turin_alsfrs/ HTTP/1.1" 302 0
+[26/May/2025 06:14:26] "GET / HTTP/1.1" 200 11596
+[26/May/2025 06:14:28] "POST /delete-table/Turin_spiro/ HTTP/1.1" 302 0
+[26/May/2025 06:14:29] "GET / HTTP/1.1" 200 10825
+[26/May/2025 06:14:31] "POST /delete-table/Turin_static_vars/ HTTP/1.1" 302 0
+[26/May/2025 06:14:31] "GET / HTTP/1.1" 200 7688
+Internal Server Error: /upload-csv/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/dist-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/var/www/my-webapp/myapp/views.py", line 74, in upload_csv_view
+    with duckdb.connect(DUCKDB_PATH) as conn:
+  File "/var/www/my-webapp/myapp/views.py", line 97, in upload_csv_view
+    os.remove(file)
+TypeError: remove: path should be string, bytes or os.PathLike, not TemporaryUploadedFile
+[26/May/2025 06:14:48] "POST /upload-csv/ HTTP/1.1" 500 71219
+Not Found: /favicon.ico
+[26/May/2025 06:14:48] "GET /favicon.ico HTTP/1.1" 404 5561
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 26, 2025 - 06:14:13
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[26/May/2025 06:17:05] "GET / HTTP/1.1" 200 9133
+[26/May/2025 06:17:09] "POST /delete-table/Turin_alsfrs/ HTTP/1.1" 302 0
+[26/May/2025 06:17:09] "GET / HTTP/1.1" 200 7683
+[26/May/2025 06:17:25] "POST /upload-csv/ HTTP/1.1" 302 0
+[26/May/2025 06:17:25] "GET / HTTP/1.1" 200 12893
+[26/May/2025 06:17:33] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:17:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:36] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:39] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:42] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:45] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:48] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:51] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:54] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:17:57] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:17:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:00] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:03] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:06] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:09] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:11] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:12] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:15] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:18] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:21] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:24] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:27] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:30] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:33] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:36] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:39] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:42] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:45] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:48] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:51] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:53] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:54] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:55] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:57] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:18:57] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:18:59] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:00] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:01] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:03] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:03] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:05] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:06] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:07] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:09] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:09] "GET /ontop/logs/ HTTP/1.1" 200 24935
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 26, 2025 - 06:17:00
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[26/May/2025 06:19:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:13] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:13] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:15] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:15] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:17] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:18] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:19] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:21] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:21] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:23] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:24] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:25] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:27] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:27] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:29] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:30] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:31] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:33] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:33] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:35] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:36] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:37] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:39] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:39] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:41] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:42] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:43] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:45] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:45] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:47] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:48] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:19:49] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:50] "GET / HTTP/1.1" 200 12603
+[26/May/2025 06:19:56] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:19:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:19:59] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:20:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:00] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:20:01] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:20:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:02] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:20:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:05] "GET /ontop/logs/ HTTP/1.1" 200 24935
+[26/May/2025 06:20:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:08] "GET /ontop/logs/ HTTP/1.1" 200 13
+[26/May/2025 06:20:08] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:20:09] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:20:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:11] "GET /ontop/logs/ HTTP/1.1" 200 829
+[26/May/2025 06:20:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:14] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:20:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:17] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:20:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:20] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:20:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:23] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:20:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:26] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:29] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:32] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:35] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:38] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:41] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:44] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:47] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:50] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:53] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:56] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:20:56] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:20:59] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:02] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:05] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:08] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:11] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:14] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:17] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:20] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:23] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:26] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:29] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:32] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:35] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:38] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:41] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:44] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:21:47] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:21:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:22:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:22:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:23:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:23:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:24:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:24:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:25:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:25:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:26:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:26:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+115.231.78.11 - - [26/May/2025 06:27:10] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [26/May/2025 06:27:11] "GET / HTTP/1.1" 404 9
+115.231.78.11 - - [26/May/2025 06:27:11] "GET /favicon.ico HTTP/1.1" 404 9
+115.231.78.11 - - [26/May/2025 06:27:12] "GET /robots.txt HTTP/1.1" 404 9
+[26/May/2025 06:27:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:27:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:28:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:28:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:29:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:29:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:30:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:30:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:31:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:31:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:32:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:32:24] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:33:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:33:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:34:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:34:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:35:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:35:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:36:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:36:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:37:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:37:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:38:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:38:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:39:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:39:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:40:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:40:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:41:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:41:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:42:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:42:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+8.211.41.141 - - [26/May/2025 06:43:09] code 400, message Bad request version ('À\\x13À')
+8.211.41.141 - - [26/May/2025 06:43:09] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03I\x06²ù¼\x99iÀYûøºe-\x83Ud]\x0e\x8d·b8´gÆÝ9dZ8f gÁ\x81i³öòË°©\x19NÖ½\x95g|püé<Z¡\x90T·é¥8'O;\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+8.211.41.141 - - [26/May/2025 06:43:19] "GET / HTTP/1.1" 404 9
+[26/May/2025 06:43:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:43:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+111.7.96.162 - - [26/May/2025 06:44:06] "GET / HTTP/1.1" 404 9
+111.7.96.152 - - [26/May/2025 06:44:09] "GET / HTTP/1.1" 404 9
+[26/May/2025 06:44:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:44:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:45:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:45:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:46:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:46:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:47:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:47:24] "GET /ontop/logs/ HTTP/1.1" 200 25258
+[26/May/2025 06:48:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:48:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:49:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:49:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:50:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:50:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:51:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:51:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:52:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:52:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:53:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:53:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:54:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:54:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:55:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:55:24] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:55:51] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:55:51] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:55:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:55:53] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:55:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:55:55] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:55:55] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:55:56] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:55:56] "GET /ontop/logs/ HTTP/1.1" 200 26874
+[26/May/2025 06:55:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:55:59] "GET /ontop/logs/ HTTP/1.1" 200 13
+[26/May/2025 06:56:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:00] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:56:00] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:56:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:02] "GET /ontop/logs/ HTTP/1.1" 200 13
+[26/May/2025 06:56:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:05] "GET /ontop/logs/ HTTP/1.1" 200 829
+[26/May/2025 06:56:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:08] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:56:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:11] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:56:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:14] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:56:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:17] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:56:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:20] "GET /ontop/logs/ HTTP/1.1" 200 24196
+[26/May/2025 06:56:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:23] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:26] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:29] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:32] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:35] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:38] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:41] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:44] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:47] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:50] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:53] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:56] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:56] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:56:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:56:59] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:02] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:05] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:08] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:11] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:14] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:17] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:20] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:23] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:26] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:29] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:32] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:35] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:38] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:41] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:44] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:47] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:50] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:53] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:56] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:56] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:57:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:57:59] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:02] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:05] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:08] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:11] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:14] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:17] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:20] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:23] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:26] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:29] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:32] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:35] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:38] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:41] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:44] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:47] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:50] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:58:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:53] "GET /ontop/logs/ HTTP/1.1" 200 24936
+/var/www/my-webapp/myapp/views.py changed, reloading.
+🔊 SPARQL‐only server listening on port 8084
+Performing system checks...
+
+System check identified no issues (0 silenced).
+May 26, 2025 - 06:19:13
+Django version 5.2, using settings 'myproject.settings'
+Starting development server at http://0.0.0.0:8001/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+[26/May/2025 06:58:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:58:59] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:02] "GET / HTTP/1.1" 200 12603
+[26/May/2025 06:59:02,837] - Broken pipe from ('34.34.132.221', 33384)
+[26/May/2025 06:59:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:02] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:05] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:08] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:11] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:14] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:17] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:20] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:21] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:59:21] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:59:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:23] "GET /ontop/logs/ HTTP/1.1" 200 24936
+[26/May/2025 06:59:24] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:25] "POST /ontop-control/ HTTP/1.1" 302 0
+[26/May/2025 06:59:25] "GET /ontop-control/ HTTP/1.1" 200 8052
+[26/May/2025 06:59:26] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:26] "GET /ontop/logs/ HTTP/1.1" 200 412
+[26/May/2025 06:59:28] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:29] "GET /ontop/logs/ HTTP/1.1" 200 1249
+[26/May/2025 06:59:30] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:32] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:32] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:59:34] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:35] "GET /ontop/logs/ HTTP/1.1" 200 1504
+[26/May/2025 06:59:36] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:38] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:38] "GET /ontop/logs/ HTTP/1.1" 200 55279
+[26/May/2025 06:59:40] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:41] "GET /ontop/logs/ HTTP/1.1" 200 66403
+[26/May/2025 06:59:42] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:44] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:44] "GET /ontop/logs/ HTTP/1.1" 200 66170
+[26/May/2025 06:59:46] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:47] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 06:59:48] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:50] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:50] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 06:59:52] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:53] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 06:59:54] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:56] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:56] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 06:59:58] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 06:59:59] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:00] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:02] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:02] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:04] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:05] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:06] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:08] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:08] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:10] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:11] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:12] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:14] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:14] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:16] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:17] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:18] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:20] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:20] "GET /ontop/logs/ HTTP/1.1" 200 65676
+[26/May/2025 07:00:22] "GET /ontop/status/ HTTP/1.1" 200 21
+[26/May/2025 07:00:23] "GET /ontop/logs/ HTTP/1.1" 200 65676
