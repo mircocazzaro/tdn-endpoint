@@ -5,7 +5,7 @@ from .views import (
     home_view, upload_csv_view, query_view,
     field_mapping_view, get_columns,
     ontop_control_view, sparql_query_view,  # ← import the new view
-    ontop_status, ontop_logs, set_level, protected_sparql,
+    ontop_status, ontop_logs, set_level, protected_sparql, delete_table_view
 )
 
 urlpatterns = [
@@ -20,4 +20,5 @@ urlpatterns = [
     path('get-columns/', get_columns, name='get_columns'),
     path('set-level/', set_level, name='set_level'),
     path('sparql-protected/', protected_sparql, name='sparql_protected'),
+    path('delete-table/<str:table_name>/', delete_table_view, name='delete_table'),
 ]
