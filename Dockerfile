@@ -1,28 +1,28 @@
+# 1. Base image with Python & Java & Supervisor
 FROM python:3.10-slim
 
-WORKDIR /app
-
-# OS deps (incl. Java for your helper thread, if needed)
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      build-essential default-jre-headless \
+      build-essential default-jre-headless supervisor \
  && rm -rf /var/lib/apt/lists/*
 
-# Python deps
+# 2. Create app dir
+WORKDIR /app
+
+# 3. Install Python deps
 COPY requirements.txt .
 RUN pip install --upgrade pip \
  && pip install -r requirements.txt
 
-# App code + static
+# 4. Copy code and Ontop files
 COPY . .
+
+# 5. Collect static assets
 RUN python manage.py collectstatic --noinput
 
-# Exposed container ports
-EXPOSE 8000 8084
+# 6. Expose the three container ports
+EXPOSE 8000 8084 8080
 
-# Run migrations, then launch both:
-CMD sh -c "\
-    python manage.py migrate && \
-    gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 & \
-    wait \
-"
+# 7. Add Supervisor config & launch
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+CMD ["supervisord", "-n"]
