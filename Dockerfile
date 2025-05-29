@@ -21,7 +21,7 @@ COPY . .
 RUN python manage.py collectstatic --noinput
 
 # 6. Expose the three container ports
-EXPOSE 8000 8084 8080
+EXPOSE 8000 8084
 
 # 7. Add Supervisor config & launch
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
