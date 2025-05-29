@@ -628,21 +628,25 @@ def protected_sparql(request):
             [h]
         ).fetchone()
         con.close()
-        if not row:
+        if not row: 
             return JsonResponse({'results':[]})   # template not recognized
         allowed_level, stored_tmpl = row
         stored_tmpl = stored_tmpl.strip()
     except Exception as e:
         return JsonResponse({'error':f'Allowed‐queries DB error: {e}'}, status=500)
-
+   
     # 3) Verify that the submitted template matches the stored one
-    if normalize_ws(tmpl) != normalize_ws(stored_tmpl):
-        for i, (c1, c2) in enumerate(zip(tmpl, stored_tmpl)):
-            if c1 != c2:
-                print(f"First difference at char {i}: {repr(c1)} vs {repr(c2)}")
-                break
-        return JsonResponse({'error':'Template mismatch'}, status=400)
-
+    #if normalize_ws(tmpl) != normalize_ws(stored_tmpl):
+    #    flag = 0
+    #    for i, (c1, c2) in enumerate(zip(tmpl, stored_tmpl)):
+    #        if c1 != c2:
+    #            if not ((c1 == '\n' or c1 == '\r') and (c2 == '\n' or c2 == '\r')):
+    #                print(f"First difference at char {i}: {repr(c1)} vs {repr(c2)}")
+    #                flag = 1
+    #                break
+    #    if flag == 1:
+    #        return JsonResponse({'error':'Template mismatch'}, status=400)
+  
     # 4) (Optional) sanity‐check that 'query' is a placeholder‐fill of 'tmpl'
     #    e.g. replace all placeholders in tmpl by regex wildcards and match
     #placeholder_pattern = re.escape(tmpl)
@@ -666,6 +670,7 @@ def protected_sparql(request):
         user_level = 0
 
     if allowed_level > user_level:
+        print("Quaaaaa")
         return JsonResponse({'results':[]})
 
     # 6) Forward the **instantiated** query to Ontop

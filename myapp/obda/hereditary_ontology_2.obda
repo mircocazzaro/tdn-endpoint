@@ -14,8 +14,8 @@ BTO_resource:	https://w3id.org/brainteaser/ontology/resource/
 
 [MappingDeclaration] @collection [[
 mappingId	MAPID-f062db0588088c0b8729a3de2f6482fa
-target		bto:Patient{weight_before_onset} a bto:Patient ; bto:hasDisease NCIT:{disease} . 
-source		SELECT weight_before_onset, 'C34373' AS disease FROM "Turin_static_vars"
+target		bto:Patient{patient} a bto:Patient ; bto:hasDisease NCIT:{disease} . 
+source		SELECT patient, 'C34373' AS disease FROM "Turin_static_vars"
 
 mappingId	MAPID-f24debb89dc84f73a47acdf763ec0b4f
 target		bto:Patient{patient} bto:alive {alive}^^xsd:boolean . 
