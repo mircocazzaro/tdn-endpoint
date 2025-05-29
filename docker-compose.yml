@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # allow overriding host‐side ports via ENV or .env file:
+    ports:
+      - "${DJANGO_HOST_PORT:-8000}:${DJANGO_PORT}"  # maps host port → container DJANGO_PORT
+      - "${SPARQL_HOST_PORT:-8084}:8084"           # maps host port → SPARQL helper (apps.py)
+
+    environment:
+      # ensure container knows which internal port to bind
+      DJANGO_PORT: 8000
+
+    volumes:
+      - .:/app
+    depends_on:
+      - ontop
+
+  ontop:
+    build:
+      context: .
+      dockerfile: ontop/Dockerfile
+
+    # no 'ports:' here → not exposed externally
+    # other services (e.g. web) can still reach it at ontop:8080
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
