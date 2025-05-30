@@ -67,10 +67,6 @@ source		SELECT patient, LCASE(retired_at_diagnosis) AS retired_at_diagnosis
 			FROM "PATIENTS GENERAL DATA"
 			WHERE retired_at_diagnosis <> ''
 
-mappingId	MAPID-5d363da979304edd8314081b1f42c665
-target		bto:Patient{patient} bto:hasKinship bto:firstKin{patient} . bto:firstKin{patient} bto:inKinshipWith bto:secondKin{patient} . bto:secondKin{patient} bto:hasDisease NCIT:C34373 . 
-source		SELECT patient FROM "PATIENTS GENERAL DATA" WHERE ALS_familiar_history = True
-
 mappingId	MAPID-224eb950119347ad93dbd75961906edd
 target		bto:Patient{patient} bto:undergo bto:eventSmoking{patient} . bto:eventSmoking{patient} a bto:ProtocolEvent ; bto:hasRegisteredActivity bto:actSmoking{patient} . bto:actSmoking{patient} a bto:Smoking ; bto:activityStartYear {smoking_startYear}^^xsd:gYear ; bto:activityEndYear {smoking_endYear}^^xsd:gYear ; bto:packYear {packYear}^^xsd:integer ; bto:dailyCigarettes {dailyCigarettes}^^xsd:integer . 
 source		SELECT patient, smoking_startYear, smoking_endYear, packYear, dailyCigarettes FROM "PATIENTS GENERAL DATA" WHERE smoking = True AND (smoking_startYear <> '' OR smoking_endYear <> '' OR packYear <> '' OR dailyCigarettes <> '')
@@ -83,13 +79,13 @@ mappingId	MAPID-85b6967eb0034ec1a2f6131b80385266
 target		bto:Patient{patient} bto:undergo bto:ewbo{patient} . bto:ewbo{patient} a bto:BeforeOnset ; bto:consists bto:cebo{patient} . bto:cebo{patient} a bto:ClinicalEvaluation ; bto:weight {weight_before_onset}^^xsd:float . 
 source		SELECT patient, weight_before_onset FROM "PATIENTS GENERAL DATA" WHERE NOT isnan(weight_before_onset)
 
-mappingId	MAPID-cf08b594927a4d488dd58d08d790d828
-target		bto:Patient{patient} bto:undergo bto:sbo{patient} . bto:sbo{patient} a bto:BeforeOnset ; bto:consists bto:s{patient} . bto:s{patient} a bto:SurgicalProcedure . 
-source		SELECT patient FROM "PATIENTS GENERAL DATA" WHERE surgical_intervention_before_onset <> ''
-
 mappingId	MAPID-9eed746ac5ee43fa857d6238ae9ab74c
 target		bto:Patient{patient} bto:undergo bto:mtbo{patient} . bto:mtbo{patient} a bto:BeforeOnset ; bto:trauma bto:trauma{patient} . bto:trauma{patient} bto:traumaDescription "Major trauma before onset"^^rdf:PlainLiteral . 
 source		SELECT patient FROM "PATIENTS GENERAL DATA" WHERE major_trauma_before_onset = True
+
+mappingId	MAPID-cf08b594927a4d488dd58d08d790d828
+target		bto:Patient{patient} bto:undergo bto:sbo{patient} . bto:sbo{patient} a bto:BeforeOnset ; bto:consists bto:s{patient} . bto:s{patient} a bto:SurgicalProcedure . 
+source		SELECT patient FROM "PATIENTS GENERAL DATA" WHERE surgical_intervention_before_onset <> ''
 
 mappingId	MAPID-6c686666470546ba946b53ed020b62a6
 target		bto:Patient{patient} bto:undergo bto:emn{patient} . bto:emn{patient} bto:consists bto:cemn{patient} . bto:cemn{patient} a bto:ClinicalEvaluation ; bto:predominantMotorNeuron {prevalentMN}^^xsd:string . 

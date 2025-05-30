@@ -1,0 +1,164 @@
+[PrefixDeclaration]
+:		https://w3id.org/hereditary/ontology/schema/
+bto:		https://w3id.org/brainteaser/ontology/schema/
+dct:		http://purl.org/dc/terms/
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+xml:		http://www.w3.org/XML/1998/namespace
+xsd:		http://www.w3.org/2001/XMLSchema#
+NCIT:		http://purl.obolibrary.org/obo/NCIT_
+obda:		https://w3id.org/obda/vocabulary#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+skos:		http://www.w3.org/2004/02/skos/core#
+BTO_resource:	https://w3id.org/brainteaser/ontology/resource/
+
+[MappingDeclaration] @collection [[
+mappingId	MAPID-f062db0588088c0b8729a3de2f6482fa
+target		bto:Patient{patient} a bto:Patient ; bto:hasDisease NCIT:{disease} . 
+source		SELECT patient, 'C34373' AS disease FROM "Turin_static_vars"
+
+mappingId	MAPID-f24debb89dc84f73a47acdf763ec0b4f
+target		bto:Patient{patient} bto:alive {alive}^^xsd:boolean . 
+source		SELECT patient, alive
+			FROM "Turin_static_vars"
+			WHERE alive IS NOT NULL
+
+mappingId	MAPID-5b2c0dfea75d44279ce8ddde95f2a9aa
+target		bto:Patient{patient} bto:sex {sex}^^xsd:string . 
+source		SELECT patient, LCASE(sex) AS sex
+			FROM "Turin_static_vars"
+			WHERE sex <> ''
+
+mappingId	MAPID-51a6eb8de7c64b7bbe4fe62d8188208c
+target		bto:Patient{patient} bto:undergo bto:eventOnset1{patient} . bto:eventOnset1{patient} a bto:Onset ; bto:eventStart {onsetDate}^^xsd:datetime ; bto:bulbarOnset {onset_bulbar}^^xsd:boolean ; bto:axialOnset {onset_axial}^^xsd:boolean ; bto:generalizedOnset {onset_generalized}^^xsd:boolean ; bto:limbsOnset {onset_limbs}^^xsd:boolean . 
+source		SELECT patient, onsetDate, onset_bulbar, onset_axial, onset_generalized, onset_limbs FROM "Turin_static_vars"
+
+mappingId	MAPID-541428e7a83441f5bd29e52d66ffc52e
+target		bto:Patient{patient} bto:undergo bto:eventOnset1{patient} . bto:eventOnset1{patient} bto:ageOnset {age_onset}^^xsd:float . 
+source		SELECT patient, age_onset FROM "Turin_static_vars" WHERE NOT isnan(age_onset)
+
+mappingId	MAPID-ff2b4bdc90af468793b4f58105fa555f
+target		bto:Patient{patient} bto:undergo bto:diagnosis{patient} . bto:diagnosis{patient} a bto:Diagnosis ; bto:eventStart {diagnosisDate}^^xsd:datetime . 
+source		SELECT patient, diagnosisDate FROM "Turin_static_vars"
+
+mappingId	MAPID-13ab39d8b67c4f34a206b7f4bcc1f442
+target		bto:Patient{patient} bto:hasEthnicity bto:eth{patient} . bto:eth{patient} rdfs:label {ethnicity}@en . 
+source		SELECT patient, ethnicity FROM "Turin_static_vars" WHERE ethnicity <> ''
+
+mappingId	MAPID-56da0e23dc6b4cb3a0bfc475f4bcb65f
+target		bto:eventOnset3{patient} bto:anatomicalLocation bto:location{patient} . bto:location{patient} rdfs:label {onset_location}^^xsd:string . 
+source		SELECT patient, onset_location FROM "Turin_static_vars" WHERE onset_location <> ''
+
+mappingId	MAPID-5ea1e8edbbb1446fb50e887c4f0605dd
+target		bto:eventOnset4{patient} bto:consists bto:clinicalEvaluation{patient} . bto:clinicalEvaluation{patient} a bto:ClinicalEvaluation ; bto:predominantLimbsSide {onset_limbs_side}^^xsd:string ; bto:predominantLimbsImpairment {onset_limbs_impairment}^^xsd:string . 
+source		SELECT patient, onset_limbs_side, onset_limbs_impairment
+			FROM "Turin_static_vars"
+			WHERE onset_limbs_side <> '' OR onset_limbs_impairment <> ''
+
+mappingId	MAPID-43e4bf0bcacd48d5b712592eeaec8895
+target		bto:Patient{patient} bto:hasOccupation bto:occupation{patient} . bto:occupation{patient} rdfs:label {occupation}@en . 
+source		SELECT patient, occupation
+			FROM "Turin_static_vars"
+			WHERE occupation <> ''
+
+mappingId	MAPID-a276932b837843dba7e633fdf5de414f
+target		bto:Patient{patient} bto:retiredAtDiagnosis {retired_at_diagnosis}^^xsd:boolean . 
+source		SELECT patient, LCASE(retired_at_diagnosis) AS retired_at_diagnosis
+			FROM "Turin_static_vars"
+			WHERE retired_at_diagnosis <> ''
+
+mappingId	MAPID-5d363da979304edd8314081b1f42c665
+target		bto:Patient{patient} bto:hasKinship bto:firstKin{patient} . bto:firstKin{patient} bto:inKinshipWith bto:secondKin{patient} . bto:secondKin{patient} bto:hasDisease NCIT:C34373 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE ALS_familiar_history = True
+
+mappingId	MAPID-224eb950119347ad93dbd75961906edd
+target		bto:Patient{patient} bto:undergo bto:eventSmoking{patient} . bto:eventSmoking{patient} a bto:ProtocolEvent ; bto:hasRegisteredActivity bto:actSmoking{patient} . bto:actSmoking{patient} a bto:Smoking ; bto:activityStartYear {smoking_startYear}^^xsd:gYear ; bto:activityEndYear {smoking_endYear}^^xsd:gYear ; bto:packYear {packYear}^^xsd:integer ; bto:dailyCigarettes {dailyCigarettes}^^xsd:integer . 
+source		SELECT patient, smoking_startYear, smoking_endYear, packYear, dailyCigarettes FROM "Turin_static_vars" WHERE smoking = True AND (smoking_startYear <> '' OR smoking_endYear <> '' OR packYear <> '' OR dailyCigarettes <> '')
+
+mappingId	MAPID-7e7c255ea1204789b33d29147b3afbd2
+target		bto:Patient{patient} bto:undergo bto:eventSmoking{patient} . bto:eventSmoking{patient} a bto:ProtocolEvent ; bto:hasRegisteredActivity bto:actSmoking{patient} . bto:actSmoking{patient} a bto:Smoking . 
+source		SELECT patient, smoking_startYear, smoking_endYear, packYear, dailyCigarettes FROM "Turin_static_vars" WHERE smoking = True AND smoking_startYear = '' AND smoking_endYear = '' AND packYear = '' AND dailyCigarettes = ''
+
+mappingId	MAPID-85b6967eb0034ec1a2f6131b80385266
+target		bto:Patient{patient} bto:undergo bto:ewbo{patient} . bto:ewbo{patient} a bto:BeforeOnset ; bto:consists bto:cebo{patient} . bto:cebo{patient} a bto:ClinicalEvaluation ; bto:weight {weight_before_onset}^^xsd:float . 
+source		SELECT patient, weight_before_onset FROM "Turin_static_vars" WHERE NOT isnan(weight_before_onset)
+
+mappingId	MAPID-cf08b594927a4d488dd58d08d790d828
+target		bto:Patient{patient} bto:undergo bto:sbo{patient} . bto:sbo{patient} a bto:BeforeOnset ; bto:consists bto:s{patient} . bto:s{patient} a bto:SurgicalProcedure . 
+source		SELECT patient FROM "Turin_static_vars" WHERE surgical_intervention_before_onset <> ''
+
+mappingId	MAPID-9eed746ac5ee43fa857d6238ae9ab74c
+target		bto:Patient{patient} bto:undergo bto:mtbo{patient} . bto:mtbo{patient} a bto:BeforeOnset ; bto:trauma bto:trauma{patient} . bto:trauma{patient} bto:traumaDescription "Major trauma before onset"^^rdf:PlainLiteral . 
+source		SELECT patient FROM "Turin_static_vars" WHERE major_trauma_before_onset = True
+
+mappingId	MAPID-6c686666470546ba946b53ed020b62a6
+target		bto:Patient{patient} bto:undergo bto:emn{patient} . bto:emn{patient} bto:consists bto:cemn{patient} . bto:cemn{patient} a bto:ClinicalEvaluation ; bto:predominantMotorNeuron {prevalentMN}^^xsd:string . 
+source		SELECT patient, prevalentMN FROM "Turin_static_vars" WHERE prevalentMN <> ''
+
+mappingId	MAPID-11e66e7f2da342619b820f6f46d5af73
+target		bto:Patient{patient} bto:undergo bto:ewm1{patient} . bto:ewm1{patient} a bto:ProtocolEvent ; bto:consists bto:cewm{patient} . bto:cewm{patient} a bto:ClinicalEvaluation ; bto:moreThan10PercentWeightloss {moreThan10PercentWeightloss}^^xsd:boolean . 
+source		SELECT patient, moreThan10PercentWeightloss FROM "Turin_static_vars" WHERE moreThan10PercentWeightloss IS NOT NULL AND NOT isnan(height) AND NOT isnan(weight)
+
+mappingId	MAPID-325ab5a214d6481a8f99ee90d5bb72f3
+target		bto:Patient{patient} bto:undergo bto:ewm2{patient} . bto:ewm2{patient} a bto:ProtocolEvent ; bto:consists bto:cewm{patient} . bto:cewm{patient} a bto:ClinicalEvaluation ; bto:moreThan10PercentWeightloss {moreThan10PercentWeightloss}^^xsd:boolean ; bto:height {height}^^xsd:float ; bto:weight {weight}^^xsd:float . 
+source		SELECT patient,  moreThan10PercentWeightloss, height, weight FROM "Turin_static_vars" WHERE moreThan10PercentWeightloss IS NOT NULL AND (NOT isnan(height) OR NOT isnan(weight))
+
+mappingId	MAPID-4bd3033217454f09bd39e216a68135d2
+target		bto:testing{gene}{patient} a bto:GeneticTesting ; bto:hasMutation {has_mutation}^^xsd:boolean ; bto:mutationType {mutation_type}^^rdf:PlainLiteral . bto:Patient{patient} bto:tested bto:testing{gene}{patient} . 
+source		SELECT patient, gene, has_mutation, mutation_type FROM (SELECT patient, 'FUS' AS gene, FUS AS has_mutation, FUS_mutation AS mutation_type
+			FROM "Turin_static_vars"
+			WHERE FUS IS NOT NULL
+			UNION
+			SELECT patient, 'SOD1' AS gene, SOD1 AS has_mutation, SOD1_mutation AS mutation_type
+			FROM "Turin_static_vars"
+			WHERE SOD1 IS NOT NULL
+			UNION
+			SELECT patient, 'C9orf72' AS gene, C9orf72 AS has_mutation, C9orf72_mutation AS mutation_type
+			FROM "Turin_static_vars"
+			WHERE C9orf72 IS NOT NULL
+			UNION
+			SELECT patient, 'TARDBP' AS gene, TARDBP AS has_mutation, TARDBP_mutation AS mutation_type
+			FROM "Turin_static_vars"
+			WHERE TARDBP IS NOT NULL) AS subquery
+
+mappingId	MAPID-85118f580e28467e9419669253240d0f
+target		bto:Patient{patient} bto:undergo bto:event1{patient} . bto:event1{patient} bto:hasRegisteredCondition bto:com1{patient} . bto:com1{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C3117 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE hypertension = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d10
+target		bto:Patient{patient} bto:undergo bto:event2{patient} . bto:event2{patient} bto:hasRegisteredCondition bto:com2{patient} . bto:com2{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C2985 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE diabetes = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d11
+target		bto:Patient{patient} bto:undergo bto:event3{patient} . bto:event3{patient} bto:hasRegisteredCondition bto:com3{patient} . bto:com3{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C80385 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE dyslipidemia = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d12
+target		bto:Patient{patient} bto:undergo bto:event4{patient} . bto:event4{patient} bto:hasRegisteredCondition bto:com4{patient} . bto:com4{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C26893 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE thyroid_disorder = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d13
+target		bto:Patient{patient} bto:undergo bto:event5{patient} . bto:event5{patient} bto:hasRegisteredCondition bto:com5{patient} . bto:com5{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C2889 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE autoimmune_disease = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d14
+target		bto:Patient{patient} bto:undergo bto:event6{patient} . bto:event6{patient} bto:hasRegisteredCondition bto:com6{patient} . bto:com6{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C3390 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE stroke = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d15
+target		bto:Patient{patient} bto:undergo bto:event7{patient} . bto:event7{patient} bto:hasRegisteredCondition bto:com7{patient} . bto:com7{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C2931 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE cardiac_disease = True
+
+mappingId	MAPID-85118f580e28467e9419669253240d16
+target		bto:Patient{patient} bto:undergo bto:event8{patient} . bto:event8{patient} bto:hasRegisteredCondition bto:com8{patient} . bto:com8{patient} a bto:Comorbidity ; bto:determinedBy NCIT:C8509 . 
+source		SELECT patient FROM "Turin_static_vars" WHERE primary_neoplasm = True
+
+mappingId	MAPID-7eef74030c03400c91bb972e6e9b0e80
+target		bto:Patient{patient} bto:undergo bto:e_spiro{patient}{date} . bto:e_spiro{patient}{date} bto:consists bto:spiro{patient}{date} . bto:spiro{patient}{date} a bto:PulmonaryFunctionTest ; bto:procedureStart {date}^^xsd:datetime ; bto:pulmonaryFVCRel {fvcRel}^^xsd:float . 
+source		SELECT patient, date, fvcRel FROM "Turin_spiro"
+
+mappingId	MAPID-4d671e8c9cff4cab84eb4acba87f21f7
+target		bto:Patient{patient} bto:undergo bto:e_alsfrs{patient}{date} . bto:e_alsfrs{patient}{date} bto:consists bto:alsfrs{patient}{date} . bto:alsfrs{patient}{date} a bto:ALSFRS ; bto:procedureStart {date}^^xsd:datetime ; bto:revisedALSFRS {tot}^^xsd:integer ; bto:bulbarSubscore {bulbar}^^xsd:integer ; bto:motorSubscore {motor}^^xsd:integer ; bto:respiratorySubscore {respiratory}^^xsd:integer ; bto:alsfrs1 {q1}^^xsd:integer ; bto:alsfrs2 {q2}^^xsd:integer ; bto:alsfrs3 {q3}^^xsd:integer ; bto:alsfrs4 {q4}^^xsd:integer ; bto:alsfrs5 {q5}^^xsd:integer ; bto:alsfrs6 {q6}^^xsd:integer ; bto:alsfrs7 {q7}^^xsd:integer ; bto:alsfrs8 {q8}^^xsd:integer ; bto:alsfrs9 {q9}^^xsd:integer ; bto:alsfrs10 {q10}^^xsd:integer ; bto:alsfrs11 {q11}^^xsd:integer ; bto:alsfrs12 {q12}^^xsd:integer . 
+source		SELECT patient, date, tot, bulbar, motor, respiratory, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12 FROM "Turin_alsfrs"
+
+]]

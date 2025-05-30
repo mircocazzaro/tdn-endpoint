@@ -9,6 +9,8 @@ import time
 import hashlib
 import requests
 import pandas as pd
+import sqlparse
+from typing import List
 
 from django import forms
 from django.conf import settings
@@ -38,6 +40,20 @@ LOG_FILE    = os.path.join(ONTOP_DIR, 'ontop.log')
 def normalize_ws(s: str) -> str:
     # replace any run of whitespace (spaces, newlines, tabs, CRs) with a single space
     return re.sub(r'\s+', ' ', s).strip()
+
+def extract_columns_from_sql(sql: str, available_cols: list[str]) -> list[str]:
+    """
+    Finds all occurrences of any of the available_cols in the SQL text,
+    matching as whole‐word (so 'id' doesn’t match 'patient_id_extra').
+    """
+    low = sql.lower()
+    found = []
+    for col in available_cols:
+        pattern = r'\b' + re.escape(col.lower()) + r'\b'
+        if re.search(pattern, low):
+            found.append(col)
+    return sorted(found)
+
 
 def home_view(request):
     """
@@ -143,6 +159,7 @@ class FieldMappingForm(forms.Form):
                 label=mid,
                 choices=[("", "— select table —")] +
                         [(t, t) for t in tables_columns],
+                required=False,
                 widget=forms.Select(attrs={
                     'id': f'table-select-{mid}',
                     'class': 'form-select mb-3'
@@ -173,25 +190,6 @@ class FieldMappingForm(forms.Form):
                     self.fields[f"{mid}__{var}"].choices = opts
 
 
-from django import forms
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.views.decorators.http import require_GET, require_POST
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-
-import os
-import re
-import json
-import duckdb
-import subprocess
-import signal
-import time
-import requests
-import pandas as pd
-
 # Constants for paths
 DUCKDB_PATH   = os.path.join(ONTOP_DIR, 'mydatabase.duckdb')
 TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
@@ -221,8 +219,26 @@ def field_mapping_view(request):
         tgt = re.search(r'target\s+(.*?)\nsource', txt, re.S).group(1).strip()
         src = re.search(r'source\s+(.*)', txt, re.S).group(1).strip()
         default_table = (re.search(r'FROM\s+"([^"]+)"', src) or [None, None])[1]
-        # placeholders as list for stable indexing
+        # placeholders as list for stable indexing (from {…} in the TARGET)
         vars_ = list(dict.fromkeys(re.findall(r'\{(\w+)\}', tgt)))
+        # ── NEW: also grab any filter-only columns (identifiers immediately before “=”) ──
+        # 1) columns used with operators (=, <>, IS NULL, IS NOT NULL)
+        op_pattern = r'\b([A-Za-z_]\w*)\b\s*(?=(?:=|<>|IS\s+NOT\s+NULL|IS\s+NULL))'
+        cols_ops    = re.findall(op_pattern, src, flags=re.IGNORECASE)
+
+        # 2) columns wrapped in isnan(...) calls (optionally preceded by NOT)
+        isnan_pattern = r'\bISNAN\s*\(\s*([A-Za-z_]\w*)\s*\)'
+        cols_isnan    = re.findall(isnan_pattern, src, flags=re.IGNORECASE)
+
+        # combine, preserving order and uniqueness
+        filters = []
+        for col in cols_ops + cols_isnan:
+            if col not in filters:
+                filters.append(col)
+        for fcol in filters:
+            if fcol not in vars_:
+                vars_.append(fcol)
+        
 
         mapping_blocks.append({
             'mappingId':     mid,
@@ -240,107 +256,133 @@ def field_mapping_view(request):
             t: [c[1] for c in conn.execute(f"PRAGMA table_info('{t}')").fetchall()]
             for t in tables
         }
+    
+    # 2b) NOW that tables_columns exists, pull out any filter‐only cols
+    for blk in mapping_blocks:
+        # 1) canonicalize the table name so we actually hit tables_columns
+        raw_tbl = blk['table_default'] or ""
+        if raw_tbl in tables_columns:
+            tbl = raw_tbl
+        else:
+            alt = slugify(raw_tbl).replace('-', '_')
+            tbl = alt if alt in tables_columns else raw_tbl.replace(' ', '_')
+
+        cols = tables_columns.get(tbl, [])
+
+        # 2) regex‐scan the SQL for any of those columns
+        
+        extra = extract_columns_from_sql(blk['source_tpl'], cols)
+
+        # 3) append any you didn’t already pull from the target
+        for col in extra:
+            if col not in blk['placeholders']:
+                blk['placeholders'].append(col)
 
     # 3) Parse existing OBDA mappings, extract var→column pairs
     existing = {}
     existing_placeholders = {}
     if os.path.exists(OBDA_FILE):
         raw_obda = open(OBDA_FILE, 'r', encoding='utf-8').read()
-        try:
-            _, body = raw_obda.split('[MappingDeclaration]', 1)
-            inner_existing = re.search(r'@collection\s*\[\[(.*)\]\]', body, re.S).group(1)
-            for chunk in re.split(r'\n\s*\nmappingId', inner_existing.strip()):
-                blk_txt = chunk.strip()
-                if not blk_txt:
-                    continue
-                if not blk_txt.startswith('mappingId'):
-                    blk_txt = 'mappingId ' + blk_txt
+        _, body = raw_obda.split('[MappingDeclaration]', 1)
+        inner_existing = re.search(r'@collection\s*\[\[(.*)\]\]', body, re.S).group(1)
+        for chunk in re.split(r'\n\s*\nmappingId', inner_existing.strip()):
+            blk_txt = chunk.strip()
+            if not blk_txt:
+                continue
+            if not blk_txt.startswith('mappingId'):
+                blk_txt = 'mappingId ' + blk_txt
 
+            try:
                 mid       = re.search(r'mappingId\s+(\S+)', blk_txt).group(1)
-                # pull out exactly what placeholders appeared *in the saved target*
                 tgt_exist = re.search(r'target\s+(.*?)\n', blk_txt, re.S).group(1).strip()
                 saved_vars = list(dict.fromkeys(
                     re.findall(r'\{(\w+)\}', tgt_exist)
                 ))
                 existing_placeholders[mid] = saved_vars
+
                 src_line  = re.search(r'source\s+(.*)', blk_txt, re.S).group(1).strip()
                 tbl = (re.search(r'FROM\s+"([^"]+)"', src_line) or [None, None])[1]
 
-                # first try to detect any explicit AS-alias or bare appearances
+                # build placeholder map exactly as before…
                 ph_map = {}
                 for blk in mapping_blocks:
                     if blk['mappingId'] != mid:
                         continue
                     for var in blk['placeholders']:
-                        # SELECT something AS var
-                        m = re.search(rf"([^\s,]+)\s+AS\s+{re.escape(var)}\b", src_line)
+                        # same AS‐alias and positional logic…
+                        m = re.search(
+                            rf"([^\s,]+)\s+AS\s+{re.escape(var)}\b",
+                            src_line
+                        )
                         if m:
-                            raw_token = m.group(1).strip()
-                            # if it's a quoted literal, ignore it
-                            if not ((raw_token.startswith("'") and raw_token.endswith("'"))
-                                    or (raw_token.startswith('"') and raw_token.endswith('"'))):
-                                ph_map[var] = raw_token.strip("'\"")
-                            # otherwise skip—leave var un-mapped so it remains exactly as in template
+                            tok = m.group(1).strip()
+                            if not (tok.startswith(("'",'"')) and tok.endswith(("'",'"'))):
+                                ph_map[var] = tok.strip("'\"")
                             continue
-                        # SELECT var
                         elif re.search(rf"\b{re.escape(var)}\b", src_line):
                             ph_map[var] = var
-                    # if some vars never showed up, but the saved target had
-                    # exactly the same count of placeholders, assume a
-                    # positional mapping template→saved
                     missing = [v for v in blk['placeholders'] if v not in ph_map]
-                    if missing and len(saved_vars)==len(blk['placeholders']):
+                    if missing and len(saved_vars) == len(blk['placeholders']):
                         for i, orig in enumerate(blk['placeholders']):
                             ph_map[orig] = saved_vars[i]
                     break
 
-                existing[mid] = {'table': tbl, 'placeholders': ph_map}
-        except Exception:
-            existing = {}
+                # pick up WHERE‐only mappings
+                filter_map = {}
+                tmpl_where  = re.search(r'WHERE\s+(.*)', blk['source_tpl'], re.S)
+                mapped_where = re.search(r'WHERE\s+(.*)', src_line,       re.S)
+                if tmpl_where and mapped_where:
+                    orig_cols = re.findall(r'(\w+)\s*=', tmpl_where.group(1))
+                    new_cols  = re.findall(r'(\w+)\s*=', mapped_where.group(1))
+                    if len(orig_cols) == len(new_cols):
+                        filter_map = dict(zip(orig_cols, new_cols))
+
+                # ── MERGE those into the main placeholder map ──
+                for orig, new in filter_map.items():
+                    ph_map[orig] = new
+
+                existing[mid] = {
+                    'table':        tbl,
+                    'placeholders': ph_map,
+                }
+            except Exception as e:
+                continue
             
     
-    # 4) Build positional mapping_connections for the UI
+    # 4) Build positional mapping_connections for the UI (handle missing .obda gracefully)
     mapping_connections = {}
     for blk in mapping_blocks:
-        mid         = blk['mappingId']
-        phs         = blk['placeholders']
-        info        = existing.get(mid, {})
-        #if not info.get('placeholders'):
-        #    continue
-        tbl     = info.get('table')
-        cols    = tables_columns.get(tbl, [])
-        pos_map     = {}
-
-        # saved_vars is the list of placeholders in the *saved* target,
-        # in the same order as blk['placeholders']
+        mid = blk['mappingId']
+        cols = tables_columns.get(existing.get(mid, {}).get('table'), [])
         saved_vars = existing_placeholders.get(mid, [])
-        for idx, var in enumerate(phs):
-            # if they aliased explicitly, use that; otherwise fall back
-            # to the saved_vars positional fill
-            col = info['placeholders'].get(var)
+        pos_map = {}
+
+        for idx, var in enumerate(blk['placeholders']):
+            # if no existing mapping, info.get('placeholders') is {} → no KeyError
+            col = existing.get(mid, {}).get('placeholders', {}).get(var)
+            # if still missing, fall back to positional fill
             if col is None and idx < len(saved_vars):
                 col = saved_vars[idx]
             if not col:
                 continue
 
+            # try to match that column name back to the current table's cols
             match_idx = None
-            # 1) exact match
             if col in cols:
                 match_idx = cols.index(col)
             else:
-                # 2) case‐insensitive match
-                lc = col.lower()
+                # case‐insensitive
                 for j, c in enumerate(cols):
-                    if c.lower() == lc:
+                    if c.lower() == col.lower():
                         match_idx = j
                         break
-            # 3) slugified (ignore hyphens/underscores)
-            if match_idx is None:
-                norm = slugify(col).replace('-', '_')
-                for j, c in enumerate(cols):
-                    if slugify(c).replace('-', '_') == norm:
-                        match_idx = j
-                        break
+                # slugified
+                if match_idx is None:
+                    norm = slugify(col).replace('-', '_')
+                    for j, c in enumerate(cols):
+                        if slugify(c).replace('-', '_') == norm:
+                            match_idx = j
+                            break
 
             if match_idx is not None:
                 pos_map[idx] = match_idx
@@ -375,7 +417,9 @@ def field_mapping_view(request):
             mid = blk['mappingId']
             src = blk['source_tpl']
             tgt_inst = blk['target']
-            tbl = data[f"{mid}__table"]
+            tbl = data.get(f"{mid}__table")
+            if not tbl:
+                continue
             src = re.sub(r'FROM\s+"[^"]+"', f'FROM "{tbl}"', src)
 
             raw = request.POST.get(f"connections_{mid}", '{}')
@@ -396,7 +440,10 @@ def field_mapping_view(request):
             for var, col in conn_map.items():
                 # replace every occurrence of {var} (including the braces)
                 tgt_inst = tgt_inst.replace(f'{{{var}}}', '{' + col + '}')
-                src = src.replace(var, col)
+                src = src.replace(var + ',' , col + ',')
+                src = src.replace(var + ' ' , col + ' ')
+                src = src.replace(var + ')' , col + ')')
+                src = src.replace('(' + var, '(' + col)
 
             lines += [
                 f"mappingId\t{mid}",
@@ -634,29 +681,6 @@ def protected_sparql(request):
         stored_tmpl = stored_tmpl.strip()
     except Exception as e:
         return JsonResponse({'error':f'Allowed‐queries DB error: {e}'}, status=500)
-   
-    # 3) Verify that the submitted template matches the stored one
-    #if normalize_ws(tmpl) != normalize_ws(stored_tmpl):
-    #    flag = 0
-    #    for i, (c1, c2) in enumerate(zip(tmpl, stored_tmpl)):
-    #        if c1 != c2:
-    #            if not ((c1 == '\n' or c1 == '\r') and (c2 == '\n' or c2 == '\r')):
-    #                print(f"First difference at char {i}: {repr(c1)} vs {repr(c2)}")
-    #                flag = 1
-    #                break
-    #    if flag == 1:
-    #        return JsonResponse({'error':'Template mismatch'}, status=400)
-  
-    # 4) (Optional) sanity‐check that 'query' is a placeholder‐fill of 'tmpl'
-    #    e.g. replace all placeholders in tmpl by regex wildcards and match
-    #placeholder_pattern = re.escape(tmpl)
-    # replace \<name\> in the escaped template with a wildcard
-    #placeholder_pattern = re.sub(r'\\<([^>]+)\\>',
-    #                             r'.+?',
-    #                             placeholder_pattern)
-    #placeholder_pattern = r'^\s*' + placeholder_pattern + r'\s*$'
-    #if not re.match(placeholder_pattern, q, flags=re.DOTALL):
-    #    return JsonResponse({'error':'Query does not fit template'}, status=400)
 
     # 5) Get user level (as before)
     try:
