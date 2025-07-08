@@ -661,6 +661,8 @@ def protected_sparql(request):
 
     tmpl = request.POST.get('template','').strip()
     q    = request.POST.get('query','').strip()
+    analytics_key = request.POST.get('analytics_key')
+    
     if not tmpl or not q:
         return JsonResponse({'error':'Must supply both template & query'}, status=400)
 
@@ -696,6 +698,69 @@ def protected_sparql(request):
     if allowed_level > user_level:
         print("Quaaaaa")
         return JsonResponse({'results':[]})
+    
+    # 5) KL‐divergence analytics
+    if analytics_key == 'klDiv':
+        # Forward to Ontop
+        try:
+            resp = requests.post(
+                settings.ONTOP_SPARQL_ENDPOINT,
+                data={'query': q},
+                headers={'Accept':'application/sparql-results+json'},
+                timeout=10
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            return JsonResponse({'error':f'Ontop query error: {e}'}, status=502)
+
+        # Extract and normalize ages
+        bindings = data.get('results', {}).get('bindings', [])
+        ages_true, ages_false = [], []
+        for bd in bindings:
+            bval = bd.get('b', {}).get('value')
+            aval = bd.get('ageOn', {}).get('value')
+            try:
+                age = float(aval)
+            except Exception:
+                continue
+            if str(bval).lower() == 'true':
+                ages_true.append(age)
+            else:
+                ages_false.append(age)
+
+        if not (ages_true or ages_false):
+            return JsonResponse({
+                'distribution_true': [],
+                'distribution_false': [],
+                'kl_divergence': None
+            })
+
+        # Compute histograms & PMFs
+        all_ages = ages_true + ages_false
+        bins = np.linspace(min(all_ages), max(all_ages), num=11)
+        p_counts, _ = np.histogram(ages_true, bins=bins)
+        q_counts, edges = np.histogram(ages_false, bins=bins)
+        eps = 1e-9
+        total = (p_counts + q_counts + 2*eps).sum()
+        p = (p_counts + eps) / total
+        q = (q_counts + eps) / total
+        kl = float((p * np.log(p / q)).sum())
+
+        dist_true = [
+            {'range': f"{edges[i]:.0f}–{edges[i+1]:.0f}", 'p': float(p[i])}
+            for i in range(len(p))
+        ]
+        dist_false = [
+            {'range': f"{edges[i]:.0f}–{edges[i+1]:.0f}", 'p': float(q[i])}
+            for i in range(len(q))
+        ]
+
+        return JsonResponse({
+            'distribution_true': dist_true,
+            'distribution_false': dist_false,
+            'kl_divergence': kl
+        })
 
     # 6) Forward the **instantiated** query to Ontop
     try:
