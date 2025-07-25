@@ -1,90 +1,402 @@
-[PrefixDeclaration]
-:		https://w3id.org/hereditary/ontology/schema/
-bto:		https://w3id.org/brainteaser/ontology/schema/
-dct:		http://purl.org/dc/terms/
-owl:		http://www.w3.org/2002/07/owl#
-rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
-xml:		http://www.w3.org/XML/1998/namespace
-xsd:		http://www.w3.org/2001/XMLSchema#
-NCIT:		http://purl.obolibrary.org/obo/NCIT_
-obda:		https://w3id.org/obda/vocabulary#
-rdfs:		http://www.w3.org/2000/01/rdf-schema#
-skos:		http://www.w3.org/2004/02/skos/core#
-BTO_resource:	https://w3id.org/brainteaser/ontology/resource/
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix ub: <http://swat.cse.lehigh.edu/onto/univ-bench.owl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 
-[MappingDeclaration] @collection [[
-mappingId	MAPID-f062db0588088c0b8729a3de2f6482fa
-target		bto:Patient{Participant_ID} a bto:Patient ; bto:hasDisease NCIT:{disease} . 
-source		SELECT Participant_ID, 'C34373' AS disease FROM "aals_dataportal_datatable"
 
-mappingId	MAPID-5b2c0dfea75d44279ce8ddde95f2a9aa
-target		bto:Patient{Participant_ID} bto:sex {SEX}^^xsd:string . 
-source		SELECT Participant_ID, LCASE(SEX) AS sex
-			FROM "aals_dataportal_datatable"
-			WHERE SEX <> ''
+<#University>
+    rr:logicalTable [ rr:tableName "university" ];
+    rr:subjectMap [
+        rr:template "http://www.university{nr}.edu";
+        rr:class ub:University;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "name" ];
+    ].
 
-mappingId	MAPID-51a6eb8de7c64b7bbe4fe62d8188208c
-target		bto:Patient{Participant_ID} bto:undergo bto:eventOnset1{Participant_ID} . bto:eventOnset1{Participant_ID} a bto:Onset ; bto:eventStart {AGE_AT_SYMPTOM_ONSET}^^xsd:datetime ; bto:bulbarOnset {Bulbar_Onset}^^xsd:boolean ; bto:axialOnset {Axial_Onset}^^xsd:boolean ; bto:generalizedOnset {Other_Onset}^^xsd:boolean ; bto:limbsOnset {Limb_Onset}^^xsd:boolean . 
-source		SELECT Participant_ID, AGE_AT_SYMPTOM_ONSET, Bulbar_Onset, Axial_Onset, Other_Onset, Limb_Onset FROM "aals_dataportal_datatable"
 
-mappingId	MAPID-541428e7a83441f5bd29e52d66ffc52e
-target		bto:Patient{Participant_ID} bto:undergo bto:eventOnset1{Participant_ID} . bto:eventOnset1{Participant_ID} bto:ageOnset {AGE_AT_SYMPTOM_ONSET}^^xsd:float . 
-source		SELECT Participant_ID, AGE_AT_SYMPTOM_ONSET FROM "aals_dataportal_datatable" WHERE NOT isnan(AGE_AT_SYMPTOM_ONSET)
+<#Department>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT nr AS departmentnr, subOrganizationOf AS universitynr, name
+        FROM department
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu";
+        rr:class ub:Department;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "name" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:subOrganizationOf;
+        rr:objectMap [ rr:template "http://www.university{universitynr}.edu" ];
+    ].
 
-mappingId	MAPID-13ab39d8b67c4f34a206b7f4bcc1f442
-target		bto:Patient{Participant_ID} bto:hasEthnicity bto:eth{Participant_ID} . bto:eth{Participant_ID} rdfs:label {ETHNIC_CATEGORY}@en . 
-source		SELECT Participant_ID, ETHNIC_CATEGORY FROM "aals_dataportal_datatable" WHERE ETHNIC_CATEGORY <> ''
 
-mappingId	MAPID-56da0e23dc6b4cb3a0bfc475f4bcb65f
-target		bto:eventOnset3{Participant_ID} bto:anatomicalLocation bto:location{Participant_ID} . bto:location{Participant_ID} rdfs:label {Site_of_Onset}^^xsd:string . 
-source		SELECT Participant_ID, Site_of_Onset FROM "aals_dataportal_datatable" WHERE Site_of_Onset <> ''
+<#Publication>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT publication.name AS publicationname, faculty.name AS facultyname, department.subOrganizationOf AS universitynr, department.nr AS departmentnr, publication.title AS publicationtitle, publication.abstract AS publicationabstract
+        FROM publication INNER JOIN faculty ON publication.mainauthor=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}/{publicationname}";
+        rr:class ub:Publication;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "publicationname" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:title;
+        rr:objectMap [ rr:column "publicationtitle" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:abstract;
+        rr:objectMap [ rr:column "publicationabstract" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:publicationAuthor;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}" ];
+    ].
 
-mappingId	MAPID-85b6967eb0034ec1a2f6131b80385266
-target		bto:Patient{Participant_ID} bto:undergo bto:ewbo{Participant_ID} . bto:ewbo{Participant_ID} a bto:BeforeOnset ; bto:consists bto:cebo{Participant_ID} . bto:cebo{Participant_ID} a bto:ClinicalEvaluation ; bto:weight {weight}^^xsd:float . 
-source		SELECT Participant_ID, weight FROM "Vital_Signs" WHERE NOT isnan(weight)
 
-mappingId	MAPID-325ab5a214d6481a8f99ee90d5bb72f3
-target		bto:Patient{Participant_ID} bto:undergo bto:ewm2{Participant_ID} . bto:ewm2{Participant_ID} a bto:ProtocolEvent ; bto:consists bto:cewm{Participant_ID} . bto:cewm{Participant_ID} a bto:ClinicalEvaluation ; bto:moreThan10PercentWeightloss {weightu}^^xsd:boolean ; bto:height {height}^^xsd:float ; bto:weight {weight}^^xsd:float . 
-source		SELECT Participant_ID,  weightu, height, weight FROM "Vital_Signs" WHERE weightu IS NOT NULL AND (NOT isnan(height) OR NOT isnan(weight))
+<#ResearchGroup>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT researchGroup.nr AS researchgroupnr, researchGroup.subOrganizationOf AS departmentnr, department.subOrganizationOf AS universitynr
+        FROM researchGroup INNER JOIN department ON researchGroup.subOrganizationOf=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/researchGroup{researchgroupnr}.edu";
+        rr:class ub:ResearchGroup;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:subOrganizationOf;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu" ];
+    ].
 
-mappingId	MAPID-85118f580e28467e9419669253240d0f
-target		bto:Patient{Participant_ID} bto:undergo bto:event1{Participant_ID} . bto:event1{Participant_ID} bto:hasRegisteredCondition bto:com1{Participant_ID} . bto:com1{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C3117 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
 
-mappingId	MAPID-85118f580e28467e9419669253240d10
-target		bto:Patient{Participant_ID} bto:undergo bto:event2{Participant_ID} . bto:event2{Participant_ID} bto:hasRegisteredCondition bto:com2{Participant_ID} . bto:com2{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C2985 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
+<#UndergraduateCourse>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT subOrganizationOf AS universitynr, undergraduateCourse.name AS undergraduatecoursename, department.nr AS departmentnr
+        FROM undergraduateCourse INNER JOIN faculty ON undergraduateCourse.teacher=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatecoursename}";
+        rr:class ub:UndergraduateCourse;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "undergraduatecoursename" ];
+    ].
 
-mappingId	MAPID-85118f580e28467e9419669253240d11
-target		bto:Patient{Participant_ID} bto:undergo bto:event3{Participant_ID} . bto:event3{Participant_ID} bto:hasRegisteredCondition bto:com3{Participant_ID} . bto:com3{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C80385 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
 
-mappingId	MAPID-85118f580e28467e9419669253240d12
-target		bto:Patient{Participant_ID} bto:undergo bto:event4{Participant_ID} . bto:event4{Participant_ID} bto:hasRegisteredCondition bto:com4{Participant_ID} . bto:com4{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C26893 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
+<#GraduateCourse>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT subOrganizationOf AS universitynr, graduateCourse.name AS graduatecoursename, department.nr AS departmentnr
+        FROM graduateCourse INNER JOIN faculty ON graduateCourse.teacher=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatecoursename}";
+        rr:class ub:GraduateCourse;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "graduatecoursename" ];
+    ].
 
-mappingId	MAPID-85118f580e28467e9419669253240d13
-target		bto:Patient{Participant_ID} bto:undergo bto:event5{Participant_ID} . bto:event5{Participant_ID} bto:hasRegisteredCondition bto:com5{Participant_ID} . bto:com5{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C2889 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
 
-mappingId	MAPID-85118f580e28467e9419669253240d14
-target		bto:Patient{Participant_ID} bto:undergo bto:event6{Participant_ID} . bto:event6{Participant_ID} bto:hasRegisteredCondition bto:com6{Participant_ID} . bto:com6{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C3390 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
+<#FullProfessor>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, faculty.name AS facultyname, department.subOrganizationOf AS universitynr
+        FROM professor INNER JOIN faculty ON professor.nr=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr WHERE professor.professorType='fullProfessor'
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+        rr:class ub:FullProfessor;
+    ].
 
-mappingId	MAPID-85118f580e28467e9419669253240d15
-target		bto:Patient{Participant_ID} bto:undergo bto:event7{Participant_ID} . bto:event7{Participant_ID} bto:hasRegisteredCondition bto:com7{Participant_ID} . bto:com7{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C2931 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
 
-mappingId	MAPID-85118f580e28467e9419669253240d16
-target		bto:Patient{Participant_ID} bto:undergo bto:event8{Participant_ID} . bto:event8{Participant_ID} bto:hasRegisteredCondition bto:com8{Participant_ID} . bto:com8{Participant_ID} a bto:Comorbidity ; bto:determinedBy NCIT:C8509 . 
-source		SELECT Participant_ID FROM "aals_dataportal_datatable" WHERE GUID = True
+<#AssistantProfessor>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, faculty.name AS facultyname, department.subOrganizationOf AS universitynr
+        FROM professor INNER JOIN faculty ON professor.nr=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr WHERE professor.professorType='assistantProfessor'
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+        rr:class ub:AssistantProfessor;
+    ].
 
-mappingId	MAPID-7eef74030c03400c91bb972e6e9b0e80
-target		bto:Patient{Participant_ID} bto:undergo bto:e_spiro{Participant_ID}{Visit_Date} . bto:e_spiro{Participant_ID}{Visit_Date} bto:consists bto:spiro{Participant_ID}{Visit_Date} . bto:spiro{Participant_ID}{Visit_Date} a bto:PulmonaryFunctionTest ; bto:procedureStart {Visit_Date}^^xsd:datetime ; bto:pulmonaryFVCRel {fvcvar}^^xsd:float . 
-source		SELECT Participant_ID, Visit_Date, fvcvar FROM "Vital_Capacity"
 
-mappingId	MAPID-4d671e8c9cff4cab84eb4acba87f21f7
-target		bto:Patient{Participant_ID} bto:undergo bto:e_alsfrs{Participant_ID}{Visit_Date} . bto:e_alsfrs{Participant_ID}{Visit_Date} bto:consists bto:alsfrs{Participant_ID}{Visit_Date} . bto:alsfrs{Participant_ID}{Visit_Date} a bto:ALSFRS ; bto:procedureStart {Visit_Date}^^xsd:datetime ; bto:revisedALSFRS {alsfrst}^^xsd:integer ; bto:bulbarSubscore {alsfrsdt}^^xsd:integer ; bto:motorSubscore {alsfrsmd}^^xsd:integer ; bto:respiratorySubscore {alsfrsrp}^^xsd:integer ; bto:alsfrs1 {alsfrs1}^^xsd:integer ; bto:alsfrs2 {alsfrs2}^^xsd:integer ; bto:alsfrs3 {alsfrs3}^^xsd:integer ; bto:alsfrs4 {alsfrs4}^^xsd:integer ; bto:alsfrs5 {alsfrs5}^^xsd:integer ; bto:alsfrs6 {alsfrs6}^^xsd:integer ; bto:alsfrs7 {alsfrs7}^^xsd:integer ; bto:alsfrs8 {alsfrs8}^^xsd:integer ; bto:alsfrs9 {alsfrs9}^^xsd:integer ; bto:alsfrs10 {alsfrsr1}^^xsd:integer ; bto:alsfrs11 {alsfrsr2}^^xsd:integer ; bto:alsfrs12 {alsfrsr3}^^xsd:integer . 
-source		SELECT Participant_ID, Visit_Date, alsfrst, alsfrsdt, alsfrsmd, alsfrsrp, alsfrs1, alsfrs2, alsfrs3, alsfrs4, alsfrs5, alsfrs6, alsfrs7, alsfrs8, alsfrs9, alsfrsr1, alsfrsr2, alsfrsr3 FROM "ALSFRS_R"
+<#AssociateProfessor>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, faculty.name AS facultyname, department.subOrganizationOf AS universitynr
+        FROM professor INNER JOIN faculty ON professor.nr=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr WHERE professor.professorType='associateProfessor'
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+        rr:class ub:AssociateProfessor;
+    ].
 
-]]
+
+<#Professor>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, faculty.name AS facultyname, department.subOrganizationOf AS universitynr, researchInterest AS researchinterest, headOf AS headof
+        FROM professor INNER JOIN faculty ON professor.nr=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:researchInterest;
+        rr:objectMap [ rr:column "researchinterest" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:headOf;
+        rr:objectMap [ rr:template "http://www.department{headof}.university{universitynr}.edu" ];
+    ].
+
+
+<#Lecturer>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, faculty.name AS facultyname, department.subOrganizationOf AS universitynr
+        FROM lecturer INNER JOIN faculty ON lecturer.nr=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+        rr:class ub:Lecturer;
+    ].
+
+
+<#Faculty>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, faculty.name AS facultyname, department.subOrganizationOf AS universitynr, telephone, emailAddress AS emailaddress, undergraduateDegreeFrom AS undergraduatedegreefrom, masterDegreeFrom AS masterdegreefrom, doctoralDegreeFrom AS doctoraldegreefrom
+        FROM faculty INNER JOIN department ON faculty.worksFor=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "facultyname" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:emailAddress;
+        rr:objectMap [ rr:column "emailaddress" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:telephone;
+        rr:objectMap [ rr:column "telephone" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:worksFor;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:doctoralDegreeFrom;
+        rr:objectMap [ rr:template "http://www.university{doctoraldegreefrom}.edu" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:masterDegreeFrom;
+        rr:objectMap [ rr:template "http://www.university{masterdegreefrom}.edu" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:undergraduateDegreeFrom;
+        rr:objectMap [ rr:template "http://www.university{undergraduatedegreefrom}.edu" ];
+    ].
+
+
+<#FacultyTeacherGraduateCourse>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT faculty.name AS facultyname, department.nr AS departmentnr, department.subOrganizationOf AS universitynr, graduateCourse.name AS graduatecoursename
+        FROM faculty INNER JOIN department ON faculty.worksFor=department.nr INNER JOIN graduateCourse ON graduateCourse.teacher=faculty.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:teacherOf;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatecoursename}" ];
+    ].
+
+
+<#FacultyTeacherUndergraduateCourse>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT faculty.name AS facultyname, department.nr AS departmentnr, department.subOrganizationOf AS universitynr, undergraduateCourse.name AS undergraduatecoursename
+        FROM faculty INNER JOIN department ON worksFor=department.nr INNER JOIN undergraduateCourse ON undergraduateCourse.teacher=faculty.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:teacherOf;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatecoursename}" ];
+    ].
+
+
+<#UndergraduateStudent>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.subOrganizationOf AS universitynr, undergraduateStudent.name AS undergraduatestudentname, department.nr AS departmentnr, telephone, emailAddress AS emailaddress
+        FROM undergraduateStudent INNER JOIN department ON undergraduateStudent.memberOf=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatestudentname}";
+        rr:class ub:UndergraduateStudent;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "undergraduatestudentname" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:emailAddress;
+        rr:objectMap [ rr:column "emailaddress" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:telephone;
+        rr:objectMap [ rr:column "telephone" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:memberOf;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu" ];
+    ].
+
+
+<#UndergraduateStudentAdvisor>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, department.subOrganizationOf AS universitynr, undergraduateStudent.name AS undergraduatestudentname, faculty.name AS facultyname
+        FROM undergraduateStudent INNER JOIN department ON undergraduateStudent.memberOf=department.nr INNER JOIN faculty ON undergraduateStudent.advisor=faculty.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatestudentname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:advisor;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}" ];
+    ].
+
+
+<#GraduateStudent>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.subOrganizationOf AS universitynr, graduateStudent.name AS graduatestudentname, department.nr AS departmentnr, telephone, emailAddress AS emailaddress
+        FROM graduateStudent INNER JOIN department ON graduateStudent.memberOf=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatestudentname}";
+        rr:class ub:GraduateStudent;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:name;
+        rr:objectMap [ rr:column "graduatestudentname" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:emailAddress;
+        rr:objectMap [ rr:column "emailaddress" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:telephone;
+        rr:objectMap [ rr:column "telephone" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:memberOf;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu" ];
+    ].
+
+
+<#GraduateStudentReification>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT graduateStudent.nr AS graduatestudentnr, department.subOrganizationOf AS universitynr, graduateStudent.name AS graduatestudentname, department.nr AS departmentnr, undergraduateDegreeFrom AS undergraduatedegreefrom, undergraduateDegreeYear AS undergraduatedegreeyear
+        FROM graduateStudent INNER JOIN department ON graduateStudent.memberOf=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:column "graduatestudentnr";
+        rr:termType rr:BlankNode;
+        rr:class rdf:Statement;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate rdf:subject;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatestudentname}" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate rdf:predicate;
+        rr:object ub:undergraduateDegreeFrom;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate rdf:object;
+        rr:objectMap [ rr:template "http://www.university{undergraduatedegreefrom}.edu" ];
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:yearOfAward;
+        rr:objectMap [ rr:column "undergraduatedegreeyear"; rr:datatype xsd:integer ];
+    ].
+
+
+<#GraduateStudentAdvisor>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT department.nr AS departmentnr, department.subOrganizationOf AS universitynr, graduateStudent.name AS graduatestudentname, faculty.name AS facultyname
+        FROM graduateStudent INNER JOIN department ON graduateStudent.memberOf=department.nr INNER JOIN faculty ON graduateStudent.advisor=faculty.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatestudentname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:advisor;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}" ];
+    ].
+
+
+<#GraduateStudentTeachingAssistant>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT undergraduateCourse.name AS undergraduatecoursename, graduateStudent.name AS graduatestudentname, department.nr AS departmentnr, department.subOrganizationOf as universitynr
+        FROM undergraduateCourse INNER JOIN graduateStudent ON undergraduateCourse.teachingAssistant=graduateStudent.nr INNER JOIN department ON graduateStudent.memberOf=department.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatestudentname}";
+        rr:class ub:TeachingAssistant;
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:teachingAssistantOf;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatecoursename}" ];
+    ].
+
+
+<#CoAuthorOfPublication>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT publication.name AS publicationname, graduateStudent.name AS graduatestudentname, faculty.name AS facultyname, department.nr AS departmentnr, department.subOrganizationOf AS universitynr
+        FROM coAuthorOfPublication INNER JOIN publication ON coAuthorOfPublication.publicationID=publication.nr INNER JOIN faculty ON publication.mainAuthor=faculty.nr INNER JOIN department ON faculty.worksFor=department.nr INNER JOIN graduateStudent ON coAuthorOfPublication.graduateStudentID=graduateStudent.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{facultyname}/{publicationname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:publicationAuthor;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatestudentname}" ];
+    ].
+
+
+<#UndergraduateStudentTakeCourse>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT undergraduateStudent.name AS undergraduatestudentname, undergraduateCourse.name AS undergraduatecoursename, department.nr AS departmentnr, department.subOrganizationOf AS universitynr
+        FROM undergraduateStudentTakeCourse INNER JOIN undergraduateStudent ON undergraduateStudentTakeCourse.undergraduateStudentID=undergraduateStudent.nr INNER JOIN department ON undergraduateStudent.memberOf=department.nr INNER JOIN undergraduateCourse ON undergraduateStudentTakeCourse.undergraduateCourseID=undergraduateCourse.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatestudentname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:takesCourse;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{undergraduatecoursename}" ];
+    ].
+
+
+<#GraduateStudentTakeCourse>
+    rr:logicalTable [ rr:sqlQuery """
+        SELECT graduateStudent.name AS graduatestudentname, graduateCourse.name AS graduatecoursename, department.nr AS departmentnr, department.subOrganizationOf AS universitynr
+        FROM graduateStudentTakeCourse INNER JOIN graduateStudent ON graduateStudentTakeCourse.graduateStudentID=graduateStudent.nr INNER JOIN department ON graduateStudent.memberOf=department.nr INNER JOIN graduateCourse ON graduateStudentTakeCourse.graduateCourseID=graduateCourse.nr
+    """ ];
+    rr:subjectMap [
+        rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatestudentname}";
+    ];
+    rr:predicateObjectMap [
+        rr:predicate ub:takesCourse;
+        rr:objectMap [ rr:template "http://www.department{departmentnr}.university{universitynr}.edu/{graduatecoursename}" ];
+    ].
