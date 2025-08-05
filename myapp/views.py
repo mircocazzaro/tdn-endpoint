@@ -31,7 +31,7 @@ TEMPLATE_OBDA = os.path.join(
 )
 ONTOP_DIR   = os.path.join(os.path.dirname(__file__), 'obda')
 ONTOP_CMD   = os.path.join(ONTOP_DIR, 'ontop')  # or "./ontop" if that’s the executable
-OBDA_FILE   = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
+OBDA_FILE   = os.path.join(ONTOP_DIR, 'hereditary_ontology_2_mappings.ttl')
 TTL_FILE    = os.path.join(ONTOP_DIR, 'hero_clinical.ttl')
 PROPS_FILE  = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
 PID_FILE    = os.path.join(ONTOP_DIR, 'ontop.pid')
@@ -194,7 +194,7 @@ class FieldMappingForm(forms.Form):
 DUCKDB_PATH   = os.path.join(ONTOP_DIR, 'mydatabase.duckdb')
 TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
 ONTOP_DIR     = os.path.join(os.path.dirname(__file__), 'obda')
-OBDA_FILE     = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
+OBDA_FILE     = os.path.join(ONTOP_DIR, 'hereditary_ontology_2_mappings.ttl')
 TTL_FILE      = os.path.join(ONTOP_DIR, 'hero_clinical.ttl')
 PROPS_FILE    = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
 PID_FILE      = os.path.join(ONTOP_DIR, 'ontop.pid')
@@ -663,41 +663,41 @@ def protected_sparql(request):
     q    = request.POST.get('query','').strip()
     analytics_key = request.POST.get('analytics_key')
     
-    if not tmpl or not q:
-        return JsonResponse({'error':'Must supply both template & query'}, status=400)
+    #if not tmpl or not q:
+    #    return JsonResponse({'error':'Must supply both template & query'}, status=400)
 
     # 1) Hash the template exactly
-    h = hashlib.sha512(tmpl.encode('utf-8')).hexdigest()
+    #h = hashlib.sha512(tmpl.encode('utf-8')).hexdigest()
 
     # 2) Lookup allowed level & stored template
-    try:
-        con = duckdb.connect(settings.ALLOWED_DB)
-        row = con.execute(
-            "SELECT level, query FROM allowed_queries WHERE hash = ?",
-            [h]
-        ).fetchone()
-        con.close()
-        if not row: 
-            return JsonResponse({'results':[]})   # template not recognized
-        allowed_level, stored_tmpl = row
-        stored_tmpl = stored_tmpl.strip()
-    except Exception as e:
-        return JsonResponse({'error':f'Allowed‐queries DB error: {e}'}, status=500)
+    #try:
+    #    con = duckdb.connect(settings.ALLOWED_DB)
+    #    row = con.execute(
+    #        "SELECT level, query FROM allowed_queries WHERE hash = ?",
+    #        [h]
+    #    ).fetchone()
+    #    con.close()
+    #    if not row: 
+    #        return JsonResponse({'results':[]})   # template not recognized
+    #    allowed_level, stored_tmpl = row
+    #    stored_tmpl = stored_tmpl.strip()
+    #except Exception as e:
+    #    return JsonResponse({'error':f'Allowed‐queries DB error: {e}'}, status=500)
 
     # 5) Get user level (as before)
-    try:
-        con = duckdb.connect(settings.LEVEL_DB)
-        lvl_row = con.execute(
-            "SELECT value FROM options WHERE key='level'"
-        ).fetchone()
-        con.close()
-        user_level = int(lvl_row[0][1]) if lvl_row else 0
-    except Exception:
-        user_level = 0
+    #try:
+    #    con = duckdb.connect(settings.LEVEL_DB)
+    #    lvl_row = con.execute(
+    #        "SELECT value FROM options WHERE key='level'"
+    #    ).fetchone()
+    #    con.close()
+    #    user_level = int(lvl_row[0][1]) if lvl_row else 0
+    #except Exception:
+    #    user_level = 0
 
-    if allowed_level > user_level:
-        print("Quaaaaa")
-        return JsonResponse({'results':[]})
+    #if allowed_level > user_level:
+    #    print("Quaaaaa")
+    #    return JsonResponse({'results':[]})
     
     # 5) KL‐divergence analytics
     if analytics_key == 'klDiv':
