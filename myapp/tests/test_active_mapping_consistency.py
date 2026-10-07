@@ -50,7 +50,20 @@ def _load_blocks():
     return parse_mappings(OBDA_FILE.read_text(encoding="utf-8"))
 
 
+@unittest.skipUnless(
+    OBDA_FILE.exists(),
+    "nessun mapping attivo in questo nodo: il file e' configurazione locale, "
+    "non e' versionato (vedi .gitignore)",
+)
 class ActiveMappingConsistencyTests(unittest.TestCase):
+    """Verifica il mapping attivo del nodo su cui il test gira.
+
+    Il file non e' versionato, perche' e' derivato dal template sullo schema
+    locale di ciascuna istituzione. Dove esiste, queste proprieta' devono
+    valere; dove non esiste, la suite viene saltata. I controlli di
+    correttezza della generazione, che non dipendono da dati locali, stanno in
+    test_mapping_substitution.py e test_mapping_generation_view.py.
+    """
 
     @classmethod
     def setUpClass(cls):

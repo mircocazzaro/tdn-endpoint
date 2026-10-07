@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Dati locali dell'istituzione.
+#
+# Il repository contiene il codice dell'endpoint e il template di mapping.
+# Dati dei pazienti, database popolati e mapping istanziati sono artefatti
+# locali di ciascun nodo e non vanno versionati: un HDN Endpoint e' per
+# definizione il custode dei propri dati.
+# ---------------------------------------------------------------------------
+*.duckdb
+*.duckdb.wal
+*.sqlite3
+local-testdata/
+
+# Il mapping attivo e' configurazione per singolo sito, derivata dal template
+# su uno schema locale: non e' sorgente condivisa.
+myapp/obda/hereditary_ontology_2.obda
+myapp/obda/*_old.obda
+
+# Stato di runtime, log e audit
+*.log
+nohup.out
+myapp/obda/ontop.pid
+audit.log
+
+# Artefatti di collectstatic
+/staticfiles/
+
+# Ambiente
+.env
+
+# ---------------------------------------------------------------------------
+# uploads/ ospita i CSV caricati dall'amministratore locale, che sono dati.
+# Restano versionati solo il catalogo delle query ammesse e la sua esportazione
+# testuale, che per D3.2 sez. 2.2.3 sono condivisi con HDN Central.
+# Nota: level.duckdb contiene la policy di disclosure del singolo sito e
+# dovrebbe diventare configurazione locale con default L0; allowed_queries.duckdb
+# dovrebbe tornare a essere un artefatto derivato dal catalogo in
+# myapp/management/queries_catalog.md. Entrambi sono oggetto dei punti 8 e 9.
+# ---------------------------------------------------------------------------
+uploads/*
+!uploads/allowed_queries.duckdb
+!uploads/level.duckdb
+!uploads/allquery.csv
