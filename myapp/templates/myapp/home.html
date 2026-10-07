@@ -40,7 +40,8 @@
           <form 
             method="post" 
             action="{% url 'delete_table' table_name=table %}" 
-            onsubmit="return confirm('Really delete table {{ table }}? This cannot be undone.');"
+            data-table="{{ table }}"
+            onsubmit="return confirm('Really delete table ' + this.dataset.table + '? This cannot be undone.');"
           >
             {% csrf_token %}
             <button type="submit" class="btn btn-sm btn-danger">

@@ -98,16 +98,28 @@ def write_connection(path, timeout=None):
             con.close()
 
 
+def _schema(con):
+    """{tabella: [(colonna, tipo)]} in ordine, letto senza interpolare nomi.
+
+    I nomi di tabella vengono dai CSV caricati: interpolarli in
+    PRAGMA table_info('{t}') faceva fallire la lettura dello schema (e la
+    home) con un apice nel nome.
+    """
+    schema = {}
+    for table, column, sql_type in con.execute(
+            "SELECT table_name, column_name, data_type FROM information_schema.columns "
+            "WHERE table_schema = current_schema() "
+            "ORDER BY table_name, ordinal_position").fetchall():
+        schema.setdefault(table, []).append((column, sql_type))
+    return schema
+
+
 def tables_columns(path, timeout=None):
     """Schema del database: {tabella: [colonne]}, vuoto se il file non esiste."""
     with read_connection(path, timeout=timeout) as con:
         if con is None:
             return {}
-        tables = [r[0] for r in con.execute("SHOW TABLES").fetchall()]
-        return {
-            t: [c[1] for c in con.execute(f"PRAGMA table_info('{t}')").fetchall()]
-            for t in tables
-        }
+        return {t: [name for name, _ in cols] for t, cols in _schema(con).items()}
 
 
 def column_types(path, timeout=None):
@@ -115,11 +127,7 @@ def column_types(path, timeout=None):
     with read_connection(path, timeout=timeout) as con:
         if con is None:
             return {}
-        tables = [r[0] for r in con.execute("SHOW TABLES").fetchall()]
-        return {
-            t: {c[1]: c[2] for c in con.execute(f"PRAGMA table_info('{t}')").fetchall()}
-            for t in tables
-        }
+        return {t: dict(cols) for t, cols in _schema(con).items()}
 
 
 def failing_sources(path, sources, timeout=None):
