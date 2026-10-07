@@ -390,3 +390,62 @@ def adapt_isnan(source, column_types):
         out = out[:start] + " " + ", ".join(new_items) + " " + out[end:]
 
     return out, rewritten
+
+
+# ---------------------------------------------------------------------------
+# Salvataggio del mapping attivo
+# ---------------------------------------------------------------------------
+
+BACKUPS_KEPT = 10
+
+
+def save_active_mapping(path, text, backup_dir, keep=BACKUPS_KEPT):
+    """Scrive il mapping attivo in modo atomico, conservando la versione precedente.
+
+    Prima il file era aperto in scrittura e troncato: un errore a meta' lo
+    lasciava vuoto o parziale, e la versione precedente era persa. Ora il testo
+    e' scritto in un file temporaneo nella stessa directory e sostituito con
+    os.replace, e la versione precedente e' copiata in ``backup_dir`` con data
+    e ora nel nome. Restano le ultime ``keep`` copie. Restituisce il percorso
+    della copia, o None se non esisteva un mapping precedente.
+    """
+    import os
+    import shutil
+    import tempfile
+    import time
+    from pathlib import Path
+
+    path, backup_dir = Path(path), Path(backup_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    backup = None
+    if path.exists():
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d-%H%M%S")
+        backup = backup_dir / f"{path.name}.{stamp}"
+        n = 1
+        while backup.exists():
+            backup = backup_dir / f"{path.name}.{stamp}-{n}"
+            n += 1
+        shutil.copy2(path, backup)
+
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except FileNotFoundError:
+            pass
+        raise
+
+    if backup_dir.exists():
+        old = sorted((p for p in backup_dir.iterdir() if p.name.startswith(path.name + ".")),
+                     key=lambda p: p.stat().st_mtime)
+        for p in old[:-keep] if keep else old:
+            p.unlink()
+    return backup
