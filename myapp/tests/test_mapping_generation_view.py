@@ -83,7 +83,7 @@ class MappingGenerationViewTests(TestCase):
         """Ogni segnaposto del target deve essere prodotto dal suo source."""
         self.template_path.write_text(TEMPLATE, encoding="utf-8")
 
-        resp = self._post({"0": 0, "1": 1}, "MAPID-ALIVE")
+        resp = self._post({"patient": "pid", "alive": "status"}, "MAPID-ALIVE")
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(self.out_path.exists(), "file non scritto")
 
@@ -103,7 +103,7 @@ class MappingGenerationViewTests(TestCase):
         self.template_path.write_text(TEMPLATE_INCONSISTENT, encoding="utf-8")
         self.out_path.write_text("CONTENUTO PRECEDENTE", encoding="utf-8")
 
-        resp = self._post({"0": 0}, "MAPID-GHOST")
+        resp = self._post({"patient": "pid"}, "MAPID-GHOST")
 
         self.assertEqual(resp.status_code, 200,
                          "la view ha rediretto: il salvataggio e' avvenuto")

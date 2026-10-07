@@ -2,8 +2,6 @@
 {% load static %}
 {% block content %}
 <div class="container py-4">
-  <!-- … your card header … -->
-
   <form method="post">
     {% csrf_token %}
     {% if form.errors %}
@@ -18,334 +16,211 @@
       </div>
     {% endif %}
 
-
     <div id="mappingCarousel" class="carousel slide mb-5">
       <div class="carousel-inner">
         {% for blk in mapping_ui %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-          <div class="card shadow-sm" id="mapping-card-{{ blk.mappingId }}">
-            <div class="card-header bg-white">
-              <h5 class="mb-0">{{ blk.mappingLabel }}</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-4">
-                  <label
-                    for="{{ blk.table_field.auto_id }}"
-                    class="form-label fw-bold"
-                  >
-                    Select DuckDB Table
-                  </label>
-                  {{ blk.table_field }}
-                </div>
-                <div class="col-md-8">
-                  <div id="area-{{ blk.mappingId }}" class="row" style="min-height:200px; position:relative;">
-                    <div class="col-6">
-                      <h6 class="text-secondary">Placeholders</h6>
-                      <ul class="list-group" id="placeholders-{{ blk.mappingId }}">
-                        {% for field in blk.placeholder_fields %}
-                          <li
-                            class="list-group-item placeholder-click p-2 mb-2 bg-white rounded"
-                            data-id="{{ field.name }}"
-                          >
-                            {{ field.label_tag }}
-                          </li>
-                        {% endfor %}
-                      </ul>
-                    </div>
-                    <div class="col-6">
-                      <h6 class="text-secondary">Columns</h6>
-                      <ul
-                        class="list-group column-click-list"
-                        id="columns-{{ blk.mappingId }}"
-                      ></ul>
+          <div class="carousel-item{% if forloop.first %} active{% endif %}">
+            <div class="card shadow-sm mapping-card" id="mapping-card-{{ blk.mappingId }}" data-mid="{{ blk.mappingId }}">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">{{ blk.mappingLabel }}</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4">
+                    <label for="{{ blk.table_field.auto_id }}" class="form-label fw-bold">Select DuckDB Table</label>
+                    {{ blk.table_field }}
+                  </div>
+                  <div class="col-md-8">
+                    <div class="row mapping-area" style="min-height:200px; position:relative;">
+                      <div class="col-6">
+                        <h6 class="text-secondary">Placeholders</h6>
+                        <ul class="list-group">
+                          {% for var in blk.placeholders %}
+                            <li class="list-group-item placeholder-click p-2 mb-2 bg-white rounded"
+                                data-var="{{ var }}" role="button" tabindex="0">
+                              <code>{{ var }}</code>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                      <div class="col-6">
+                        <h6 class="text-secondary">Columns</h6>
+                        <ul class="list-group column-list"></ul>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <input type="hidden" class="connections-input"
+                       name="connections_{{ blk.mappingId }}"
+                       value="{{ blk.connections_json }}">
               </div>
-              <input
-                type="hidden"
-                name="connections_{{ blk.mappingId }}"
-                id="connections-{{ blk.mappingId }}"
-                value='{{ blk.connections_json|default:"{}"|safe }}'
-              >
             </div>
           </div>
-        </div>
         {% endfor %}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#mappingCarousel" data-bs-slide="prev" style="width:auto;">
-          <i class="bi bi-chevron-left fs-3 text-primary" aria-hidden="true"></i>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#mappingCarousel" data-bs-slide="next" style="width:auto;">
-          <i class="bi bi-chevron-right fs-3 text-primary" aria-hidden="true"></i>
-          <span class="visually-hidden">Next</span>
-        </button>
       </div>
-
-      <!-- carousel controls -->
-    </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#mappingCarousel" data-bs-slide="prev" style="width:auto;">
+        <i class="bi bi-chevron-left fs-3 text-primary" aria-hidden="true"></i>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#mappingCarousel" data-bs-slide="next" style="width:auto;">
+        <i class="bi bi-chevron-right fs-3 text-primary" aria-hidden="true"></i>
+        <span class="visually-hidden">Next</span>
+      </button>
     </div>
 
     <div class="text-center mb-5">
-      <button type="submit" class="btn btn-primary px-5">
-        Generate OBDA File
-      </button>
+      <button type="submit" class="btn btn-primary px-5">Generate OBDA File</button>
     </div>
   </form>
 </div>
 
+{{ mapping_connections|json_script:"saved-mappings" }}
 <script src="https://cdn.jsdelivr.net/npm/jsplumb@2.15.6/dist/js/jsplumb.min.js"></script>
+<script src="{% static 'myapp/mapping_state.js' %}"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+  var S = window.HdnMappingState;
+  var saved = JSON.parse(document.getElementById('saved-mappings').textContent);
+  var columnsUrl = "{% url 'get_columns' %}";
+  var instances = {};
 
-  // turn any string into a repeatable HSL color
-function hashToColor(str) {
-  // simple 32-bit JS string hash
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash  = str.charCodeAt(i) + ((hash << 5) - hash);
-    hash |= 0; // force 32-bit
+  function hashToColor(str) {
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      hash |= 0;
+    }
+    return 'hsl(' + (Math.abs(hash) * 5485563 % 360) + ', 70%, 50%)';
   }
-  // map to [0,360)
-  const hue = Math.abs(hash)*5485563 % 360;
-  // return a nice saturated color
-  return `hsl(${hue}, 70%, 50%)`;
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Wait until element has non-zero size before drawing
   function whenSized(el, callback) {
-    const tick = () => {
+    (function tick() {
       if (el.offsetWidth > 0 && el.offsetHeight > 0) callback();
       else setTimeout(tick, 50);
-    };
-    tick();
+    })();
   }
 
-  window.savedMappings = JSON.parse('{{ mapping_connections_json|escapejs }}');
+  document.querySelectorAll('.mapping-card').forEach(function (card) {
+    var mid = card.dataset.mid;
+    var area = card.querySelector('.mapping-area');
+    var tableSelect = card.querySelector('select');
+    var columnList = card.querySelector('.column-list');
+    var input = card.querySelector('.connections-input');
+    var placeholders = Array.prototype.slice.call(card.querySelectorAll('.placeholder-click'));
+    var placeholderNames = placeholders.map(function (p) { return p.dataset.var; });
+    var instance = jsPlumb.getInstance();
+    var active = null;
+    // Lo stato e' l'unica fonte di verita': le frecce si ridisegnano da qui.
+    var state = S.parse(input.value);
+    var loadedTable = tableSelect.value;
+    instances[mid] = instance;
 
-  {% for blk in mapping_ui %}
-  (function() {
-    const mid         = '{{ blk.mappingId }}';
-    const card        = document.getElementById('mapping-card-' + mid);
-    const area        = document.getElementById('area-' + mid);
-    const tableSelect = card.querySelector('select[name="{{ blk.table_field.name }}"]');
-    const placeholders= Array.from(card.querySelectorAll('.placeholder-click'));
-    const columnList  = card.querySelector('#columns-{{ blk.mappingId }}');
-    const connInput   = document.getElementById('connections-{{ blk.mappingId }}');
-    const connections = {};
-
-    // Create a jsPlumb instance WITHOUT specifying Container
-    const instance = jsPlumb.getInstance();
     instance.importDefaults({
-      // use a smooth bezier curve instead of a harsh straight line
       Connector: ['Bezier', { curviness: 50 }],
-    
-      // style the line
-      PaintStyle: { stroke: '#0d6efd', strokeWidth: 2 },
-    
-      // no visible endpoints
       Endpoint: ['Blank', {}],
-
-      Anchors:     ['Center', 'LeftMiddle'],  // ← middle of R and L sides
-    
-      // add an arrow overlay at the target end
-      ConnectionOverlays: [
-        ['Arrow', {
-          location: 1,    // put the arrow at the target
-          width: 10,      // arrow width
-          length: 10,     // arrow length
-          foldback: 0.7   // how “pointy” the arrow is
-        }]
-      ]
+      Anchors: ['Center', 'LeftMiddle']
     });
-    window._jsPlumbMap = window._jsPlumbMap || {};
-    window._jsPlumbMap[mid] = instance;
 
-    function loadAndDraw() {
-      // clear previous endpoints & connectors
-      instance.deleteEveryEndpoint();
-      instance.reset();
+    function columnItem(name) {
+      var items = columnList.querySelectorAll('.column-click');
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].dataset.name === name) return items[i];
+      }
+      return null;
+    }
+
+    function redraw() {
+      instance.deleteEveryConnection();
+      placeholders.forEach(function (ph) {
+        var col = columnItem(state[ph.dataset.var]);
+        if (!col) return;
+        var color = hashToColor(ph.dataset.var);
+        instance.connect({
+          source: ph, target: col,
+          anchors: ['Center', 'LeftMiddle'],
+          paintStyle: { stroke: color, strokeWidth: 2 },
+          overlays: [['Arrow', { location: 1, width: 10, length: 10, foldback: 0.7,
+                                 paintStyle: { fill: color } }]]
+        });
+      });
+      input.value = S.serialize(state);
+      instance.repaintEverything();
+    }
+
+    function select(ph) {
+      placeholders.forEach(function (p) { p.classList.remove('active-bg'); });
+      active = ph;
+      if (ph) ph.classList.add('active-bg');
+    }
+
+    placeholders.forEach(function (ph) {
+      ph.addEventListener('click', function () { select(ph); });
+      ph.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(ph); }
+      });
+    });
+
+    function load() {
+      instance.deleteEveryConnection();
       columnList.innerHTML = '';
-      Object.keys(connections).forEach(k => delete connections[k]);
-      connInput.value = '';
+      var table = tableSelect.value;
+      if (table !== loadedTable) {
+        // Cambio tabella: le associazioni precedenti non valgono piu'; si
+        // ripartono da quelle salvate per questa tabella, se esistono.
+        state = S.forTable(saved[mid], table);
+        loadedTable = table;
+      }
+      input.value = S.serialize(state);
+      if (!table) return;
 
-      if (!tableSelect.value) return;
-
-      fetch(`{% url 'get_columns' %}?table=${encodeURIComponent(tableSelect.value)}`)
-        .then(r => r.json())
-        .then(data => {
-          // 1) add endpoints on placeholders
-          placeholders.forEach(ph => {
-            instance.addEndpoint(ph, {
-              anchor: 'RightMiddle',
-              isSource: true,
-              isTarget: false,
-              maxConnections: -1
-            });
-            ph.style.cursor = 'pointer';
-            ph.addEventListener('click', () => {
-              placeholders.forEach(p => p.classList.remove('active-bg'));
-              ph.classList.add('active-bg');
-              instance.activePh = ph;
-            });
-          });
-
-          // 2) populate columns & add endpoints
-          data.columns.forEach(col => {
-            const li = document.createElement('li');
+      fetch(columnsUrl + '?table=' + encodeURIComponent(table))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var columns = data.columns || [];
+          columns.forEach(function (name) {
+            var li = document.createElement('li');
             li.className = 'list-group-item column-click p-2 mb-2 bg-white rounded';
-            li.textContent = col;
-            li.dataset.name = col;
-            li.style.cursor = 'pointer';
+            li.textContent = name;
+            li.dataset.name = name;
+            li.setAttribute('role', 'button');
+            li.tabIndex = 0;
+            function choose() {
+              if (!active) return;
+              state = S.toggle(state, active.dataset.var, name);
+              select(null);
+              redraw();
+            }
+            li.addEventListener('click', choose);
+            li.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); }
+            });
             columnList.appendChild(li);
-
-            instance.addEndpoint(li, {
-              anchor: 'LeftMiddle',
-              isSource: false,
-              isTarget: true,
-              maxConnections: -1
-            });
-
-            li.addEventListener('click', () => {
-              const ph = instance.activePh;
-              if (!ph) return;
-              const varName = ph.dataset.id.split('__')[1];
-              const colName = li.dataset.name;
-
-              // 1) detach any old arrow for this placeholder
-              instance.getConnections({ source: ph }).forEach(conn => instance.deleteConnection(conn));
-            
-              // 2) (optional) detach any old arrow pointing to this column,
-              //    if you want to enforce one-to-one mappings
-              //instance.getConnections({ target: li }).forEach(conn => instance.deleteConnection(conn));
-            
-              // 3) remove stale state
-              //    - delete the old mapping for this varName
-              //    - and if you enforced 1:1, also clear any other var that was using this colName
-              delete connections[varName];
-              Object.entries(connections).forEach(([v, c]) => {
-                if (c === colName) delete connections[v];
-              });
-
-
-              const color = hashToColor(varName);
-              
-              instance.connect({
-                source:   ph,
-                target:   li,
-                anchors:  ['Center','LeftMiddle'],
-                connector: ['Bezier',{ curviness: 50 }],
-                paintStyle: { stroke: color, strokeWidth: 2 },
-                overlays: [
-                  ['Arrow', {
-                    location: 1,
-                    width:    10,
-                    length:   10,
-                    foldback: 0.7,
-                    // arrow’s fill should match the line
-                    paintStyle: { fill: color }
-                  }]
-                ]
-              });
-              const phIndex  = placeholders.indexOf(ph);
-              const colIndex = Array.from(columnList.children).indexOf(li);
-            
-              // store index instead of name
-              connections[phIndex] = colIndex;
-              connInput.value = JSON.stringify(connections);
-              connInput.value = JSON.stringify(connections);
-
-              ph.classList.remove('active-bg');
-              instance.activePh = null;
-            });
           });
-
-          // 3) re-draw any saved mappings
-          const saved = savedMappings[mid] || {};
-          Object.entries(saved).forEach(([phIndexStr, colIndex]) => {
-            const phIndex = Number(phIndexStr);
-            const phEl    = placeholders[phIndex];
-            const colEl   = columnList.children[colIndex];
-            if (!phEl || !colEl) return;
-
-            // draw with the same hashToColor(ph.dataset.id)…
-            const varName = phEl.dataset.id.split('__')[1];
-            const color   = hashToColor(varName);
-
-            instance.connect({
-              source:   phEl,
-              target:   colEl,
-              anchors:  ['Center','LeftMiddle'],
-              connector:['Bezier',{curviness:50}],
-              paintStyle:{stroke:color,strokeWidth:2},
-              overlays: [['Arrow',{location:1,paintStyle:{fill:color}}]]
-            });
-
-            // and rebuild your server-side mapping object so the POST still
-            // submits a varName→colName map:
-            connections[varName] = colEl.dataset.name;
-            connInput.value      = JSON.stringify(connections);
-          });
-
-          connInput.value = JSON.stringify(connections);
-          instance.repaintEverything();
+          state = S.retain(state, columns, placeholderNames);
+          redraw();
+        })
+        .catch(function () {
+          columnList.innerHTML = '<li class="list-group-item text-danger">Columns could not be loaded.</li>';
         });
     }
 
-    // Expose a “draw when visible” wrapper
-    instance.loadAndDraw = () => whenSized(area, loadAndDraw);
+    card.hdnLoad = function () { whenSized(area, load); };
+    tableSelect.addEventListener('change', function () { card.hdnLoad(); });
+    if (card.closest('.carousel-item').classList.contains('active')) card.hdnLoad();
+  });
 
-    // Init only if this slide is active on page load
-    if (card.closest('.carousel-item').classList.contains('active')) {
-      instance.loadAndDraw();
-    }
-
-    // On table change, re-draw if visible
-    tableSelect.addEventListener('change', () => {
-      if (card.closest('.carousel-item').classList.contains('active')) {
-        instance.loadAndDraw();
-      }
-    });
-  })();
-  {% endfor %}
-
-  // On each carousel slide, draw the newly-visible card
-  const carousel = document.getElementById('mappingCarousel');
-  carousel.addEventListener('slid.bs.carousel', () => {
-    const activeCard = carousel.querySelector('.carousel-item.active .card');
-    if (!activeCard) return;
-    const mid  = activeCard.id.replace('mapping-card-', '');
-    const inst = window._jsPlumbMap[mid];
-    if (inst) inst.loadAndDraw();
+  document.getElementById('mappingCarousel').addEventListener('slid.bs.carousel', function () {
+    var card = this.querySelector('.carousel-item.active .mapping-card');
+    if (card && card.hdnLoad) card.hdnLoad();
   });
 });
 </script>
 
-
-
-
-
 <style>
   .active-bg { background-color: #e7f1ff !important; }
-    /* make sure carousel arrows sit above any jsPlumb SVG overlay */
-  .carousel-control-prev,
-  .carousel-control-next {
-    z-index: 2000;
-  }
-  .jtk-connector, .jtk-endpoint {
-    z-index: 1000;
-  }
-  .carousel-item {
-    display: block !important;      /* force them all to take up space */
-    visibility: hidden;             /* but hide until active */
-    position: absolute;             /* stack on top of each other */
-    width: 100%; top: 0; left: 0;
-  }
-  .carousel-item.active {
-    visibility: visible;            /* only the active one is seen */
-    position: relative;             /* in-flow for layout */
-  }
+  .carousel-control-prev, .carousel-control-next { z-index: 2000; }
+  .jtk-connector, .jtk-endpoint { z-index: 1000; }
+  .carousel-item { display: block !important; visibility: hidden; position: absolute; width: 100%; top: 0; left: 0; }
+  .carousel-item.active { visibility: visible; position: relative; }
 </style>
 {% endblock %}
