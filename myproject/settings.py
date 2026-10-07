@@ -80,6 +80,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'myapp.context_processors.level_choices',
+                'myapp.context_processors.notifications',
             ],
         },
     },
@@ -108,6 +109,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Policy di disclosure del sito (lavoro dedicato alla privacy, da rivedere).
 LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
+
+# Stato dell'endpoint nella rete HDN: chiave privata del nodo, catalogo e
+# ontologia ricevuti da Central, copie di sicurezza. Non versionato.
+HDN_STATE_DIR = os.environ.get('HDN_STATE_DIR', os.path.join(MEDIA_ROOT, 'hdn'))
 
 # ---------------------------------------------------------------------------
 # File statici

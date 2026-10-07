@@ -80,7 +80,16 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'ontop_control' %}">Ontop Monitor</a>
             </li>
-            <!-- You can add more nav items here -->
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'network' %}">HDN Network</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'notifications' %}" id="nav-notifications">
+                <i class="bi bi-bell" aria-hidden="true"></i>
+                <span class="visually-hidden">Notifications</span>
+                {% if unread_notifications %}<span class="badge rounded-pill bg-danger">{{ unread_notifications }}<span class="visually-hidden"> unread</span></span>{% endif %}
+              </a>
+            </li>
           </ul>
         </div>
       </div>

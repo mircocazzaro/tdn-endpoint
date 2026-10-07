@@ -1,6 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
+from . import network_views
 from .views import (
     home_view, upload_csv_view, query_view,
     field_mapping_view, get_columns,
@@ -21,4 +22,10 @@ urlpatterns = [
     path('set-level/', set_level, name='set_level'),
     path('sparql-protected/', protected_sparql, name='sparql_protected'),
     path('delete-table/<str:table_name>/', delete_table_view, name='delete_table'),
+    # Rete HDN: pagine dell'amministratore
+    path('network/', network_views.network_view, name='network'),
+    path('notifications/', network_views.notifications_view, name='notifications'),
+    path('notifications/read/', network_views.notifications_read, name='notifications_read'),
+    # Rete HDN: protocolli firmati invocati da Central (anche sulla porta 8084)
+    path('hdn/enrollment/', network_views.hdn_enrollment, name='hdn_enrollment'),
 ]

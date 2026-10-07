@@ -1,0 +1,49 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+<h2>HDN network</h2>
+<p class="text-muted">
+  This endpoint's key: <code>{{ identity.fingerprint }}</code>.
+  The Central manager sees this fingerprint when approving the application.
+</p>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Apply to an HDN Central</h5>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for f in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+          {{ f }}
+          {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Send application</button>
+    </form>
+  </div>
+</div>
+
+<h5>Centrals</h5>
+{% if memberships %}
+<table class="table table-sm">
+  <thead><tr><th>Central</th><th>Key</th><th>Status</th><th>Presented as</th><th>Since</th></tr></thead>
+  <tbody>
+  {% for m in memberships %}
+    <tr>
+      <td>{% if m.central_name %}{{ m.central_name }}<br>{% endif %}<small>{{ m.central_url }}</small></td>
+      <td><code class="small">{{ m.central_fingerprint }}</code></td>
+      <td>
+        {% if m.status == 'approved' %}<span class="badge bg-success">Member</span>
+        {% elif m.status == 'pending' %}<span class="badge bg-warning text-dark">Waiting for approval</span>
+        {% else %}<span class="badge bg-danger">Rejected</span>{% endif %}
+      </td>
+      <td>{{ m.endpoint_name }}<br><small>{{ m.endpoint_url }}</small></td>
+      <td><small>{{ m.created|date:"Y-m-d H:i" }}</small></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="text-muted">This endpoint has not applied to any Central yet.</p>
+{% endif %}
+{% endblock %}
