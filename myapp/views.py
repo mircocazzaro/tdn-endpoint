@@ -1,6 +1,7 @@
 # myapp/views.py
 import os
 import json
+import logging
 import re
 import duckdb
 import subprocess
@@ -11,6 +12,13 @@ import requests
 import pandas as pd
 import sqlparse
 from typing import List
+
+from .sparql_results import empty_result
+
+# Audit log locale. Registra le decisioni di disclosure che verso l'esterno
+# restano invisibili: senza questo, un endpoint che rifiuta tutto e' indistin-
+# guibile da un endpoint senza dati anche per il suo stesso amministratore.
+audit = logging.getLogger('hdn.audit')
 
 from django import forms
 from django.conf import settings
@@ -656,124 +664,148 @@ def sparql_query_view(request):
 
 @csrf_exempt
 def protected_sparql(request):
-    if request.method != 'POST':
-        return JsonResponse({'error':'POST only'}, status=405)
+    """Interfaccia di servizio verso HDN Central.
 
-    tmpl = request.POST.get('template','').strip()
-    q    = request.POST.get('query','').strip()
+    Ogni mancato contributo - template non riconosciuto, rifiuto per livello di
+    disclosure, catalogo non disponibile, errore o timeout del backend - produce
+    la stessa risposta vuota canonica con HTTP 200. Dall'esterno questi casi
+    sono indistinguibili fra loro e dall'assenza di dati che matchano, come
+    richiesto da D3.2 sez. 2.1.1, 2.2.3 e 2.4.4. La causa reale viene
+    registrata solo nell'audit log locale.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    tmpl = request.POST.get('template', '').strip()
+    q = request.POST.get('query', '').strip()
     analytics_key = request.POST.get('analytics_key')
-    
+
     if not tmpl or not q:
-        return JsonResponse({'error':'Must supply both template & query'}, status=400)
+        return JsonResponse({'error': 'Must supply both template & query'}, status=400)
+
+    def no_contribution(reason, **details):
+        """Unica uscita negativa dell'endpoint."""
+        audit.info(
+            "no-contribution reason=%s remote=%s %s",
+            reason,
+            request.META.get('REMOTE_ADDR', '-'),
+            " ".join(f"{k}={v}" for k, v in sorted(details.items())),
+        )
+        return JsonResponse(empty_result(q))
 
     # 1) Hash the template exactly
     h = hashlib.sha512(tmpl.encode('utf-8')).hexdigest()
 
     # 2) Lookup allowed level & stored template
     try:
-        con = duckdb.connect(settings.ALLOWED_DB)
+        con = duckdb.connect(settings.ALLOWED_DB, read_only=True)
         row = con.execute(
             "SELECT level, query FROM allowed_queries WHERE hash = ?",
             [h]
         ).fetchone()
         con.close()
-        if not row: 
-            return JsonResponse({'results':[]})   # template not recognized
-        allowed_level, stored_tmpl = row
-        stored_tmpl = stored_tmpl.strip()
-    except Exception as e:
-        return JsonResponse({'error':f'Allowed‐queries DB error: {e}'}, status=500)
+    except Exception as exc:
+        return no_contribution('catalog-unavailable', error=type(exc).__name__)
 
-    # 5) Get user level (as before)
+    if not row:
+        return no_contribution('unknown-template', hash=h[:16])
+    allowed_level, stored_tmpl = row
+    stored_tmpl = stored_tmpl.strip()
+
+    # 3) Massimo livello di disclosure configurato localmente
     try:
-        con = duckdb.connect(settings.LEVEL_DB)
+        con = duckdb.connect(settings.LEVEL_DB, read_only=True)
         lvl_row = con.execute(
             "SELECT value FROM options WHERE key='level'"
         ).fetchone()
         con.close()
-        user_level = int(lvl_row[0][1]) if lvl_row else 0
-    except Exception:
-        user_level = 0
+        local_max_level = int(lvl_row[0][1]) if lvl_row else 0
+    except Exception as exc:
+        # Fail-closed: in assenza di una policy leggibile si assume la piu'
+        # restrittiva. L'evento va registrato perche' altrimenti l'endpoint
+        # smetterebbe di contribuire senza che nessuno lo sappia.
+        audit.warning("level-store-unreadable error=%s: fallback a L0",
+                      type(exc).__name__)
+        local_max_level = 0
 
-    if allowed_level > user_level:
-        print("Quaaaaa")
-        return JsonResponse({'results':[]})
-    
-    # 5) KL‐divergence analytics
+    if allowed_level > local_max_level:
+        return no_contribution('disclosure-refused',
+                               requested=allowed_level, local_max=local_max_level)
+
+    # 4) KL-divergence analytics
     if analytics_key == 'klDiv':
-        # Forward to Ontop
         try:
             resp = requests.post(
                 settings.ONTOP_SPARQL_ENDPOINT,
                 data={'query': q},
-                headers={'Accept':'application/sparql-results+json'},
+                headers={'Accept': 'application/sparql-results+json'},
                 timeout=10
             )
             resp.raise_for_status()
             data = resp.json()
-        except Exception as e:
-            return JsonResponse({'error':f'Ontop query error: {e}'}, status=502)
 
-        # Extract and normalize ages
-        bindings = data.get('results', {}).get('bindings', [])
-        ages_true, ages_false = [], []
-        for bd in bindings:
-            bval = bd.get('b', {}).get('value')
-            aval = bd.get('ageOn', {}).get('value')
-            try:
-                age = float(aval)
-            except Exception:
-                continue
-            if str(bval).lower() == 'true':
-                ages_true.append(age)
-            else:
-                ages_false.append(age)
+            # Extract and normalize ages
+            bindings = data.get('results', {}).get('bindings', [])
+            ages_true, ages_false = [], []
+            for bd in bindings:
+                bval = bd.get('b', {}).get('value')
+                aval = bd.get('ageOn', {}).get('value')
+                try:
+                    age = float(aval)
+                except Exception:
+                    continue
+                if str(bval).lower() == 'true':
+                    ages_true.append(age)
+                else:
+                    ages_false.append(age)
 
-        if not (ages_true or ages_false):
+            if not (ages_true or ages_false):
+                return JsonResponse({
+                    'distribution_true': [],
+                    'distribution_false': [],
+                    'kl_divergence': None
+                })
+
+            # Compute histograms & PMFs
+            all_ages = ages_true + ages_false
+            bins = np.linspace(min(all_ages), max(all_ages), num=11)
+            p_counts, _ = np.histogram(ages_true, bins=bins)
+            q_counts, edges = np.histogram(ages_false, bins=bins)
+            eps = 1e-9
+            total = (p_counts + q_counts + 2 * eps).sum()
+            p = (p_counts + eps) / total
+            q_pmf = (q_counts + eps) / total
+            kl = float((p * np.log(p / q_pmf)).sum())
+
+            dist_true = [
+                {'range': f"{edges[i]:.0f}–{edges[i+1]:.0f}", 'p': float(p[i])}
+                for i in range(len(p))
+            ]
+            dist_false = [
+                {'range': f"{edges[i]:.0f}–{edges[i+1]:.0f}", 'p': float(q_pmf[i])}
+                for i in range(len(q_pmf))
+            ]
+
             return JsonResponse({
-                'distribution_true': [],
-                'distribution_false': [],
-                'kl_divergence': None
+                'distribution_true': dist_true,
+                'distribution_false': dist_false,
+                'kl_divergence': kl
             })
+        except Exception as exc:
+            return no_contribution('analytics-error', error=type(exc).__name__)
 
-        # Compute histograms & PMFs
-        all_ages = ages_true + ages_false
-        bins = np.linspace(min(all_ages), max(all_ages), num=11)
-        p_counts, _ = np.histogram(ages_true, bins=bins)
-        q_counts, edges = np.histogram(ages_false, bins=bins)
-        eps = 1e-9
-        total = (p_counts + q_counts + 2*eps).sum()
-        p = (p_counts + eps) / total
-        q = (q_counts + eps) / total
-        kl = float((p * np.log(p / q)).sum())
-
-        dist_true = [
-            {'range': f"{edges[i]:.0f}–{edges[i+1]:.0f}", 'p': float(p[i])}
-            for i in range(len(p))
-        ]
-        dist_false = [
-            {'range': f"{edges[i]:.0f}–{edges[i+1]:.0f}", 'p': float(q[i])}
-            for i in range(len(q))
-        ]
-
-        return JsonResponse({
-            'distribution_true': dist_true,
-            'distribution_false': dist_false,
-            'kl_divergence': kl
-        })
-
-    # 6) Forward the **instantiated** query to Ontop
+    # 5) Forward the instantiated query to Ontop
     try:
         resp = requests.post(
             settings.ONTOP_SPARQL_ENDPOINT,
-            data={'query':q},
-            headers={'Accept':'application/sparql-results+json'},
+            data={'query': q},
+            headers={'Accept': 'application/sparql-results+json'},
             timeout=10
         )
         resp.raise_for_status()
         return JsonResponse(resp.json())
-    except Exception as e:
-        return JsonResponse({'error':f'Ontop query error: {e}'}, status=502)
+    except Exception as exc:
+        return no_contribution('backend-error', error=type(exc).__name__)
 
 @require_POST
 def delete_table_view(request, table_name):

@@ -66,6 +66,39 @@ LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
 ALLOWED_DB = os.path.join(MEDIA_ROOT, 'allowed_queries.duckdb')
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
+# Audit log locale delle decisioni di disclosure.
+# Verso HDN Central rifiuti, template ignoti ed errori di backend sono
+# indistinguibili per costruzione; questo file e' l'unico posto in cui
+# l'amministratore locale puo' vedere cosa l'endpoint ha effettivamente
+# rifiutato e perche'.
+AUDIT_LOG = os.environ.get('HDN_AUDIT_LOG', os.path.join(BASE_DIR, 'audit.log'))
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'audit': {
+            'format': '%(asctime)s %(levelname)s %(message)s',
+        },
+    },
+    'handlers': {
+        'audit_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': AUDIT_LOG,
+            'maxBytes': 10 * 1024 * 1024,
+            'backupCount': 5,
+            'formatter': 'audit',
+        },
+    },
+    'loggers': {
+        'hdn.audit': {
+            'handlers': ['audit_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
 import os
 from pathlib import Path
 
