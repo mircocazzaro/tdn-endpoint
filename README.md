@@ -167,18 +167,65 @@ SELECT (COUNT(DISTINCT ?pat) AS ?n) WHERE {
 }
 ```
 
-### 6. Collegate l'endpoint a HDN Central
+### 6. Iscrivete l'endpoint a HDN Central
 
-Comunicate all'amministratore di HDN Central l'indirizzo del servizio
-protetto, ad esempio `http://endpoint.istituzione.example:8084`. Central vi
-aggiunge `/sparql-protected/` da solo.
-
-Per verificare che la porta sia raggiungibile:
+Verificate prima che la porta 8084 sia raggiungibile da Central:
 
 ```bash
 curl -i http://endpoint.istituzione.example:8084/sparql-protected/
 # atteso: HTTP/1.0 405 Method Not Allowed
 ```
+
+Poi, dalla pagina **HDN Network** dell'interfaccia:
+
+1. inserite l'URL di Central, l'URL con cui Central raggiunge questo endpoint
+   (la porta 8084, ad esempio `http://endpoint.istituzione.example:8084/`) e il
+   nome dell'istituzione;
+2. inviate la candidatura. L'endpoint resta *Waiting for approval* finche'
+   l'amministratore di Central non la approva;
+3. all'approvazione compare una notifica (campanella nella barra in alto) e lo
+   stato diventa *Member*.
+
+Da quel momento Central puo' inviare query, cataloghi delle query e ontologie.
+
+---
+
+## Rete HDN: protocolli con Central
+
+Accanto a `/sparql-protected/`, la porta 8084 espone tre protocolli sotto
+`/hdn/`. Ogni messaggio e' firmato con Ed25519 e la risposta e' firmata a sua
+volta.
+
+| protocollo | percorso | cosa fa l'endpoint |
+|---|---|---|
+| iscrizione | `/hdn/enrollment/` | riceve l'esito della candidatura |
+| catalogo delle query | `/hdn/catalog/` | installa subito il catalogo, se la versione e' piu' recente |
+| ontologia | `/hdn/ontology/` | installa subito l'ontologia, adegua il mapping, riavvia Ontop se era acceso |
+
+- **Chiavi.** L'endpoint genera la propria chiave al primo avvio, in
+  `uploads/hdn/identity.pem`. La chiave di Central e' quella ricevuta al primo
+  contatto: se lo stesso URL si ripresenta con una chiave diversa, la
+  candidatura viene rifiutata. Il primo contatto non e' verificato in altro
+  modo, quindi va fatto su una rete di cui vi fidate.
+- **Firma.** Ogni richiesta e' legata a azione, destinatario, istante e nonce:
+  non si puo' alterare, ripetere o reindirizzare a un altro endpoint. Solo un
+  Central approvato puo' inviare cataloghi e ontologie.
+- **Catalogo.** Un catalogo ricevuto puo' cambiare testi, livelli e descrizioni
+  dei template. Non puo' introdurre nuove grammatiche dei parametri: un
+  parametro resta sempre un valore chiuso. Il catalogo nel codice
+  (`myapp/catalog.py`) e' la versione 0.
+- **Ontologia.** Sono ammessi solo `owl:imports` risolvibili offline
+  (`myapp/obda/imports/`). Viene eliminato ogni blocco di mapping che usa un
+  termine dichiarato dall'ontologia precedente e non piu' dalla nuova. La
+  versione precedente del mapping resta in `mapping-backups/`. Se non resta
+  alcun blocco, Ontop non viene riavviato e il mapping va rifatto.
+- **Notifiche.** Iscrizione, cataloghi e ontologie ricevuti o rifiutati, e
+  l'esito del riavvio di Ontop, compaiono nella pagina **Notifications**.
+
+Limiti noti:
+- dopo una nuova ontologia, *Map Data to HERO* propone ancora i blocchi del
+  template che usano termini rimossi;
+- `/sparql-protected/` non e' autenticato.
 
 ---
 
@@ -190,6 +237,10 @@ curl -i http://endpoint.istituzione.example:8084/sparql-protected/
 | `myapp/obda/hereditary_ontology_2.obda` | il mapping attivo del sito | no |
 | `myapp/obda/mapping-backups/` | le ultime 10 versioni del mapping | no |
 | `uploads/level.duckdb` | il livello di disclosure scelto | si' (vedi passo 3) |
+| `uploads/hdn/identity.pem` | chiave privata dell'endpoint nella rete HDN | no |
+| `uploads/hdn/db.sqlite3` | iscrizioni ai Central e notifiche | no |
+| `uploads/hdn/catalog.json` | catalogo delle query ricevuto da Central | no |
+| `uploads/hdn/ontology/` | ontologia ricevuta da Central e versioni precedenti | no |
 | `audit.log` | decisioni dell'endpoint sulle richieste di Central | no |
 | `myapp/obda/ontop.log` | log di Ontop, con rotazione a 10 MB (5 file) | no |
 | `myapp/obda/ontop.console.log` | output della JVM all'ultimo avvio di Ontop | no |
@@ -273,6 +324,7 @@ Variabili d'ambiente:
 | `HDN_HTTPS=1` | cookie Secure, redirect HTTPS e HSTS, se l'endpoint e' servito in HTTPS |
 | `HDN_SPARQL_PORT` | porta del servizio protetto (default 8084) |
 | `HDN_AUDIT_LOG` | percorso dell'audit log |
+| `HDN_STATE_DIR` | stato di rete e database (default `uploads/hdn`) |
 | `HDN_ONTOP_OWL_LOG_LEVEL=WARN` | mostra nel log di Ontop gli avvisi OWL 2 QL, nascosti di default |
 
 ---
