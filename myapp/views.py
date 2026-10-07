@@ -73,6 +73,19 @@ def extract_columns_from_sql(sql: str, available_cols: list[str]) -> list[str]:
     return sorted(found)
 
 
+def safe_referer(request, fallback='home'):
+    """Referer della richiesta se punta a questo host, altrimenti ``fallback``."""
+    from django.urls import reverse
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    target = request.META.get('HTTP_REFERER', '')
+    if target and url_has_allowed_host_and_scheme(
+            target, allowed_hosts={request.get_host()},
+            require_https=request.is_secure()):
+        return target
+    return reverse(fallback)
+
+
 BUSY_MESSAGE = ("The data database is held by another process and could not be "
                 "read. If Ontop was started outside this interface, stop it from "
                 "Ontop Monitor and retry.")
@@ -712,8 +725,9 @@ def set_level(request):
     else:
         messages.error(request, f"Invalid level: {lvl}")
 
-    # go back
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
+    # Torna alla pagina di provenienza solo se e' su questo host: il Referer e'
+    # controllato dal client e senza verifica diventa un open redirect.
+    return redirect(safe_referer(request))
 
 
 
