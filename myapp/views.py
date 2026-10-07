@@ -16,6 +16,7 @@ from typing import List
 from contextlib import contextmanager
 
 from . import catalog, datastore, ontop_process
+from .schema_diagram import er_diagram
 from .sparql_results import empty_result
 from .obda_mapping import (
     adapt_isnan,
@@ -142,6 +143,7 @@ def home_view(request):
     # Render, passing schema
     return render(request, 'myapp/home.html', {
         'tables_columns': tables_columns,
+        'er_diagram': er_diagram(tables_columns),
     })
 
 def upload_csv_view(request):
