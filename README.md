@@ -1,172 +1,284 @@
-# TDN - Endpoint
+# HDN Endpoint
 
-# tdn-endpoint
+Nodo locale della Hereditary Data Network (HDN, deliverable D3.2 di HEREDITARY).
+Ogni istituzione partecipante installa un endpoint accanto ai propri dati:
 
-A Django-based web application that allows users to:
+- carica i dati in un database locale (DuckDB), che resta nell'istituzione;
+- li collega all'ontologia HERO tramite un mapping (Ontop, OBDA);
+- risponde alle query di HDN Central solo se sono nel catalogo delle query
+  ammesse e non superano il livello di disclosure scelto dall'istituzione.
 
-* Upload CSV files and store them in a DuckDB database
-* Define field-to-ontology mappings (OBDA)
-* Expose a SPARQL endpoint via Ontop
-* Run SPARQL queries through a web interface or API
-* Control the Ontop SPARQL server (start/stop, view status/logs)
-
----
-
-## Features
-
-1. **CSV Upload & DuckDB Storage**
-
-   * Upload CSV files via the web UI
-   * Store and manage data in a local DuckDB database (`mydatabase.duckdb`)
-
-2. **Field Mapping (OBDA)**
-
-   * Define mappings between CSV fields and ontology classes/properties
-   * Templates stored under `myapp/mappings`
-
-3. **SPARQL Endpoint**
-
-   * Start/stop an Ontop-powered SPARQL endpoint from the web UI
-   * Configure the OBDA mapping (`.obda`), ontology (`.ttl`), and properties files in `myapp/obda`
-
-4. **Query Interface**
-
-   * Execute SPARQL queries via a dedicated web page (`/sparql/`) or programmatically via HTTP
-   * Supports both public (`/sparql/`) and protected (`/sparql-protected/`) endpoints
-
-5. **Server Control & Monitoring**
-
-   * View Ontop process status and logs (`/ontop/status/`, `/ontop/logs/`)
-   * Start and stop the SPARQL endpoint (`/ontop-control/`)
+HDN Central non vede mai i dati: riceve solo le risposte alle query ammesse.
 
 ---
 
-## Requirements
+## Prima di iniziare: limiti di sicurezza attuali
 
-* Python 3.8+
-* Java 11+ (for Ontop CLI)
-* Django 4.x
-* duckdb (Python package)
-* pandas
-* requests
-* whitenoise
+Questa versione **non va esposta su una rete non fidata**. In particolare:
 
-> **Note:** Ontop CLI (binary and scripts) is included in `myapp/obda` but requires Java.
+- **l'interfaccia di amministrazione (porta 8000) non ha autenticazione**:
+  chiunque la raggiunga puo' caricare o cancellare dati, cambiare il livello
+  di disclosure ed eseguire SQL sui dati;
+- **Ontop (porta 8080) accetta qualunque query SPARQL senza controlli**: il
+  catalogo e i livelli di disclosure valgono solo sulla porta 8084;
+- `DEBUG` e' attivo e `SECRET_KEY` e' quella del repository.
 
----
-
-## Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/mircocazzaro/tdn-endpoint.git
-   cd tdn-endpoint/my-webapp
-   ```
-
-2. **Install Python dependencies**
-
-   ```bash
-   pip install Django duckdb pandas requests whitenoise
-   ```
-
-3. **Set up the database**
-
-   ```bash
-   python manage.py migrate
-   ```
-
-4. **Collect static files**
-
-   ```bash
-   python manage.py collectstatic
-   ```
+Fino a quando questi punti non sono risolti, rendete raggiungibile da HDN
+Central **solo la porta 8084**, e le porte 8000 e 8080 solo dalla macchina
+stessa (firewall, o un tunnel SSH per usare l'interfaccia da remoto).
 
 ---
 
-## Configuration
+## Requisiti
 
-All configuration lives in `myproject/settings.py`:
+| | |
+|---|---|
+| Sistema | Linux (verificato su Ubuntu 24.04) |
+| Python | 3.10 o successivo (installazione verificata con 3.12) |
+| Java | 11 o successivo, per Ontop (verificato con OpenJDK 21) |
+| Disco | circa 300 MB per il repository, piu' le dipendenze Python e i dati |
+| Rete | serve solo per installare le dipendenze Python. In esercizio l'endpoint non accede a Internet: librerie dell'interfaccia e ontologie importate sono incluse nel repository |
 
-* `SECRET_KEY` – change to a secure random value
-* `DEBUG` – set to `False` in production
-* `ALLOWED_HOSTS` – configure your domain or IP addresses
-* `ONTOP_SPARQL_ENDPOINT` – URL of the Ontop SPARQL endpoint (default: `http://localhost:8080/sparql`)
-* `MEDIA_ROOT` – directory for uploaded files and DuckDB
-
-You can further customize:
-
-* Templates directory (`BASE_DIR/templates`)
-* Static files settings (`STATIC_URL`, `STATIC_ROOT`)
-
----
-
-## Usage
-
-1. **Run the development server**
-
-   ```bash
-   python manage.py runserver
-   ```
-
-2. **Access the app**
-
-   * Home & upload CSV: `http://127.0.0.1:8000/`
-   * Field mapping: `http://127.0.0.1:8000/map-fields/`
-   * Ontop control: `http://127.0.0.1:8000/ontop-control/`
-   * SPARQL query UI: `http://127.0.0.1:8000/sparql/`
-
-3. **API Endpoints**
-
-   * **Upload CSV**: `POST /upload-csv/`
-   * **Get columns**: `GET /get-columns/` (returns JSON)
-   * **Run SPARQL**: `POST /sparql/` or `POST /sparql-protected/`
-   * **Set inference level**: `POST /set-level/`
-   * **ONTOP control**: `POST /ontop-control/` with `action=start|stop`
-
----
-
-## OBDA Mapping & Ontology
-
-* Templates and mappings: `myapp/mappings/`
-* Ontology files: `myapp/obda/*.ttl`
-* OBDA files: `myapp/obda/*.obda`
-* Properties: `myapp/obda/*.properties`
-
-When you start the SPARQL endpoint, the app runs:
+Su Ubuntu/Debian:
 
 ```bash
-ontop endpoint \
-  -m path/to/mapping.obda \
-  -p path/to/hereditary_ontology_2.properties \
-  -o path/to/ontop.log
+sudo apt install python3 python3-venv default-jre-headless git
 ```
 
 ---
 
-## Logs & Monitoring
+## Installazione
 
-* **Ontop logs**: `myapp/obda/ontop.log`
-* **Ontop status**: Check via `/ontop/status/`
+```bash
+git clone https://github.com/mircocazzaro/tdn-endpoint.git
+cd tdn-endpoint
+
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+Facoltativo, per verificare l'installazione (circa 15 secondi, tutti i test
+devono passare):
+
+```bash
+python manage.py test myapp.tests
+```
 
 ---
 
-## Static Files
+## Avvio
 
-Static assets are in `static/` and `myapp/static/`. Collected by `collectstatic` into `staticfiles/`.
+L'endpoint e' composto da tre processi:
+
+| porta | processo | chi lo usa |
+|---|---|---|
+| 8000 | interfaccia di amministrazione | l'amministratore locale |
+| 8084 | servizio SPARQL protetto (`/sparql-protected/`) | HDN Central |
+| 8080 | Ontop | solo i due processi precedenti, in locale |
+
+Avviate interfaccia e servizio protetto, ciascuno in un terminale (o con il
+vostro gestore di servizi, es. systemd), dalla directory del repository e con
+il virtualenv attivo:
+
+```bash
+# interfaccia di amministrazione
+gunicorn myproject.wsgi:application --bind 127.0.0.1:8000 --workers 2 --threads 2 --timeout 300
+
+# servizio SPARQL protetto per HDN Central
+python run_sparql_server.py
+```
+
+Ontop **non va avviato a mano**: si avvia e si ferma da *Ontop Monitor*
+nell'interfaccia (vedi sotto). L'interfaccia lo arresta e lo riavvia da sola
+quando caricate dati o salvate il mapping.
+
+Aprite l'interfaccia su `http://localhost:8000/`.
 
 ---
 
-## Contributing
+## Prima configurazione
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/x`)
-3. Commit your changes (`git commit -m "Add feature x"`)
-4. Push to the branch (`git push origin feature/x`)
-5. Open a pull request
+### 1. Caricate i dati
+
+*Upload CSV*: selezionate uno o piu' file CSV.
+
+- **Il nome del file diventa il nome della tabella**, spazi e maiuscole
+  compresi. Il template di mapping si aspetta queste tabelle:
+
+  | file | contenuto |
+  |---|---|
+  | `PATIENTS GENERAL DATA.csv` | una riga per paziente (dati anagrafici, onset, diagnosi, genetica, comorbidita') |
+  | `ALS FUNCTIONAL RATING SCALE.csv` | una riga per visita ALSFRS-R |
+  | `SPIRO VISITS.csv` | una riga per spirometria |
+
+  Non e' obbligatorio usare questi nomi: al passo successivo potete associare
+  ogni blocco del template a qualunque tabella.
+- Ricaricare un file con lo stesso nome **sostituisce** la tabella.
+- Se un file non si carica, nessuna tabella dell'upload viene modificata.
+- I CSV non restano su disco: vengono letti e cancellati.
+
+La pagina mostra lo schema delle tabelle caricate.
+
+### 2. Collegate i dati all'ontologia
+
+*Map Data to HERO*: per ogni blocco del template
+
+1. scegliete la tabella;
+2. cliccate un segnaposto a sinistra e poi la colonna corrispondente a destra.
+
+Premete *Generate OBDA File*. Prima di salvare, ogni blocco viene eseguito sui
+vostri dati: se uno non funziona il mapping non viene salvato e la pagina dice
+quale blocco e perche'. Se una colonna numerica e' stata caricata come testo
+(ad esempio perche' contiene codici come `u` per i valori mancanti), il
+controllo viene adattato da solo e la pagina ve lo segnala.
+
+Ogni salvataggio conserva la versione precedente in `myapp/obda/mapping-backups/`.
+
+### 3. Scegliete il livello di disclosure
+
+Il selettore *Select Privacy Level*, nella barra laterale, fissa il livello
+massimo di dettaglio che l'endpoint restituisce, da L0 (solo risposte si'/no)
+a L6 (dati completi). Le query di livello superiore ricevono una risposta
+vuota, indistinguibile dall'assenza di dati.
+
+**Il repository arriva impostato su L4: sceglietelo voi prima di collegare
+l'endpoint a HDN Central.** Il valore viene applicato appena lo cambiate.
+
+### 4. Avviate Ontop
+
+*Ontop Monitor*: attivate l'interruttore *Running*. L'avvio richiede qualche
+secondo; la console mostra il log di Ontop.
+
+### 5. Verificate in locale
+
+*Run SPARQL Query* interroga Ontop direttamente, senza catalogo ne' livelli: e'
+lo strumento per controllare il mapping. Esempio:
+
+```sparql
+PREFIX bto:  <https://w3id.org/brainteaser/ontology/schema/>
+PREFIX NCIT: <http://purl.obolibrary.org/obo/NCIT_>
+SELECT (COUNT(DISTINCT ?pat) AS ?n) WHERE {
+  ?pat a bto:Patient ;
+       bto:hasDisease NCIT:C34373 .
+}
+```
+
+### 6. Collegate l'endpoint a HDN Central
+
+Comunicate all'amministratore di HDN Central l'indirizzo del servizio
+protetto, ad esempio `http://endpoint.istituzione.example:8084`. Central vi
+aggiunge `/sparql-protected/` da solo.
+
+Per verificare che la porta sia raggiungibile:
+
+```bash
+curl -i http://endpoint.istituzione.example:8084/sparql-protected/
+# atteso: HTTP/1.0 405 Method Not Allowed
+```
 
 ---
 
-## License
+## Cosa c'e' dove
 
-This project does not currently include a license. Add one if you wish to specify reuse terms.
+| percorso | contenuto | versionato |
+|---|---|---|
+| `myapp/obda/mydatabase.duckdb` | i dati caricati | no |
+| `myapp/obda/hereditary_ontology_2.obda` | il mapping attivo del sito | no |
+| `myapp/obda/mapping-backups/` | le ultime 10 versioni del mapping | no |
+| `uploads/level.duckdb` | il livello di disclosure scelto | si' (vedi passo 3) |
+| `audit.log` | decisioni dell'endpoint sulle richieste di Central | no |
+| `myapp/obda/ontop.log` | log di Ontop, con rotazione a 10 MB (5 file) | no |
+| `myapp/obda/ontop.console.log` | output della JVM all'ultimo avvio di Ontop | no |
+| `myapp/mappings/template.obda` | template di mapping comune a tutti i siti | si' |
+| `myapp/catalog.py` | catalogo delle query ammesse | si' |
+| `myapp/obda/hero_clinical.ttl` | ontologia HERO | si' |
+
+Per un backup copiate `myapp/obda/mydatabase.duckdb`,
+`myapp/obda/hereditary_ontology_2.obda` e `uploads/level.duckdb`.
+
+**`audit.log`** e' l'unico posto in cui vedere perche' una richiesta di Central
+non ha avuto risposta (livello troppo alto, query fuori catalogo, Ontop
+spento): verso Central questi casi sono volutamente indistinguibili.
+
+---
+
+## Aggiornamento
+
+```bash
+git pull
+. .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+poi riavviate i due processi. Dati, mapping e livello non vengono toccati.
+
+Il catalogo delle query (`myapp/catalog.py`) deve coincidere con quello di HDN
+Central: se Central lo aggiorna, aggiornate anche l'endpoint, altrimenti le
+nuove query ricevono risposte vuote.
+
+---
+
+## Problemi frequenti
+
+| sintomo | causa probabile |
+|---|---|
+| Ontop non parte; la console mostra un errore Java | Java mancante o precedente alla 11: `java -version` |
+| Ontop non parte; `ontop.log` cita il mapping | mapping non valido: rigeneratelo da *Map Data to HERO* |
+| Upload: "Ontop did not stop in time" | Ontop e' stato avviato fuori dall'interfaccia: fermatelo e riavviatelo da *Ontop Monitor* |
+| Central non riceve risultati | guardate `audit.log`: livello troppo basso, query fuori catalogo o Ontop spento |
+| Pagine con avviso "database is held by another process" | un altro processo tiene `mydatabase.duckdb` in scrittura |
+| La porta 8084 non risponde | `run_sparql_server.py` non e' avviato |
+
+---
+
+## Docker
+
+E' disponibile un `Dockerfile` che avvia interfaccia e servizio protetto con
+supervisor, con un utente senza privilegi. Il build dell'immagine non e' ancora
+stato verificato; l'installazione descritta sopra si'. Anche nel container
+Ontop si avvia da *Ontop Monitor*: il programma `ontop` di `supervisord.conf`
+non va usato.
+
+Rendete persistenti `myapp/obda/` e `uploads/` (volumi), altrimenti dati e
+mapping si perdono ricreando il container.
+
+---
+
+## Sviluppo
+
+```bash
+python manage.py runserver 127.0.0.1:8000   # interfaccia, con ricaricamento
+python run_sparql_server.py                  # servizio protetto (porta 8084)
+```
+
+`/sparql-protected/` e' servito anche dalla porta 8000.
+
+Test che richiedono strumenti esterni, saltati se non attivati:
+
+```bash
+HDN_ONTOP_LIVE=1 python manage.py test myapp.tests          # avvia Ontop reale
+HDN_MERMAID_NODE_MODULES=/percorso/node_modules python manage.py test myapp.tests
+```
+
+Variabili d'ambiente:
+
+| variabile | effetto |
+|---|---|
+| `HDN_HTTPS=1` | cookie Secure, redirect HTTPS e HSTS, se l'endpoint e' servito in HTTPS |
+| `HDN_SPARQL_PORT` | porta del servizio protetto (default 8084) |
+| `HDN_AUDIT_LOG` | percorso dell'audit log |
+| `HDN_ONTOP_OWL_LOG_LEVEL=WARN` | mostra nel log di Ontop gli avvisi OWL 2 QL, nascosti di default |
+
+---
+
+## Licenze
+
+Le librerie e le ontologie incluse hanno licenze proprie, indicate in
+`myapp/static/myapp/vendor/README`, `myapp/obda/imports/README` e
+`myapp/obda/copyright/`.
