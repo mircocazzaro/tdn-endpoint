@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
+"""Servizio SPARQL protetto per HDN Central sulla porta 8084.
+
+E' l'unico punto che lo avvia (supervisord, programma "sparql"). In sviluppo,
+accanto a "manage.py runserver", va avviato a parte con
+"python run_sparql_server.py"; /sparql-protected/ e' comunque servito anche
+dal server di sviluppo sulla porta 8000.
+"""
+
 import os
 from wsgiref.simple_server import make_server
-from django.core.wsgi import get_wsgi_application
 
-# 1) Init Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
-app = get_wsgi_application()
+PORT = int(os.environ.get("HDN_SPARQL_PORT", "8084"))
 
-# 2) Wrap it to only allow /sparql-protected/
-def sparql_only_app(environ, start_response):
-    path = environ.get("PATH_INFO", "")
-    if path.startswith("/sparql-protected/"):
-        return app(environ, start_response)
-    start_response("404 Not Found", [("Content-Type", "text/plain")])
-    return [b"Not Found"]
-
-# 3) Run the simple server
 if __name__ == "__main__":
-    print("🔊 SPARQL‐only server listening on port 8084")
-    httpd = make_server("", 8084, sparql_only_app)
-    httpd.serve_forever()
+    from myproject.sparql_wsgi import application
+
+    print(f"SPARQL-only server listening on port {PORT}", flush=True)
+    make_server("", PORT, application).serve_forever()
