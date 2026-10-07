@@ -10,8 +10,9 @@ Stato prima della correzione, in ``myapp/obda/hereditary_ontology_2.obda``:
 
      - ``aals_dataportal_datatable`` non ha alcuna colonna di comorbidita', per
        cui quelle otto asserzioni non hanno sorgente;
-     - ``GUID`` e' VARCHAR e contiene stringhe tipo 'un identificativo alfanumerico', quindi il
-       predicato solleva ConversionException a tempo di esecuzione. Poiche'
+     - ``GUID`` e' VARCHAR e contiene identificativi alfanumerici, non
+       booleani, quindi il predicato solleva ConversionException a tempo di
+       esecuzione (DuckDB: "Could not convert string ... to BOOL"). Poiche'
        Ontop espande una query SPARQL in una union sui mapping pertinenti,
        l'errore si propaga a query che non chiedono comorbidita'.
 
