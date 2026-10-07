@@ -1,0 +1,17 @@
+Ontologie importate da hero_clinical.ttl (owl:imports), incluse nell'installer.
+
+Ontop risolve gli owl:imports all'avvio. Senza queste copie li scarica dalla
+rete, e se la rete non e' raggiungibile (tipico di una rete ospedaliera) termina
+con UnloadableImportException e l'endpoint non parte.
+
+catalog-v001.xml li reindirizza sui file locali; Ontop lo riceve con l'opzione
+-x (vedi myapp/ontop_process.py).
+
+  Pollution.owl   http://ontology.eil.utoronto.ca/GCI/Environment/Pollution.owl
+                  Dahleh, Fox - University of Toronto, licenza CC BY 3.0
+                  (http://creativecommons.org/licenses/by/3.0/)
+  skos-core.rdf   http://www.w3.org/2004/02/skos/core
+                  W3C, W3C Software and Document License
+
+Copie scaricate dagli IRI indicati; SHA256SUMS ne fissa il contenuto.
+Nessuna delle due importa a sua volta altre ontologie.

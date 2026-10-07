@@ -27,6 +27,9 @@ ONTOP_CMD = ONTOP_DIR / "ontop"
 OBDA_FILE = ONTOP_DIR / "hereditary_ontology_2.obda"
 TTL_FILE = ONTOP_DIR / "hero_clinical.ttl"
 PROPS_FILE = ONTOP_DIR / "hereditary_ontology_2.properties"
+# Reindirizza gli owl:imports dell'ontologia su copie locali: senza, Ontop li
+# scarica all'avvio e senza rete non parte (vedi obda/imports/README).
+XML_CATALOG = ONTOP_DIR / "imports" / "catalog-v001.xml"
 PID_FILE = ONTOP_DIR / "ontop.pid"
 LOG_FILE = ONTOP_DIR / "ontop.log"
 
@@ -123,6 +126,13 @@ def stop(timeout=None):
     return True
 
 
+def command():
+    """Riga di comando con cui la UI avvia Ontop."""
+    return [str(ONTOP_CMD), "endpoint",
+            "-m", str(OBDA_FILE), "-t", str(TTL_FILE), "-p", str(PROPS_FILE),
+            "-x", str(XML_CATALOG)]
+
+
 def start():
     """Avvia Ontop se non e' gia' acceso. Restituisce il PID."""
     if is_running():
@@ -131,8 +141,7 @@ def start():
         log.write(f"\n===== avvio {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n")
         log.flush()
         proc = subprocess.Popen(
-            [str(ONTOP_CMD), "endpoint",
-             "-m", str(OBDA_FILE), "-t", str(TTL_FILE), "-p", str(PROPS_FILE)],
+            command(),
             cwd=str(ONTOP_DIR),
             stdout=log, stderr=subprocess.STDOUT,
             start_new_session=True,

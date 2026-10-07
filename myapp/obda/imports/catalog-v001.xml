@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Reindirizza gli owl:imports di hero_clinical.ttl su copie locali, cosi' che
+  Ontop si avvii senza accesso a Internet (opzione -x / ONTOP_XML_CATALOG_FILE).
+  Senza catalogo, in una rete con uscita filtrata Ontop termina all'avvio con
+  UnloadableImportException. Vedi README in questa directory.
+-->
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <uri name="http://ontology.eil.utoronto.ca/GCI/Environment/Pollution.owl" uri="Pollution.owl"/>
+    <uri name="http://www.w3.org/2004/02/skos/core" uri="skos-core.rdf"/>
+</catalog>
