@@ -51,16 +51,7 @@
       {% endfor %}
     </ul>
 
-    <div class="mermaid">
-      erDiagram
-      {% for table, cols in tables_columns.items %}
-        {{ table }} {
-          {% for col in cols %}
-            string {{ col }}
-          {% endfor %}
-        }
-      {% endfor %}
-    </div>
+    <pre class="mermaid">{{ er_diagram }}</pre>
      <!-- Mermaid JS -->
      <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
      <script>
