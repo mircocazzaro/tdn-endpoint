@@ -1,15 +1,49 @@
-# myproject/settings.py
+"""Impostazioni Django dell'HDN Endpoint.
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',  # Required for admin
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Required for admin
-    'django.contrib.messages.middleware.MessageMiddleware',     # Required for admin
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+Ogni impostazione e' definita una sola volta, in quest'ordine: percorsi,
+sicurezza, applicazione, dati, file statici, integrazione con Ontop, log.
+"""
 
+import os
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Percorsi
+# ---------------------------------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# CSV caricati dall'amministratore e stato locale del sito.
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+
+# ---------------------------------------------------------------------------
+# Sicurezza
+# ---------------------------------------------------------------------------
+
+# Da rendere configurabili per sito: SECRET_KEY va ruotata e letta
+# dall'ambiente, DEBUG e ALLOWED_HOSTS rientrano nei punti 15 e 2
+# dell'assessment. Valori invariati.
+SECRET_KEY = '-dzyj5_ndx2xn7#4-mvxbuxc^2g!=pelj!0l7s$-emri3cog^$'
+DEBUG = True
+ALLOWED_HOSTS = ['*']
+
+# HTTPS. Attivo con HDN_HTTPS=1 quando l'endpoint e' servito in HTTPS, anche
+# dietro un reverse proxy che termina TLS e imposta X-Forwarded-Proto.
+# Spento di default: su un endpoint servito in HTTP su rete interna, cookie di
+# sessione e CSRF marcati Secure non verrebbero mai inviati dal browser e ogni
+# form dell'interfaccia fallirebbe.
+HTTPS = os.environ.get('HDN_HTTPS') == '1'
+SESSION_COOKIE_SECURE = HTTPS
+CSRF_COOKIE_SECURE = HTTPS
+SECURE_SSL_REDIRECT = HTTPS
+SECURE_HSTS_SECONDS = 31536000 if HTTPS else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') if HTTPS else None
+
+# ---------------------------------------------------------------------------
+# Applicazione
+# ---------------------------------------------------------------------------
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -19,31 +53,25 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp.apps.MyappConfig',
-    # ...
 ]
 
-# For simplicity, store uploaded CSVs and the DuckDB file in BASE_DIR / 'uploads'
-import os
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
-
-# Ensure you have 'django.core.files.uploadhandler.TemporaryFileUploadHandler' in FILE_UPLOAD_HANDLERS
-FILE_UPLOAD_HANDLERS = [
-    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-DEBUG = True  # or whatever your configuration requires
-ALLOWED_HOSTS = ['*']
+
 ROOT_URLCONF = 'myproject.urls'
-
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # You can customize this if needed
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -57,14 +85,46 @@ TEMPLATES = [
     },
 ]
 
+# Gli upload passano da file temporanei anziche' dalla memoria: i CSV dei
+# siti possono essere grandi.
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+]
+
+# ---------------------------------------------------------------------------
+# Dati
+# ---------------------------------------------------------------------------
+
+# Database dell'applicazione Django (sessioni, admin). I dati del sito sono
+# in DuckDB, vedi myapp/datastore.py; il catalogo delle query ammesse e' codice,
+# myapp/catalog.py.
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    }
+}
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Policy di disclosure del sito (lavoro dedicato alla privacy, da rivedere).
+LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
+
+# ---------------------------------------------------------------------------
+# File statici
+# ---------------------------------------------------------------------------
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-# after STATIC_ROOT, etc.
+
+# ---------------------------------------------------------------------------
+# Ontop
+# ---------------------------------------------------------------------------
+
 ONTOP_SPARQL_ENDPOINT = 'http://localhost:8080/sparql'
-SECRET_KEY = '-dzyj5_ndx2xn7#4-mvxbuxc^2g!=pelj!0l7s$-emri3cog^$'
-LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
-# Il catalogo delle query ammesse e' codice: myapp/catalog.py.
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+# ---------------------------------------------------------------------------
+# Log
+# ---------------------------------------------------------------------------
 
 # Audit log locale delle decisioni di disclosure.
 # Verso HDN Central rifiuti, template ignoti ed errori di backend sono
@@ -98,16 +158,3 @@ LOGGING = {
         },
     },
 }
-
-import os
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
-}
-
