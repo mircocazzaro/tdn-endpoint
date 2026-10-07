@@ -1,5 +1,28 @@
+# Contesto di build dell'immagine. Esclude storia git, dati e stato locale:
+# un'immagine costruita su un nodo con dati caricati non deve portarli con se'.
+
+.git
+.gitignore
 __pycache__/
+**/__pycache__/
 *.pyc
-*.sqlite3
-*.log
 .env
+
+# Dati e stato locale del sito
+local-testdata/
+uploads/
+*.duckdb
+*.duckdb.wal
+*.sqlite3
+myapp/obda/hereditary_ontology_2.obda
+myapp/obda/*_old.obda
+myapp/obda/ontop.pid
+
+# Log e audit
+*.log
+*.log.[0-9]*
+audit.log
+
+# Artefatti di collectstatic, rigenerati nel build
+static/
+staticfiles/
