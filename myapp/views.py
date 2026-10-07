@@ -709,22 +709,31 @@ def sparql_query_view(request):
 def protected_sparql(request):
     """Interfaccia di servizio verso HDN Central.
 
-    Ogni mancato contributo - template non riconosciuto, rifiuto per livello di
-    disclosure, catalogo non disponibile, errore o timeout del backend - produce
-    la stessa risposta vuota canonica con HTTP 200. Dall'esterno questi casi
-    sono indistinguibili fra loro e dall'assenza di dati che matchano, come
-    richiesto da D3.2 sez. 2.1.1, 2.2.3 e 2.4.4. La causa reale viene
-    registrata solo nell'audit log locale.
+    Il template di una richiesta si ricava dalla query, non da cio' che il
+    chiamante dichiara: la query, tolti i valori dei parametri, deve coincidere
+    con un template del catalogo, e ogni valore deve rispettare la grammatica
+    del proprio tipo (myapp/catalog.py, match_query). Il livello di disclosure
+    e' quello del template cosi' ricavato, e a Ontop va la query ricostruita
+    dal catalogo con quei valori, mai il testo ricevuto.
+
+    Ogni mancato contributo - query fuori catalogo, rifiuto per livello di
+    disclosure, errore o timeout del backend - produce la stessa risposta
+    vuota canonica con HTTP 200. Dall'esterno questi casi sono indistinguibili
+    fra loro e dall'assenza di dati che matchano, come richiesto da D3.2
+    sez. 2.1.1, 2.2.3 e 2.4.4. La causa reale viene registrata solo
+    nell'audit log locale.
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
 
-    tmpl = request.POST.get('template', '').strip()
+    # Il campo `template` e' una dichiarazione del chiamante e non autorizza
+    # nulla; resta accettato perche' Central lo invia, e serve solo all'audit.
+    claimed_template = request.POST.get('template', '').strip()
     q = request.POST.get('query', '').strip()
     analytics_key = request.POST.get('analytics_key')
 
-    if not tmpl or not q:
-        return JsonResponse({'error': 'Must supply both template & query'}, status=400)
+    if not q:
+        return JsonResponse({'error': 'Must supply query'}, status=400)
 
     def no_contribution(reason, **details):
         """Unica uscita negativa dell'endpoint."""
@@ -736,12 +745,26 @@ def protected_sparql(request):
         )
         return JsonResponse(empty_result(q))
 
-    # 1-2) Riconoscimento del template nel catalogo locale (myapp/catalog.py)
-    template = catalog.lookup_by_template_text(tmpl)
-    if template is None:
-        h = hashlib.sha512(tmpl.encode('utf-8')).hexdigest()
-        return no_contribution('unknown-template', hash=h[:16])
+    # 1-2) Template ricavato dalla query stessa
+    try:
+        matched = catalog.match_query(q)
+    except catalog.RejectedQuery as exc:
+        return no_contribution(exc.reason, **exc.details)
+
+    template = matched.template
     allowed_level = template.level
+    executed_query = matched.query
+
+    if matched.alternatives:
+        audit.warning("ambiguous-match template=%s alternatives=%s",
+                      template.key, ",".join(matched.alternatives))
+    if claimed_template and catalog.lookup_by_template_text(claimed_template) is not template:
+        audit.warning(
+            "template-claim-mismatch derived=%s claimed=%s remote=%s",
+            template.key,
+            hashlib.sha512(claimed_template.encode('utf-8')).hexdigest()[:16],
+            request.META.get('REMOTE_ADDR', '-'),
+        )
 
     # 3) Massimo livello di disclosure configurato localmente
     try:
@@ -768,7 +791,7 @@ def protected_sparql(request):
         try:
             resp = requests.post(
                 settings.ONTOP_SPARQL_ENDPOINT,
-                data={'query': q},
+                data={'query': executed_query},
                 headers={'Accept': 'application/sparql-results+json'},
                 timeout=10
             )
@@ -825,18 +848,22 @@ def protected_sparql(request):
         except Exception as exc:
             return no_contribution('analytics-error', error=type(exc).__name__)
 
-    # 5) Forward the instantiated query to Ontop
+    # 5) A Ontop va la query ricostruita dal catalogo, non quella ricevuta
     try:
         resp = requests.post(
             settings.ONTOP_SPARQL_ENDPOINT,
-            data={'query': q},
+            data={'query': executed_query},
             headers={'Accept': 'application/sparql-results+json'},
             timeout=10
         )
         resp.raise_for_status()
-        return JsonResponse(resp.json())
+        data = resp.json()
     except Exception as exc:
         return no_contribution('backend-error', error=type(exc).__name__)
+
+    audit.info("contributed template=%s level=%s remote=%s",
+               template.key, allowed_level, request.META.get('REMOTE_ADDR', '-'))
+    return JsonResponse(data)
 
 @require_POST
 def delete_table_view(request, table_name):

@@ -541,6 +541,145 @@ verify(CATALOG)
 BY_KEY = MappingProxyType({t.key: t for t in CATALOG})
 
 
+# ---------------------------------------------------------------------------
+# Legame fra la query eseguita e il catalogo
+#
+# L'endpoint non si fida di cio' che il chiamante dichiara. Il template di una
+# richiesta si ricava dalla query stessa: la query, tolti i valori dei
+# parametri, deve coincidere con un template del catalogo. In pratica ogni
+# template diventa un'espressione regolare in cui il testo fisso deve
+# coincidere e ogni segnaposto accetta solo la grammatica chiusa del proprio
+# tipo; le ripetizioni dello stesso segnaposto devono avere lo stesso valore.
+#
+# Il confronto ignora la quantita' di spazi bianchi, perche' formattazione e
+# fine riga non cambiano il significato della query fuori dai literal. Per lo
+# stesso motivo a Ontop non va mai il testo ricevuto: va la query ricostruita
+# dal catalogo con i valori estratti, cosi' che cio' che viene eseguito sia
+# sempre testo del catalogo piu' valori validati.
+# ---------------------------------------------------------------------------
+
+MAX_QUERY_CHARS = 64 * 1024
+
+_WS_RE = re.compile(r"\s+")
+_PREFIX_DECL_RE = re.compile(
+    r"\s*PREFIX\s+([A-Za-z][A-Za-z0-9_-]*)?:\s*<([^<>\"{}|^`\\\x00-\x20]*)>",
+    re.IGNORECASE,
+)
+
+
+class RejectedQuery(ValueError):
+    """La query non corrisponde ad alcun template ammesso."""
+
+    def __init__(self, reason, **details):
+        super().__init__(reason)
+        self.reason = reason
+        self.details = details
+
+
+@dataclass(frozen=True)
+class QueryMatch:
+    template: Template
+    bindings: "MappingProxyType[str, str]"
+    query: str
+    alternatives: tuple = ()
+
+
+def _normalize(text):
+    return _WS_RE.sub(" ", text).strip()
+
+
+def _compile(template):
+    normalized = _normalize(template.sparql)
+    parts, seen, pos = [], set(), 0
+    for m in PLACEHOLDER_RE.finditer(normalized):
+        parts.append(re.escape(normalized[pos:m.start()]))
+        name = m.group(1)
+        if name in seen:
+            parts.append(f"(?P={name})")
+        else:
+            parts.append(f"(?P<{name}>{template.params[name].pattern})")
+            seen.add(name)
+        pos = m.end()
+    parts.append(re.escape(normalized[pos:]))
+    return re.compile("".join(parts))
+
+
+_COMPILED = tuple((t, _compile(t)) for t in CATALOG)
+
+
+def _split_prologue(query):
+    """Separa le dichiarazioni PREFIX iniziali dal corpo della query.
+
+    Sono ammessi solo i prefissi del prologo di Central, ciascuno con lo stesso
+    IRI: ridefinire bto: o NCIT: cambierebbe il significato della query anche a
+    parita' di testo del corpo.
+    """
+    pos = 0
+    while True:
+        m = _PREFIX_DECL_RE.match(query, pos)
+        if not m:
+            break
+        name, iri = m.group(1) or "", m.group(2)
+        if name not in PREFIXES:
+            raise RejectedQuery("prefix-not-allowed", prefix=name or ":")
+        if PREFIXES[name] != iri:
+            raise RejectedQuery("prefix-redefined", prefix=name)
+        pos = m.end()
+    return query[pos:]
+
+
+def instantiate(template, bindings):
+    """Query eseguibile: prologo di Central piu' template con i valori sostituiti.
+
+    La sostituzione avviene in un solo passaggio, quindi un valore non puo'
+    essere a sua volta interpretato come segnaposto.
+    """
+    if set(bindings) != set(template.params):
+        raise ValueError(f"{template.key}: parametri {sorted(bindings)}, "
+                         f"attesi {sorted(template.params)}")
+    for name, value in bindings.items():
+        if not template.params[name].accepts(value):
+            raise ValueError(f"{template.key}: valore non ammesso per {name}")
+    body = PLACEHOLDER_RE.sub(lambda m: bindings[m.group(1)], template.sparql)
+    return PROLOGUE + body
+
+
+def match_query(query):
+    """Template e valori da cui ``query`` e' stata istanziata.
+
+    Solleva RejectedQuery se la query non e' l'istanza di un template del
+    catalogo con valori ammessi. Se piu' template corrispondono vale il piu'
+    restrittivo, cioe' quello di livello piu' alto.
+    """
+    if len(query) > MAX_QUERY_CHARS:
+        raise RejectedQuery("query-too-large", chars=len(query))
+
+    body = _normalize(_split_prologue(query))
+
+    matches = []
+    for template, regex in _COMPILED:
+        m = regex.fullmatch(body)
+        if m:
+            matches.append((template, m.groupdict()))
+    if not matches:
+        raise RejectedQuery("no-template-match")
+
+    matches.sort(key=lambda tb: tb[0].level, reverse=True)
+    template, bindings = matches[0]
+    canonical = instantiate(template, bindings)
+
+    # Invariante: la query ricostruita e' quella ricevuta, a meno degli spazi.
+    if _normalize(canonical[len(PROLOGUE):]) != body:
+        raise RejectedQuery("canonical-mismatch", template=template.key)
+
+    return QueryMatch(
+        template=template,
+        bindings=MappingProxyType(dict(bindings)),
+        query=canonical,
+        alternatives=tuple(t.key for t, _ in matches[1:]),
+    )
+
+
 def lookup_by_template_text(text):
     """Template il cui testo, in chiaro o mascherato da Central, ha hash ``text``.
 
