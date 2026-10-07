@@ -13,41 +13,27 @@ correzione l'endpoint rispondeva:
 cioe' quattro casi distinguibili fra loro, due dei quali con stato HTTP diverso
 e con stato interno nel corpo.
 
-Questi test verificano la proprieta' che conta davvero: tutti gli esiti
+I test usano i template reali del catalogo, nella forma esatta in cui HDN
+Central li istanzia, e verificano la proprieta' che conta: tutti gli esiti
 negativi producono *la stessa* risposta, byte per byte.
 """
 
-import hashlib
 import json
-import tempfile
-from pathlib import Path
 
-import duckdb
 from django.test import Client, TestCase, override_settings
 
-ASK_TEMPLATE = """ASK WHERE {
-  ?pat a bto:Patient ;
-       bto:hasDisease {disease} .
-}"""
+from myapp import catalog, views
+from myapp.tests.helpers import LevelStores, central_request
 
-SELECT_TEMPLATE = """SELECT (COUNT(DISTINCT ?pat) AS ?nDISEASE) WHERE {
-  ?pat a bto:Patient ;
-       bto:hasDisease {disease} .
-}"""
+ALS = "NCIT:C34373"
 
-L6_TEMPLATE = """SELECT ?pat ?name ?sex WHERE {
-  ?pat a bto:Patient ;
-       bto:sex ?sex ;
-       bto:hasDisease {disease} .
-}"""
-
-
-def _hash(text):
-    return hashlib.sha512(text.encode("utf-8")).hexdigest()
-
-
-def _instantiate(template):
-    return template.replace("{disease}", "NCIT:C34373")
+# Query fuori catalogo con la stessa proiezione di q02_L1: serve a confrontare
+# un "template ignoto" con gli altri esiti negativi a parita' di forma.
+UNKNOWN_COUNT_QUERY = catalog.PROLOGUE + (
+    "SELECT (COUNT(DISTINCT ?pat) AS ?nDISEASE) WHERE {\n"
+    "  ?pat ?p ?o .\n"
+    "}"
+)
 
 
 class DisclosureIndistinguishabilityTests(TestCase):
@@ -56,64 +42,51 @@ class DisclosureIndistinguishabilityTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls._tmp = tempfile.TemporaryDirectory()
-        tmp = Path(cls._tmp.name)
-        cls.allowed_db = str(tmp / "allowed_queries.duckdb")
-        cls.level_db = str(tmp / "level.duckdb")
-
-        con = duckdb.connect(cls.allowed_db)
-        con.execute(
-            "CREATE TABLE allowed_queries (hash TEXT PRIMARY KEY, level INTEGER, query TEXT)"
-        )
-        for tmpl, lvl in [(ASK_TEMPLATE, 0), (SELECT_TEMPLATE, 1), (L6_TEMPLATE, 6)]:
-            con.execute("INSERT INTO allowed_queries VALUES (?, ?, ?)",
-                        [_hash(tmpl), lvl, tmpl])
-        con.close()
-
-        con = duckdb.connect(cls.level_db)
-        con.execute("CREATE TABLE options (key TEXT PRIMARY KEY, value TEXT)")
-        con.execute("INSERT INTO options VALUES ('level', 'L2 - Full Aggregations (AVG, ecc.)')")
-        con.close()
+        cls.levels = LevelStores()
 
     @classmethod
     def tearDownClass(cls):
-        cls._tmp.cleanup()
+        cls.levels.cleanup()
         super().tearDownClass()
 
     def setUp(self):
         self.client = Client()
         # ONTOP_SPARQL_ENDPOINT punta a una porta chiusa: le richieste che
-        # arrivano al backend falliscono, ed e' esattamente il terzo caso
-        # negativo che vogliamo rendere indistinguibile dagli altri due.
-        self.overrides = override_settings(
-            ALLOWED_DB=self.allowed_db,
-            LEVEL_DB=self.level_db,
+        # superano i controlli falliscono sul backend, che e' uno dei casi
+        # negativi da rendere indistinguibile dagli altri.
+        overrides = override_settings(
+            LEVEL_DB=self.levels[2],
             ONTOP_SPARQL_ENDPOINT="http://127.0.0.1:1/sparql",
         )
-        self.overrides.enable()
-        self.addCleanup(self.overrides.disable)
+        overrides.enable()
+        self.addCleanup(overrides.disable)
 
-    def _post(self, template, query=None):
-        return self.client.post("/sparql-protected/", {
-            "template": template,
-            "query": query if query is not None else _instantiate(template),
-        })
+    def _post(self, fields, level=None):
+        if level is None:
+            return self.client.post("/sparql-protected/", fields)
+        with override_settings(LEVEL_DB=self.levels[level]):
+            return self.client.post("/sparql-protected/", fields)
+
+    def _audit(self, fields, level=None):
+        captured = []
+        original = views.audit.info
+        views.audit.info = lambda msg, *a, **k: captured.append(msg % a if a else msg)
+        try:
+            self._post(fields, level)
+        finally:
+            views.audit.info = original
+        return " ".join(captured)
 
     # ------------------------------------------------------------------ forma
 
     def test_ask_refusal_has_canonical_ask_shape(self):
         """Un rifiuto su ASK deve avere la forma di una ASK negativa."""
-        # L6 su un endpoint configurato a L2 -> rifiutato
-        resp = self._post(L6_TEMPLATE)
-        self.assertEqual(resp.status_code, 200)
-
-        ask_refused = self.client.post("/sparql-protected/", {
-            "template": ASK_TEMPLATE,
-            "query": "ASK WHERE { ?s ?p ?o }",
+        resp = self._post({
+            "template": "ASK WHERE { ?s ?p ?o }",
+            "query": catalog.PROLOGUE + "ASK WHERE { ?s ?p ?o }",
         })
-        self.assertEqual(ask_refused.status_code, 200)
-        self.assertEqual(json.loads(ask_refused.content),
-                         {"head": {}, "boolean": False})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(json.loads(resp.content), {"head": {}, "boolean": False})
 
     def test_select_refusal_declares_the_projected_variables(self):
         """Una SELECT vuota deve dichiarare le variabili proiettate.
@@ -121,10 +94,11 @@ class DisclosureIndistinguishabilityTests(TestCase):
         Senza questo, Central distingue il rifiuto da un risultato vuoto
         semplicemente guardando se ``head.vars`` c'e' o no.
         """
-        resp = self._post(L6_TEMPLATE)
-        body = json.loads(resp.content)
-        self.assertEqual(body, {"head": {"vars": ["pat", "name", "sex"]},
-                                "results": {"bindings": []}})
+        resp = self._post(central_request("q14_L6", disease=ALS))  # L6 su L2
+        self.assertEqual(json.loads(resp.content), {
+            "head": {"vars": ["pat", "name", "aOns", "sex", "ev", "evType", "evStart"]},
+            "results": {"bindings": []},
+        })
 
     # -------------------------------------------------------- indistinguibilita'
 
@@ -133,32 +107,21 @@ class DisclosureIndistinguishabilityTests(TestCase):
 
         Tre cause diverse - template ignoto, rifiuto per livello, backend
         irraggiungibile - devono produrre la stessa risposta byte per byte e
-        lo stesso stato HTTP.
+        lo stesso stato HTTP. Le tre query hanno la stessa proiezione, cosi'
+        che l'unica differenza possibile sia la causa.
         """
-        query = _instantiate(SELECT_TEMPLATE)
-
-        # (a) template non presente in catalogo
-        unknown = self.client.post("/sparql-protected/", {
-            "template": "SELECT ?x WHERE { ?x a <urn:NonInCatalogo> }",
-            "query": query,
-        })
-
-        # (b) template in catalogo ma di livello superiore al massimo locale
-        refused = self.client.post("/sparql-protected/", {
-            "template": L6_TEMPLATE,
-            "query": query,
-        })
-
-        # (c) template ammesso, ma il backend Ontop non risponde
-        backend_down = self.client.post("/sparql-protected/", {
-            "template": SELECT_TEMPLATE,
-            "query": query,
-        })
+        q02 = central_request("q02_L1", disease=ALS)
 
         responses = {
-            "unknown-template": unknown,
-            "disclosure-refused": refused,
-            "backend-error": backend_down,
+            # (a) query e template fuori catalogo
+            "unknown-template": self._post({
+                "template": "SELECT ?x WHERE { ?x a <urn:NonInCatalogo> }",
+                "query": UNKNOWN_COUNT_QUERY,
+            }),
+            # (b) template L1 su un endpoint configurato a L0
+            "disclosure-refused": self._post(q02, level=0),
+            # (c) template ammesso a L2, ma il backend Ontop non risponde
+            "backend-error": self._post(q02, level=2),
         }
 
         for name, resp in responses.items():
@@ -169,72 +132,33 @@ class DisclosureIndistinguishabilityTests(TestCase):
                                  f"{name}: il corpo rivela stato interno")
 
         bodies = {name: resp.content for name, resp in responses.items()}
-        distinct = set(bodies.values())
-        self.assertEqual(
-            len(distinct), 1,
-            "gli esiti negativi sono distinguibili: " + repr(bodies),
-        )
+        self.assertEqual(len(set(bodies.values())), 1,
+                         "gli esiti negativi sono distinguibili: " + repr(bodies))
 
     def test_refusal_is_identical_to_a_genuinely_empty_answer(self):
         """Un rifiuto deve coincidere con cio' che Ontop risponderebbe se non
         ci fossero pazienti che matchano."""
-        query = _instantiate(SELECT_TEMPLATE)
-
-        refused = self.client.post("/sparql-protected/", {
-            "template": L6_TEMPLATE, "query": query,
-        })
-
-        # Risposta vuota genuina per la stessa query, nel formato SPARQL-JSON
-        # che l'endpoint inoltra verbatim quando Ontop risponde.
-        genuine_empty = json.dumps(
-            {"head": {"vars": ["nDISEASE"]}, "results": {"bindings": []}}
-        )
-
-        self.assertEqual(json.loads(refused.content), json.loads(genuine_empty))
+        refused = self._post(central_request("q02_L1", disease=ALS), level=0)
+        genuine_empty = {"head": {"vars": ["nDISEASE"]}, "results": {"bindings": []}}
+        self.assertEqual(json.loads(refused.content), genuine_empty)
 
     def test_level_is_enforced_in_the_right_direction(self):
         """Un template al di sotto del massimo locale non viene rifiutato dal
         controllo di livello.
 
         Serve come controllo negativo: se questo test passasse anche con il
-        livello invertito, il test precedente non proverebbe nulla.
+        livello invertito, i test precedenti non proverebbero nulla.
         """
-        from myapp import views
-
-        captured = []
-        original = views.audit.info
-        views.audit.info = lambda msg, *a, **k: captured.append(msg % a if a else msg)
-        try:
-            self.client.post("/sparql-protected/", {
-                "template": SELECT_TEMPLATE,  # L1 <= L2 locale
-                "query": _instantiate(SELECT_TEMPLATE),
-            })
-        finally:
-            views.audit.info = original
-
-        joined = " ".join(captured)
-        self.assertIn("backend-error", joined,
+        audit = self._audit(central_request("q02_L1", disease=ALS), level=2)
+        self.assertIn("backend-error", audit,
                       "L1 su endpoint L2 doveva superare il controllo di livello "
-                      f"e fallire sul backend; audit: {joined}")
-        self.assertNotIn("disclosure-refused", joined)
+                      f"e fallire sul backend; audit: {audit}")
+        self.assertNotIn("disclosure-refused", audit)
 
     def test_audit_log_records_the_real_reason(self):
         """La causa reale non va persa: deve finire nell'audit log locale."""
-        from myapp import views
-
-        captured = []
-        original = views.audit.info
-        views.audit.info = lambda msg, *a, **k: captured.append(msg % a if a else msg)
-        try:
-            self.client.post("/sparql-protected/", {
-                "template": L6_TEMPLATE,
-                "query": _instantiate(L6_TEMPLATE),
-            })
-        finally:
-            views.audit.info = original
-
-        self.assertTrue(any("disclosure-refused" in c for c in captured),
-                        f"rifiuto non registrato nell'audit log: {captured}")
-        self.assertTrue(any("requested=6" in c and "local_max=2" in c
-                            for c in captured),
-                        f"audit log senza i livelli coinvolti: {captured}")
+        audit = self._audit(central_request("q14_L6", disease=ALS), level=2)
+        self.assertIn("disclosure-refused", audit,
+                      f"rifiuto non registrato nell'audit log: {audit}")
+        self.assertIn("requested=6", audit)
+        self.assertIn("local_max=2", audit)

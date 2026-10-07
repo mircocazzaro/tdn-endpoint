@@ -63,7 +63,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 ONTOP_SPARQL_ENDPOINT = 'http://localhost:8080/sparql'
 SECRET_KEY = '***REMOVED-SECRET-KEY***'
 LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
-ALLOWED_DB = os.path.join(MEDIA_ROOT, 'allowed_queries.duckdb')
+# Il catalogo delle query ammesse e' codice: myapp/catalog.py.
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Audit log locale delle decisioni di disclosure.

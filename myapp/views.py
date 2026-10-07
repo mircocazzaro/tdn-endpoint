@@ -13,6 +13,7 @@ import pandas as pd
 import sqlparse
 from typing import List
 
+from . import catalog
 from .sparql_results import empty_result
 from .obda_mapping import (
     split_collection,
@@ -735,24 +736,12 @@ def protected_sparql(request):
         )
         return JsonResponse(empty_result(q))
 
-    # 1) Hash the template exactly
-    h = hashlib.sha512(tmpl.encode('utf-8')).hexdigest()
-
-    # 2) Lookup allowed level & stored template
-    try:
-        con = duckdb.connect(settings.ALLOWED_DB, read_only=True)
-        row = con.execute(
-            "SELECT level, query FROM allowed_queries WHERE hash = ?",
-            [h]
-        ).fetchone()
-        con.close()
-    except Exception as exc:
-        return no_contribution('catalog-unavailable', error=type(exc).__name__)
-
-    if not row:
+    # 1-2) Riconoscimento del template nel catalogo locale (myapp/catalog.py)
+    template = catalog.lookup_by_template_text(tmpl)
+    if template is None:
+        h = hashlib.sha512(tmpl.encode('utf-8')).hexdigest()
         return no_contribution('unknown-template', hash=h[:16])
-    allowed_level, stored_tmpl = row
-    stored_tmpl = stored_tmpl.strip()
+    allowed_level = template.level
 
     # 3) Massimo livello di disclosure configurato localmente
     try:
