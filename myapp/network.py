@@ -195,3 +195,50 @@ def enrollment_decision(membership, payload):
                "", Notification.WARNING)
     membership.save()
     return 200, {"status": membership.status, "public_key": identity().public_b64}
+
+
+# ---------------------------------------------------------------------------
+# Catalogo delle query
+# ---------------------------------------------------------------------------
+
+def _catalog_changes(old, new):
+    added = sorted(set(new.by_key) - set(old.by_key))
+    removed = sorted(set(old.by_key) - set(new.by_key))
+    changed = sorted(k for k in set(old.by_key) & set(new.by_key)
+                     if (old.by_key[k].sha512, old.by_key[k].level,
+                         dict(old.by_key[k].params)) !=
+                        (new.by_key[k].sha512, new.by_key[k].level,
+                         dict(new.by_key[k].params)))
+    return added, removed, changed
+
+
+def receive_catalog(membership, payload):
+    """Catalogo distribuito da Central (azione ``catalog``): installato subito."""
+    from . import catalog
+
+    doc = payload.get("catalog")
+    current = catalog.active()
+    try:
+        candidate = catalog.from_document(doc)
+    except catalog.CatalogIntegrityError as exc:
+        notify(Notification.CATALOG,
+               f"Refused a query catalog from {membership.central_name or membership.central_url}",
+               f"The catalog is not valid:\n{exc}", Notification.ERROR)
+        return 422, {"error": "invalid catalog", "problems": str(exc).splitlines()[:50]}
+
+    if candidate.version <= current.version:
+        if (candidate.version == current.version
+                and candidate.content_digest() == current.content_digest()):
+            return 200, {"status": "current", "version": current.version}
+        return 409, {"error": "stale catalog", "installed": current.version}
+
+    new, old = catalog.install(doc)
+    added, removed, changed = _catalog_changes(old, new)
+    lines = [f"{len(new.templates)} queries (was {len(old.templates)})."]
+    for label, keys in (("Added", added), ("Removed", removed), ("Changed", changed)):
+        if keys:
+            lines.append(f"{label}: {', '.join(keys)}")
+    notify(Notification.CATALOG,
+           f"New query catalog v{new.version} from {membership.central_name or membership.central_url}",
+           "\n".join(lines), Notification.INFO)
+    return 200, {"status": "installed", "version": new.version}

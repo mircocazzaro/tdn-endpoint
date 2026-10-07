@@ -72,7 +72,7 @@ class MatchQueryTests(SimpleTestCase):
         high = _synthetic("t_high", 5, text)
         compiled = ((low, catalog._compile(low)), (high, catalog._compile(high)))
 
-        with mock.patch.object(catalog, "_COMPILED", compiled):
+        with mock.patch.object(catalog.BASE, "compiled", compiled):
             match = catalog.match_query(catalog.PROLOGUE + text)
 
         self.assertEqual(match.template.key, "t_high")
