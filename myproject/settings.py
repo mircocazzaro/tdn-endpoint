@@ -99,10 +99,17 @@ FILE_UPLOAD_HANDLERS = [
 # Database dell'applicazione Django (sessioni, admin). I dati del sito sono
 # in DuckDB, vedi myapp/datastore.py; il catalogo delle query ammesse e' codice,
 # myapp/catalog.py.
+# Stato dell'endpoint nella rete HDN: chiave privata del nodo, catalogo e
+# ontologia ricevuti da Central, copie di sicurezza. Non versionato.
+HDN_STATE_DIR = os.environ.get('HDN_STATE_DIR', os.path.join(MEDIA_ROOT, 'hdn'))
+os.makedirs(HDN_STATE_DIR, exist_ok=True)
+
+# Il database (iscrizioni ai Central, notifiche) sta con il resto dello stato,
+# cosi' che un solo volume lo conservi.
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": os.path.join(HDN_STATE_DIR, "db.sqlite3"),
     }
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
@@ -110,9 +117,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Policy di disclosure del sito (lavoro dedicato alla privacy, da rivedere).
 LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
 
-# Stato dell'endpoint nella rete HDN: chiave privata del nodo, catalogo e
-# ontologia ricevuti da Central, copie di sicurezza. Non versionato.
-HDN_STATE_DIR = os.environ.get('HDN_STATE_DIR', os.path.join(MEDIA_ROOT, 'hdn'))
 
 # ---------------------------------------------------------------------------
 # File statici
