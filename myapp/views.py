@@ -6,6 +6,7 @@ import re
 import duckdb
 import hashlib
 import requests
+import tempfile
 import pandas as pd
 
 from contextlib import contextmanager
@@ -30,7 +31,6 @@ audit = logging.getLogger('hdn.audit')
 from django import forms
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -140,51 +140,50 @@ def upload_csv_view(request):
     Handles the CSV file upload, converts them into DuckDB tables, and ingests the data.
     """
     if request.method == 'POST' and request.FILES.getlist('csv_files'):
-        # Use FileSystemStorage to save the uploaded files
-        fss = FileSystemStorage(location=settings.MEDIA_ROOT)
         uploaded_files = request.FILES.getlist('csv_files')
 
+        # Nomi delle tabelle verificati prima di toccare Ontop: un nome non
+        # valido non deve costare un arresto e un riavvio dell'endpoint.
         try:
-            with ontop_paused(request):
-                try:
-                    created = []
-                    # For each uploaded CSV, store and then ingest into DuckDB
-                    with datastore.write_connection(DUCKDB_PATH) as conn:
-                        for file in uploaded_files:
+            tables = [datastore.table_name_for(f.name) for f in uploaded_files]
+        except datastore.InvalidTableName as exc:
+            messages.error(request, f"Upload rejected, no table was updated: {exc}")
+            return redirect('home')
+        duplicated = sorted({t for t in tables if tables.count(t) > 1})
+        if duplicated:
+            messages.error(request, "Upload rejected, two files would produce the same "
+                                    "table: " + ", ".join(duplicated))
+            return redirect('home')
 
-                            filename = fss.save(file.name, file)  # saves file to MEDIA_ROOT
-                            saved_file_path = os.path.join(settings.MEDIA_ROOT, filename)
+        # I file sono scritti fuori da MEDIA_ROOT, che e' servito via /media/,
+        # e rimossi in ogni caso, anche se l'ingestione fallisce.
+        with tempfile.TemporaryDirectory(prefix='hdn-upload-') as staging:
+            files = []
+            for i, (f, table) in enumerate(zip(uploaded_files, tables)):
+                target = os.path.join(staging, f"{i}.csv")
+                with open(target, 'wb') as out:
+                    for chunk in f.chunks():
+                        out.write(chunk)
+                files.append((table, target, f.name))
 
-                            # Ingest CSV into DuckDB (table name can be derived from filename)
-                            table_name = os.path.splitext(filename)[0].replace('-', '_').replace(' ', '_')
-
-                            # CREATE or APPEND to a table
-                            # If we assume new table each time, do CREATE. If it exists, we can overwrite or append.
-                            create_sql = f"""
-                                CREATE TABLE IF NOT EXISTS {table_name} AS
-                                SELECT * FROM read_csv_auto('{saved_file_path}');
-                            """
-                            conn.execute(create_sql)
-                            created.append(table_name)
-
-                            # Alternatively, if table already exists, you might want to append:
-                            # insert_sql = f"""
-                            #     INSERT INTO {table_name}
-                            #     SELECT * FROM read_csv_auto('{saved_file_path}');
-                            # """
-                            # conn.execute(insert_sql)
-                            os.remove(os.path.join(settings.MEDIA_ROOT, filename))
-                except datastore.DataStoreBusy:
-                    messages.error(request, BUSY_MESSAGE + " No table was updated.")
-                except Exception as exc:
-                    messages.error(request,
-                                   f"CSV ingestion failed ({type(exc).__name__}): {exc}")
-                else:
-                    messages.success(request, "Tables updated: " + ", ".join(created) + ".")
-        except OntopDidNotStop:
-            messages.error(request,
-                           "Ontop did not stop in time: no table was updated.")
-        return redirect('home')  # after success, go back to home or wherever
+            try:
+                with ontop_paused(request):
+                    try:
+                        results = datastore.ingest_csvs(DUCKDB_PATH, files)
+                    except datastore.DataStoreBusy:
+                        messages.error(request, BUSY_MESSAGE + " No table was updated.")
+                    except datastore.IngestError as exc:
+                        messages.error(request, f"CSV ingestion failed, no table was updated: {exc}")
+                    except Exception as exc:
+                        messages.error(request, "CSV ingestion failed, no table was updated "
+                                                f"({type(exc).__name__}): {exc}")
+                    else:
+                        messages.success(request, "Tables updated: " + ", ".join(
+                            f"{t} ({action})" for t, action in results) + ".")
+            except OntopDidNotStop:
+                messages.error(request,
+                               "Ontop did not stop in time: no table was updated.")
+        return redirect('home')
     return render(request, 'myapp/home.html', {'error': 'No files uploaded'})
 
 def query_view(request):
