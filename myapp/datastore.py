@@ -149,3 +149,73 @@ def failing_sources(path, sources, timeout=None):
             except duckdb.Error as exc:
                 failing[mid] = f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
     return failing
+
+
+# ---------------------------------------------------------------------------
+# Caricamento di CSV
+# ---------------------------------------------------------------------------
+
+MAX_TABLE_NAME = 120
+
+
+class InvalidTableName(ValueError):
+    pass
+
+
+class IngestError(RuntimeError):
+    """Un file non e' stato caricato; nessuna tabella e' stata modificata."""
+
+    def __init__(self, filename, cause):
+        super().__init__(f"{filename}: {type(cause).__name__}: {str(cause).splitlines()[0]}")
+        self.filename = filename
+
+
+def table_name_for(filename):
+    """Nome della tabella per un file caricato: il nome del file senza estensione.
+
+    Spazi, trattini e maiuscole restano: "PATIENTS GENERAL DATA.csv" produce
+    la tabella "PATIENTS GENERAL DATA" che il template di mapping si aspetta.
+    """
+    # splitext tratta ".csv" come file nascosto senza estensione e
+    # restituirebbe ".csv" come nome: si toglie l'ultima estensione a mano.
+    base = os.path.basename(filename)
+    stem = (base.rsplit(".", 1)[0] if "." in base else base).strip()
+    if not stem:
+        raise InvalidTableName(f"{filename!r}: il nome del file e' vuoto")
+    if len(stem) > MAX_TABLE_NAME:
+        raise InvalidTableName(f"{filename!r}: nome piu' lungo di {MAX_TABLE_NAME} caratteri")
+    if any(ord(c) < 32 for c in stem):
+        raise InvalidTableName(f"{filename!r}: il nome contiene caratteri di controllo")
+    return stem
+
+
+def quote_identifier(name):
+    return '"' + name.replace('"', '""') + '"'
+
+
+def ingest_csvs(path, files, timeout=None):
+    """Carica i CSV ``files`` [(tabella, percorso, nome originale)] in una transazione.
+
+    Una tabella esistente con lo stesso nome viene sostituita. Se un file
+    fallisce non viene modificata nessuna tabella. Restituisce
+    [(tabella, 'created' | 'replaced')].
+    """
+    results = []
+    with write_connection(path, timeout=timeout) as con:
+        existing = {r[0].lower() for r in con.execute("SHOW TABLES").fetchall()}
+        con.execute("BEGIN TRANSACTION")
+        try:
+            for table, csv_path, original in files:
+                try:
+                    con.execute(
+                        f"CREATE OR REPLACE TABLE {quote_identifier(table)} AS "
+                        "SELECT * FROM read_csv_auto(?)", [str(csv_path)])
+                except duckdb.Error as exc:
+                    raise IngestError(original, exc) from exc
+                results.append((table, "replaced" if table.lower() in existing else "created"))
+                existing.add(table.lower())
+            con.execute("COMMIT")
+        except BaseException:
+            con.execute("ROLLBACK")
+            raise
+    return results
