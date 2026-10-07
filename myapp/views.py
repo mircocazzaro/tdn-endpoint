@@ -13,7 +13,9 @@ import pandas as pd
 import sqlparse
 from typing import List
 
-from . import catalog
+from contextlib import contextmanager
+
+from . import catalog, datastore, ontop_process
 from .sparql_results import empty_result
 from .obda_mapping import (
     split_collection,
@@ -70,22 +72,58 @@ def extract_columns_from_sql(sql: str, available_cols: list[str]) -> list[str]:
     return sorted(found)
 
 
+BUSY_MESSAGE = ("The data database is held by another process and could not be "
+                "read. If Ontop was started outside this interface, stop it from "
+                "Ontop Monitor and retry.")
+
+
+class OntopDidNotStop(RuntimeError):
+    """Ontop non si e' arrestato entro il tempo previsto."""
+
+
+@contextmanager
+def ontop_paused(request):
+    """Arresta Ontop, se acceso, per la durata di una scrittura sui dati, poi lo riavvia.
+
+    Ontop tiene il database aperto in sola lettura, e DuckDB non ammette una
+    scrittura mentre un altro processo lo ha aperto. Ogni passo e' notificato
+    all'amministratore con un toast. Il riavvio avviene anche se la scrittura
+    fallisce, cosi' che l'endpoint federato non resti spento per un errore di
+    caricamento.
+    """
+    was_running = ontop_process.is_running()
+    if was_running:
+        if not ontop_process.stop():
+            raise OntopDidNotStop()
+        messages.info(request, "Ontop was running: stopped to update the tables.")
+    try:
+        yield was_running
+    finally:
+        if was_running:
+            try:
+                ontop_process.start()
+                ready = ontop_process.wait_ready()
+            except Exception as exc:
+                audit.warning("ontop-restart-failed error=%s", type(exc).__name__)
+                ready = False
+            if ready:
+                messages.success(request,
+                                 "Ontop restarted: the SPARQL endpoint is available again.")
+            else:
+                messages.error(request,
+                               "Ontop did not restart. Check Ontop Monitor and its log: "
+                               "the endpoint is not answering HDN Central.")
+
+
 def home_view(request):
     """
     Home page: upload form + live DuckDB schema.
     """
-    # Try to read the DuckDB file
-    tables_columns = {}
-    if os.path.exists(DUCKDB_PATH):
-        with duckdb.connect(DUCKDB_PATH) as conn:
-            # get all tables
-            tables = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
-            # for each table, get its columns
-            for t in tables:
-                info = conn.execute(f"PRAGMA table_info('{t}')").fetchall()
-                # PRAGMA table_info returns rows like (cid, name, type, …)
-                cols = [col[1] for col in info]
-                tables_columns[t] = cols
+    try:
+        tables_columns = datastore.tables_columns(DUCKDB_PATH)
+    except datastore.DataStoreBusy:
+        tables_columns = {}
+        messages.warning(request, BUSY_MESSAGE)
 
     # Render, passing schema
     return render(request, 'myapp/home.html', {
@@ -100,33 +138,47 @@ def upload_csv_view(request):
         # Use FileSystemStorage to save the uploaded files
         fss = FileSystemStorage(location=settings.MEDIA_ROOT)
         uploaded_files = request.FILES.getlist('csv_files')
-        
-        # For each uploaded CSV, store and then ingest into DuckDB
-        with duckdb.connect(DUCKDB_PATH) as conn:
-            for file in uploaded_files:
-                
-                filename = fss.save(file.name, file)  # saves file to MEDIA_ROOT
-                saved_file_path = os.path.join(settings.MEDIA_ROOT, filename)
 
-                # Ingest CSV into DuckDB (table name can be derived from filename)
-                table_name = os.path.splitext(filename)[0].replace('-', '_').replace(' ', '_')
-                
-                # CREATE or APPEND to a table
-                # If we assume new table each time, do CREATE. If it exists, we can overwrite or append.
-                create_sql = f"""
-                    CREATE TABLE IF NOT EXISTS {table_name} AS
-                    SELECT * FROM read_csv_auto('{saved_file_path}');
-                """
-                conn.execute(create_sql)
-                
-                # Alternatively, if table already exists, you might want to append:
-                # insert_sql = f"""
-                #     INSERT INTO {table_name}
-                #     SELECT * FROM read_csv_auto('{saved_file_path}');
-                # """
-                # conn.execute(insert_sql)
-                os.remove(os.path.join(settings.MEDIA_ROOT, filename))
-        messages.success(request, "✅ CSV files correctly uploaded and ingested")
+        try:
+            with ontop_paused(request):
+                try:
+                    created = []
+                    # For each uploaded CSV, store and then ingest into DuckDB
+                    with datastore.write_connection(DUCKDB_PATH) as conn:
+                        for file in uploaded_files:
+
+                            filename = fss.save(file.name, file)  # saves file to MEDIA_ROOT
+                            saved_file_path = os.path.join(settings.MEDIA_ROOT, filename)
+
+                            # Ingest CSV into DuckDB (table name can be derived from filename)
+                            table_name = os.path.splitext(filename)[0].replace('-', '_').replace(' ', '_')
+
+                            # CREATE or APPEND to a table
+                            # If we assume new table each time, do CREATE. If it exists, we can overwrite or append.
+                            create_sql = f"""
+                                CREATE TABLE IF NOT EXISTS {table_name} AS
+                                SELECT * FROM read_csv_auto('{saved_file_path}');
+                            """
+                            conn.execute(create_sql)
+                            created.append(table_name)
+
+                            # Alternatively, if table already exists, you might want to append:
+                            # insert_sql = f"""
+                            #     INSERT INTO {table_name}
+                            #     SELECT * FROM read_csv_auto('{saved_file_path}');
+                            # """
+                            # conn.execute(insert_sql)
+                            os.remove(os.path.join(settings.MEDIA_ROOT, filename))
+                except datastore.DataStoreBusy:
+                    messages.error(request, BUSY_MESSAGE + " No table was updated.")
+                except Exception as exc:
+                    messages.error(request,
+                                   f"CSV ingestion failed ({type(exc).__name__}): {exc}")
+                else:
+                    messages.success(request, "Tables updated: " + ", ".join(created) + ".")
+        except OntopDidNotStop:
+            messages.error(request,
+                           "Ontop did not stop in time: no table was updated.")
         return redirect('home')  # after success, go back to home or wherever
     return render(request, 'myapp/home.html', {'error': 'No files uploaded'})
 
@@ -142,11 +194,15 @@ def query_view(request):
     if request.method == 'POST':
         query_text = request.POST.get('sql_query', '')
         try:
-            with duckdb.connect(DUCKDB_PATH) as conn:
+            with datastore.read_connection(DUCKDB_PATH) as conn:
+                if conn is None:
+                    raise RuntimeError("no data has been uploaded yet")
                 df: pd.DataFrame = conn.execute(query_text).df()
                 # grab column names
             columns = df.columns.tolist()
             results = df.values.tolist()
+        except datastore.DataStoreBusy:
+            error = BUSY_MESSAGE
         except Exception as e:
             error = str(e)
 
@@ -264,13 +320,12 @@ def field_mapping_view(request):
             'placeholders':  vars_,
         })
 
-    # 2) Introspect DuckDB for tables and columns
-    with duckdb.connect(DUCKDB_PATH) as conn:
-        tables = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
-        tables_columns = {
-            t: [c[1] for c in conn.execute(f"PRAGMA table_info('{t}')").fetchall()]
-            for t in tables
-        }
+    # 2) Introspect DuckDB for tables and columns (sola lettura: convive con Ontop)
+    try:
+        tables_columns = datastore.tables_columns(DUCKDB_PATH)
+    except datastore.DataStoreBusy:
+        tables_columns = {}
+        messages.warning(request, BUSY_MESSAGE)
     
     # 2b) NOW that tables_columns exists, pull out any filter‐only cols
     for blk in mapping_blocks:
@@ -541,64 +596,29 @@ def get_columns(request):
     table = request.GET.get('table')
     if not table:
         return JsonResponse({'columns': []})
-    # Introspect DuckDB
-    conn = duckdb.connect(DUCKDB_PATH)
-    rows = conn.execute(f"PRAGMA table_info('{table}')").fetchall()
-    conn.close()
+    # Introspect DuckDB (sola lettura: convive con Ontop)
+    try:
+        with datastore.read_connection(DUCKDB_PATH) as conn:
+            if conn is None:
+                return JsonResponse({'columns': []})
+            rows = conn.execute(f"PRAGMA table_info('{table}')").fetchall()
+    except datastore.DataStoreBusy:
+        return JsonResponse({'columns': [], 'error': BUSY_MESSAGE}, status=503)
     cols = [r[1] for r in rows]  # r = (cid, name, type, ...)
     return JsonResponse({'columns': cols})
 
 def ontop_control_view(request):
-    # check if it’s running
-    status = 'stopped'
-    pid = None
-    if os.path.exists(PID_FILE):
-        try:
-            pid = int(open(PID_FILE).read())
-            os.kill(pid, 0)
-            status = 'running'
-        except Exception:
-            status = 'stopped'
-
+    # Avvio e arresto passano da myapp/ontop_process.py, la stessa logica usata
+    # quando una scrittura sui dati deve fermare e riavviare Ontop.
     if request.method == 'POST':
         action = request.POST.get('action')
-        # STOP
-        if action == 'stop' and status == 'running':
-            os.kill(pid, signal.SIGTERM)
-            os.remove(PID_FILE)
-            status = 'stopped'
-        # START
-        if action == 'start' and status != 'running':
-            with open(LOG_FILE, 'w') as log:
-                proc = subprocess.Popen(
-                    [ONTOP_CMD, 'endpoint', '-m', OBDA_FILE, '-t', TTL_FILE, '-p', PROPS_FILE],
-                    cwd=ONTOP_DIR,
-                    stdout=log, stderr=subprocess.STDOUT
-                )
-            with open(PID_FILE, 'w') as f:
-                f.write(str(proc.pid))
-            # give it a second to spin up
-            time.sleep(1)
-            status = 'running'
-        # RESTART
-        if action == 'restart':
-            if status == 'running':
-                os.kill(pid, signal.SIGTERM)
-                os.remove(PID_FILE)
-            proc = subprocess.Popen(
-                [ONTOP_CMD, 'endpoint',
-                 '-m', OBDA_FILE,
-                 '-t', TTL_FILE,
-                 '-p', PROPS_FILE],
-                cwd=ONTOP_DIR
-            )
-            with open(PID_FILE, 'w') as f:
-                f.write(str(proc.pid))
-            time.sleep(1)
-            status = 'running'
-
+        if action in ('stop', 'restart'):
+            ontop_process.stop()
+        if action in ('start', 'restart'):
+            ontop_process.start()
         return redirect('ontop_control')
 
+    status = 'running' if ontop_process.is_running() else 'stopped'
     return render(request, 'myapp/ontop_control.html', {
         'status': status
     })
@@ -606,14 +626,7 @@ def ontop_control_view(request):
 @require_GET
 def ontop_status(request):
     """Return JSON {status: 'running'|'stopped'}."""
-    status = 'stopped'
-    if os.path.exists(PID_FILE):
-        try:
-            pid = int(open(PID_FILE).read())
-            os.kill(pid, 0)
-            status = 'running'
-        except Exception:
-            status = 'stopped'
+    status = 'running' if ontop_process.is_running() else 'stopped'
     return JsonResponse({'status': status})
 
 @require_GET
@@ -870,12 +883,30 @@ def delete_table_view(request, table_name):
     """
     Deletes the given table from the DuckDB database if it exists.
     """
-    # Basic safety: only drop known tables
-    with duckdb.connect(DUCKDB_PATH) as conn:
-        existing = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
-        if table_name in existing:
-            conn.execute(f'DROP TABLE "{table_name}"')
-            messages.success(request, f"✅ Table `{table_name}` deleted.")
-        else:
-            messages.error(request, f"Table `{table_name}` does not exist.")
+    # Verifica preliminare in sola lettura: una tabella inesistente non deve
+    # costare un arresto e un riavvio di Ontop.
+    try:
+        known = datastore.tables_columns(DUCKDB_PATH)
+    except datastore.DataStoreBusy:
+        messages.error(request, BUSY_MESSAGE)
+        return redirect('home')
+    if table_name not in known:
+        messages.error(request, f"Table `{table_name}` does not exist.")
+        return redirect('home')
+
+    try:
+        with ontop_paused(request):
+            try:
+                # Basic safety: only drop known tables
+                with datastore.write_connection(DUCKDB_PATH) as conn:
+                    existing = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
+                    if table_name in existing:
+                        conn.execute(f'DROP TABLE "{table_name}"')
+                        messages.success(request, f"Tables updated: `{table_name}` deleted.")
+                    else:
+                        messages.error(request, f"Table `{table_name}` does not exist.")
+            except datastore.DataStoreBusy:
+                messages.error(request, BUSY_MESSAGE + " No table was deleted.")
+    except OntopDidNotStop:
+        messages.error(request, "Ontop did not stop in time: no table was deleted.")
     return redirect('home')

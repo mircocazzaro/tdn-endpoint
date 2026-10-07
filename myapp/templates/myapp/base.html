@@ -127,20 +127,37 @@
 
     <!-- Main Content -->
     <div class="main-content">
-       {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
       {% block content %}{% endblock %}
+    </div>
+
+    <!-- Notifiche: un toast per messaggio, colorato secondo il livello.
+         Gli errori restano visibili finche' non vengono chiusi. -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="margin-top:56px; z-index:2100;">
+      {% for message in messages %}
+        <div
+          class="toast hdn-toast align-items-center border-0 {% if message.level_tag == 'error' %}text-bg-danger{% elif message.level_tag == 'warning' %}text-bg-warning{% elif message.level_tag == 'info' %}text-bg-info{% else %}text-bg-success{% endif %}"
+          role="{% if message.level_tag == 'error' or message.level_tag == 'warning' %}alert{% else %}status{% endif %}"
+          aria-live="{% if message.level_tag == 'error' or message.level_tag == 'warning' %}assertive{% else %}polite{% endif %}"
+          aria-atomic="true"
+          data-bs-autohide="{% if message.level_tag == 'error' or message.level_tag == 'warning' %}false{% else %}true{% endif %}"
+          data-bs-delay="8000"
+        >
+          <div class="d-flex">
+            <div class="toast-body">{{ message }}</div>
+            <button type="button" class="btn-close me-2 m-auto{% if message.level_tag != 'warning' %} btn-close-white{% endif %}" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      {% endfor %}
     </div>
 
     <!-- Bootstrap JS -->
     <script 
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script>
+      document.querySelectorAll('.hdn-toast').forEach(function (el) {
+        bootstrap.Toast.getOrCreateInstance(el).show();
+      });
     </script>
 </body>
 </html>
