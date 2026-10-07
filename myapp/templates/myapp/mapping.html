@@ -75,7 +75,7 @@
 </div>
 
 {{ mapping_connections|json_script:"saved-mappings" }}
-<script src="https://cdn.jsdelivr.net/npm/jsplumb@2.15.6/dist/js/jsplumb.min.js"></script>
+<script src="{% static 'myapp/vendor/jsplumb-2.15.6/jsplumb.min.js' %}"></script>
 <script src="{% static 'myapp/mapping_state.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
