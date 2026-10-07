@@ -357,10 +357,15 @@ def field_mapping_view(request):
         
         extra = extract_columns_from_sql(blk['source_tpl'], cols)
 
-        # 3) append any you didn’t already pull from the target
+        # 3) append any you didn’t already pull from the target. Il confronto
+        #    ignora le maiuscole: una colonna 'SEX' del sito e' lo stesso
+        #    identificatore del segnaposto 'sex' del template, non un nuovo
+        #    segnaposto da associare.
+        known = {p.lower() for p in blk['placeholders']}
         for col in extra:
-            if col not in blk['placeholders']:
+            if col.lower() not in known:
                 blk['placeholders'].append(col)
+                known.add(col.lower())
 
     # 3) Parse existing OBDA mappings, extract var→column pairs
     existing = {}
@@ -444,13 +449,16 @@ def field_mapping_view(request):
                 continue
             
     
-    # 4) Build positional mapping_connections for the UI (handle missing .obda gracefully)
+    # 4) Associazioni salvate per la UI: {mid: {'table': t, 'pairs': {var: col}}}.
+    #    Nomi, mai indici, e legate alla tabella a cui si riferiscono: la UI le
+    #    ridisegna solo se e' selezionata quella tabella.
     mapping_connections = {}
     for blk in mapping_blocks:
         mid = blk['mappingId']
-        cols = tables_columns.get(existing.get(mid, {}).get('table'), [])
+        saved_table = existing.get(mid, {}).get('table')
+        cols = tables_columns.get(saved_table, [])
         saved_vars = existing_placeholders.get(mid, [])
-        pos_map = {}
+        pairs = {}
 
         for idx, var in enumerate(blk['placeholders']):
             # if no existing mapping, info.get('placeholders') is {} → no KeyError
@@ -480,9 +488,10 @@ def field_mapping_view(request):
                             break
 
             if match_idx is not None:
-                pos_map[idx] = match_idx
+                pairs[var] = cols[match_idx]
 
-        mapping_connections[mid] = pos_map
+        mapping_connections[mid] = {'table': saved_table if pairs else None,
+                                    'pairs': pairs}
 
     # 5) Prepare initial data for the Django form
     initial = {}
@@ -535,16 +544,21 @@ def field_mapping_view(request):
                 problems.append(f"{mid}: associazioni non leggibili, riprova")
                 continue
 
+            # Il campo contiene {segnaposto: colonna}, per nome. Prima la UI vi
+            # mescolava coppie per indice e per nome, e il server provava a
+            # interpretare ogni chiave come indice: due voci per lo stesso
+            # segnaposto, con l'ordine del dict a decidere quale vinceva.
             cols = tables_columns.get(tbl, [])
             conn_map = {}
-            for key, val in parsed.items():
-                try:
-                    ph_idx  = int(key)
-                    col_idx = int(val)
-                    var_name = blk['placeholders'][ph_idx]
-                    col_name = cols[col_idx]
-                except Exception:
-                    var_name, col_name = key, val
+            if not isinstance(parsed, dict):
+                parsed = {}
+            for var_name, col_name in parsed.items():
+                if var_name not in blk['placeholders'] or col_name not in cols:
+                    problems.append(
+                        f"{mid}: associazione {var_name!r} -> {col_name!r} non valida "
+                        f"per la tabella {tbl!r}"
+                    )
+                    continue
                 conn_map[var_name] = col_name
 
             # Sostituzione simultanea e consapevole dei token, sia nel target
@@ -618,20 +632,23 @@ def field_mapping_view(request):
     mapping_ui = []
     for blk in mapping_blocks:
         mid = blk['mappingId']
+        saved = mapping_connections.get(mid, {'table': None, 'pairs': {}})
         mapping_ui.append({
             'mappingId':       mid,
             'mappingLabel':    blk['mappingLabel'],
             'table_field':     form[f"{mid}__table"],
-            'placeholder_fields': [form[f"{mid}__{v}"] for v in blk['placeholders']],
-            'connections_json': json.dumps(mapping_connections.get(mid, {})),
+            'placeholders':    blk['placeholders'],
+            # Valore iniziale del campo nascosto: le coppie salvate, solo se la
+            # tabella selezionata all'apertura e' quella a cui si riferiscono.
+            'connections_json': json.dumps(
+                saved['pairs'] if form[f"{mid}__table"].value() == saved['table'] else {}),
         })
 
-    # 9) Render the template, passing global JSON for reload and per-block JSON for POST
+    # 9) Render the template; le associazioni salvate arrivano via json_script
     return render(request, 'myapp/mapping.html', {
-        'mapping_ui':               mapping_ui,
-        'tables_columns_json':      json.dumps(tables_columns),
-        'mapping_connections_json': json.dumps(mapping_connections),
-        'form':                     form,
+        'mapping_ui':          mapping_ui,
+        'mapping_connections': mapping_connections,
+        'form':                form,
     })
 
 
