@@ -242,3 +242,98 @@ def receive_catalog(membership, payload):
            f"New query catalog v{new.version} from {membership.central_name or membership.central_url}",
            "\n".join(lines), Notification.INFO)
     return 200, {"status": "installed", "version": new.version}
+
+
+# ---------------------------------------------------------------------------
+# Ontologia
+# ---------------------------------------------------------------------------
+
+def _restart_ontop_after_ontology(version, has_mapping):
+    """Riavvia Ontop con la nuova ontologia, se era acceso. Esito nel centro notifiche."""
+    from django.db import connection
+    from . import ontop_process
+    try:
+        if not ontop_process.is_running():
+            return
+        if not ontop_process.stop():
+            notify(Notification.ONTOLOGY, f"Ontop did not stop for ontology v{version}",
+                   "Ontop is still answering with the previous ontology. Restart it from "
+                   "Ontop Monitor.", Notification.ERROR)
+            return
+        if not has_mapping:
+            notify(Notification.ONTOLOGY, "Ontop stopped: no valid mapping left",
+                   f"Ontology v{version} invalidated every mapping. Map the data again "
+                   "from \"Map Data to HERO\", then start Ontop.", Notification.WARNING)
+            return
+        try:
+            ontop_process.start()
+            ready = ontop_process.wait_ready()
+        except Exception as exc:
+            audit.warning("ontop-restart-failed error=%s", type(exc).__name__)
+            ready = False
+        if ready:
+            notify(Notification.ONTOLOGY, f"Ontop restarted with ontology v{version}",
+                   "", Notification.SUCCESS)
+        else:
+            notify(Notification.ONTOLOGY, f"Ontop did not restart with ontology v{version}",
+                   "Check Ontop Monitor and its log: the endpoint is not answering "
+                   "HDN Central. The remaining mappings may not be compatible with the "
+                   "new ontology.", Notification.ERROR)
+    finally:
+        # Thread dedicato: chiude la propria connessione al database.
+        import threading
+        if threading.current_thread() is not threading.main_thread():
+            connection.close()
+
+
+def receive_ontology(membership, payload):
+    """Ontologia distribuita da Central (azione ``ontology``): installata subito."""
+    import hashlib
+    import threading
+    from . import ontology, ontop_process
+
+    who = membership.central_name or membership.central_url
+    version, ttl, digest = payload.get("version"), payload.get("ttl"), payload.get("sha256")
+    if not isinstance(ttl, str) or not isinstance(digest, str):
+        return 400, {"error": "version, ttl and sha256 are required"}
+    data = ttl.encode("utf-8")
+    if hashlib.sha256(data).hexdigest() != digest:
+        return 400, {"error": "sha256 does not match the ontology"}
+    current = ontology.installed()
+    if version == current["version"] and digest == current["sha256"]:
+        return 200, {"status": "current", "version": version}
+    try:
+        outcome = ontology.install(data, version)
+    except ontology.StaleOntology as exc:
+        return 409, {"error": "stale ontology", "installed": exc.installed}
+    except ontology.InvalidOntology as exc:
+        notify(Notification.ONTOLOGY, f"Refused ontology v{version} from {who}",
+               str(exc), Notification.ERROR)
+        return 422, {"error": str(exc)}
+
+    lines = []
+    if outcome["mapping"] == "none":
+        lines.append("No mapping was defined yet.")
+    elif outcome["mapping"] == "unchanged":
+        lines.append(f"All {len(outcome['kept'])} mappings are still valid.")
+    else:
+        lines.append(f"{len(outcome['dropped'])} mappings removed because they use terms the "
+                     f"new ontology no longer declares; {len(outcome['kept'])} kept.")
+        for mid, terms in outcome["dropped"][:50]:
+            lines.append(f"- {mid}: {', '.join(terms[:5])}")
+        lines.append("The previous mapping is saved in mapping-backups.")
+        if outcome["mapping"] == "emptied":
+            lines.append("No mapping is left: map the data again from \"Map Data to HERO\".")
+    running = ontop_process.is_running()
+    lines.append("Ontop is being restarted with the new ontology." if running
+                 else "Ontop is not running: the new ontology will be used when it starts.")
+    notify(Notification.ONTOLOGY, f"New ontology v{version} from {who}", "\n".join(lines),
+           Notification.WARNING if outcome["dropped"] else Notification.INFO)
+
+    # Il riavvio di Ontop puo' durare minuti: Central riceve subito l'esito
+    # dell'installazione, quello del riavvio arriva nel centro notifiche.
+    if running:
+        threading.Thread(target=_restart_ontop_after_ontology,
+                         args=(version, outcome["mapping"] != "emptied"), daemon=True).start()
+    return 200, {"status": "installed", "version": version, "mapping": outcome["mapping"],
+                 "kept": len(outcome["kept"]), "dropped": len(outcome["dropped"])}

@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django import forms
 
-from . import catalog, network
+from . import catalog, network, ontology
 from .models import CentralMembership, Notification
 
 
@@ -27,6 +27,12 @@ def hdn_enrollment(request):
 def hdn_catalog(request):
     """Central distribuisce un catalogo delle query aggiornato."""
     return network.handle_signed(request, "catalog", network.receive_catalog)
+
+
+@csrf_exempt
+def hdn_ontology(request):
+    """Central distribuisce una nuova ontologia."""
+    return network.handle_signed(request, "ontology", network.receive_ontology)
 
 
 # --- pagine dell'amministratore -------------------------------------------
@@ -63,6 +69,7 @@ def network_view(request):
         "memberships": CentralMembership.objects.all(),
         "identity": network.identity(),
         "catalog_version": catalog.active().version,
+        "ontology_version": ontology.installed()["version"],
     })
 
 

@@ -29,4 +29,5 @@ urlpatterns = [
     # Rete HDN: protocolli firmati invocati da Central (anche sulla porta 8084)
     path('hdn/enrollment/', network_views.hdn_enrollment, name='hdn_enrollment'),
     path('hdn/catalog/', network_views.hdn_catalog, name='hdn_catalog'),
+    path('hdn/ontology/', network_views.hdn_ontology, name='hdn_ontology'),
 ]

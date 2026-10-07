@@ -133,8 +133,10 @@ def stop(timeout=None):
 
 def command():
     """Riga di comando con cui la UI avvia Ontop."""
+    # L'ontologia ricevuta da Central, se c'e', sostituisce quella del repository.
+    from .ontology import active_path
     return [str(ONTOP_CMD), "endpoint",
-            "-m", str(OBDA_FILE), "-t", str(TTL_FILE), "-p", str(PROPS_FILE),
+            "-m", str(OBDA_FILE), "-t", str(active_path()), "-p", str(PROPS_FILE),
             "-x", str(XML_CATALOG)]
 
 
