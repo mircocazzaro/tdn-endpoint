@@ -4,14 +4,9 @@ import json
 import logging
 import re
 import duckdb
-import subprocess
-import signal
-import time
 import hashlib
 import requests
 import pandas as pd
-import sqlparse
-from typing import List
 
 from contextlib import contextmanager
 
@@ -41,24 +36,17 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils.text import slugify
 
-# Path to the DuckDB file we’re going to create/use
-DUCKDB_PATH = os.path.join(settings.MEDIA_ROOT, 'mydatabase.duckdb')
-TEMPLATE_OBDA = os.path.join(
-     os.path.dirname(__file__),  # this file’s directory → myapp/
-     'mappings',
-     'template.obda'
-)
-ONTOP_DIR   = os.path.join(os.path.dirname(__file__), 'obda')
-ONTOP_CMD   = os.path.join(ONTOP_DIR, 'ontop')  # or "./ontop" if that’s the executable
-OBDA_FILE   = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
-TTL_FILE    = os.path.join(ONTOP_DIR, 'hero_clinical.ttl')
-PROPS_FILE  = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
-PID_FILE    = os.path.join(ONTOP_DIR, 'ontop.pid')
-LOG_FILE    = os.path.join(ONTOP_DIR, 'ontop.log')
-
-def normalize_ws(s: str) -> str:
-    # replace any run of whitespace (spaces, newlines, tabs, CRs) with a single space
-    return re.sub(r'\s+', ' ', s).strip()
+# Percorsi. Una sola definizione: prima erano dichiarati due volte in questo
+# modulo, e DUCKDB_PATH valeva uploads/mydatabase.duckdb o
+# myapp/obda/mydatabase.duckdb a seconda della riga in cui lo si leggeva. I
+# percorsi di Ontop vengono da ontop_process, che li usa per avviarlo.
+ONTOP_DIR     = str(ontop_process.ONTOP_DIR)
+OBDA_FILE     = str(ontop_process.OBDA_FILE)
+LOG_FILE      = str(ontop_process.LOG_FILE)
+# Il database dei dati e' quello che Ontop apre: jdbc.url in
+# hereditary_ontology_2.properties e' relativo a ONTOP_DIR.
+DUCKDB_PATH   = os.path.join(ONTOP_DIR, 'mydatabase.duckdb')
+TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
 
 def extract_columns_from_sql(sql: str, available_cols: list[str]) -> list[str]:
     """
@@ -276,16 +264,6 @@ class FieldMappingForm(forms.Form):
                 for var in blk['placeholders']:
                     self.fields[f"{mid}__{var}"].choices = opts
 
-
-# Constants for paths
-DUCKDB_PATH   = os.path.join(ONTOP_DIR, 'mydatabase.duckdb')
-TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
-ONTOP_DIR     = os.path.join(os.path.dirname(__file__), 'obda')
-OBDA_FILE     = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.obda')
-TTL_FILE      = os.path.join(ONTOP_DIR, 'hero_clinical.ttl')
-PROPS_FILE    = os.path.join(ONTOP_DIR, 'hereditary_ontology_2.properties')
-PID_FILE      = os.path.join(ONTOP_DIR, 'ontop.pid')
-LOG_FILE      = os.path.join(ONTOP_DIR, 'ontop.log')
 
 
 def field_mapping_view(request):
