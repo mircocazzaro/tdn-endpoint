@@ -23,8 +23,9 @@ local-testdata/
 myapp/obda/hereditary_ontology_2.obda
 myapp/obda/*_old.obda
 
-# Stato di runtime, log e audit
+# Stato di runtime, log e audit (compresi i file ruotati, es. ontop.log.1)
 *.log
+*.log.[0-9]*
 nohup.out
 myapp/obda/ontop.pid
 audit.log

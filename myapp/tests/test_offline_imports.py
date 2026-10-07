@@ -18,19 +18,13 @@ import hashlib
 import os
 import re
 import shutil
-import subprocess
-import tempfile
-import time
-import urllib.parse
-import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from unittest import mock
 
-import duckdb
 from django.test import SimpleTestCase
 
 from myapp import ontop_process
+from myapp.tests.ontop_live import LiveOntop
 
 IMPORTS = Path(ontop_process.ONTOP_DIR) / "imports"
 NS = "{urn:oasis:names:tc:entity:xmlns:xml:catalog}"
@@ -83,60 +77,20 @@ class OfflineImportsTests(SimpleTestCase):
 class OntopStartsOfflineTests(SimpleTestCase):
     """Avvio reale di Ontop con la rete irraggiungibile per la JVM."""
 
-    PORT = 18084
-
-    def _start(self, with_catalog):
-        work = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, work, True)
-        db = work / "d.duckdb"
-        con = duckdb.connect(str(db))
-        con.execute('CREATE TABLE "T" (p VARCHAR)')
-        con.execute("INSERT INTO \"T\" VALUES ('x')")
-        con.close()
-        (work / "m.obda").write_text(
-            "[PrefixDeclaration]\nbto:\t\thttps://w3id.org/brainteaser/ontology/schema/\n\n"
-            "[MappingDeclaration] @collection [[\nmappingId\tM1\n"
-            "target\t\tbto:Patient{p} a bto:Patient . \nsource\t\tSELECT p FROM \"T\"\n]]\n")
-        (work / "p.properties").write_text(
-            f"jdbc.url = jdbc:duckdb:{db}\njdbc.driver = org.duckdb.DuckDBDriver\n"
-            "jdbc.property.duckdb.read_only = true\n")
-        cmd = [str(ontop_process.ONTOP_CMD), "endpoint", "-m", str(work / "m.obda"),
-               "-t", str(ontop_process.TTL_FILE), "-p", str(work / "p.properties"),
-               "--port", str(self.PORT)]
-        if with_catalog:
-            cmd += ["-x", str(ontop_process.XML_CATALOG)]
-        env = dict(os.environ, ONTOP_JAVA_ARGS=(
-            "-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=9 "
-            "-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=9"))
-        log = open(work / "o.log", "w")
-        proc = subprocess.Popen(cmd, cwd=ontop_process.ONTOP_DIR, stdout=log,
-                                stderr=subprocess.STDOUT, env=env)
-        self.addCleanup(log.close)
-        self.addCleanup(lambda: (proc.terminate(), proc.wait(30)))
-        query = urllib.parse.urlencode({"query": (
-            "PREFIX bto: <https://w3id.org/brainteaser/ontology/schema/> "
-            "SELECT (COUNT(?s) AS ?n) WHERE { ?s a bto:Patient }")}).encode()
-        deadline = time.time() + 150
-        while time.time() < deadline and proc.poll() is None:
-            try:
-                req = urllib.request.Request(f"http://127.0.0.1:{self.PORT}/sparql", data=query,
-                                             headers={"Accept": "application/sparql-results+json"})
-                with urllib.request.urlopen(req, timeout=5) as r:
-                    return r.status == 200, (work / "o.log")
-            except Exception:
-                time.sleep(1)
-        return False, (work / "o.log")
+    OFFLINE_ENV = dict(os.environ, ONTOP_JAVA_ARGS=(
+        "-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=9 "
+        "-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=9"))
 
     def setUp(self):
         if os.environ.get("HDN_ONTOP_LIVE") != "1" or not shutil.which("java"):
             self.skipTest("avvio reale di Ontop non richiesto (HDN_ONTOP_LIVE=1)")
 
     def test_starts_offline_with_the_catalog(self):
-        up, _ = self._start(with_catalog=True)
-        self.assertTrue(up, "Ontop non si e' avviato senza rete nonostante il catalogo")
+        with LiveOntop(["-x", str(ontop_process.XML_CATALOG)], env=self.OFFLINE_ENV) as o:
+            self.assertTrue(o.ready, "Ontop non si e' avviato senza rete nonostante il catalogo")
 
     def test_does_not_start_offline_without_the_catalog(self):
         """Controllo negativo: la simulazione di rete assente e' efficace."""
-        up, log = self._start(with_catalog=False)
-        self.assertFalse(up)
-        self.assertIn("UnloadableImport", log.read_text())
+        with LiveOntop([], env=self.OFFLINE_ENV, deadline=60) as o:
+            self.assertFalse(o.ready)
+            self.assertIn("UnloadableImport", o.console.read_text())
