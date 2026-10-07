@@ -11,6 +11,7 @@ import pandas as pd
 from contextlib import contextmanager
 
 from . import catalog, datastore, ontop_process
+from .logtail import tail_lines
 from .schema_diagram import er_diagram
 from .sparql_results import empty_result
 from .obda_mapping import (
@@ -675,26 +676,24 @@ def ontop_status(request):
 
 @require_GET
 def ontop_logs(request):
+    """Ultime righe del log di Ontop come JSON {lines: [...]}.
+
+    Se l'ultimo avvio e' fallito prima che partisse logback (es. Java assente o
+    errore della JVM), il motivo e' solo nella console della JVM: in quel caso,
+    cioe' quando la console e' piu' recente del log, le sue ultime righe
+    vengono aggiunte in coda.
     """
-    Return the last N lines of ontop.log as JSON {lines: [...]}
-    """
-    N = 200
-    if not os.path.exists(LOG_FILE):
-        return JsonResponse({'lines': []})
-    with open(LOG_FILE, 'rb') as f:
-        # tail N lines efficiently
-        f.seek(0, os.SEEK_END)
-        end = f.tell()
-        size = 1024
-        data = b''
-        while end > 0 and len(data.splitlines()) <= N:
-            step = min(size, end)
-            end -= step
-            f.seek(end)
-            data = f.read(step) + data
-        lines = data.splitlines()[-N:]
-    # decode safely
-    lines = [ln.decode('utf-8', 'ignore') for ln in lines]
+    lines = tail_lines(LOG_FILE, 200)
+    console = str(ontop_process.CONSOLE_FILE)
+    try:
+        console_newer = (not os.path.exists(LOG_FILE)
+                         or os.path.getmtime(console) > os.path.getmtime(LOG_FILE))
+    except OSError:
+        console_newer = False
+    if console_newer:
+        extra = tail_lines(console, 50)
+        if extra:
+            lines += ['----- JVM console (ontop.console.log) -----'] + extra
     return JsonResponse({'lines': lines})
 
 
