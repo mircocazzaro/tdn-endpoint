@@ -1,0 +1,42 @@
+<!--
+  Configurazione di log di Ontop quando e' avviato dall'interfaccia
+  dell'endpoint (ONTOP_LOG_CONFIG in myapp/ontop_process.py).
+
+  - Il log va in ${HDN_ONTOP_LOG} (myapp/obda/ontop.log), letto da Ontop Monitor,
+    e ruota a 10 MB tenendo 5 file precedenti: un endpoint resta acceso per
+    mesi e prima il file cresceva senza limite.
+  - Gli avvisi "Axiom does not belong to OWL 2 QL" e le ridichiarazioni di
+    entita' della chiusura di import sono ~190 righe identiche a ogni avvio,
+    dovute a HERO e non correggibili dal sito: per vederle avviare con
+    HDN_ONTOP_OWL_LOG_LEVEL=WARN.
+  - Il livello generale segue ONTOP_LOG_LEVEL (default info), come nella
+    configurazione distribuita con Ontop.
+-->
+<configuration>
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${HDN_ONTOP_LOG}</file>
+		<append>true</append>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>${HDN_ONTOP_LOG}.%i</fileNamePattern>
+			<minIndex>1</minIndex>
+			<maxIndex>5</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>${HDN_ONTOP_LOG_MAX_SIZE:-10MB}</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} |-%-5level in %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="it.unibz.inf.ontop.spec.ontology.owlapi.OWLAPITranslatorOWL2QL"
+	        level="${HDN_ONTOP_OWL_LOG_LEVEL:-ERROR}"/>
+	<logger name="uk.ac.manchester.cs.owl.owlapi.OWLOntologyManagerImpl"
+	        level="${HDN_ONTOP_OWL_LOG_LEVEL:-ERROR}"/>
+	<logger name="org.semanticweb.owlapi.rdf.rdfxml.parser.TripleHandlers"
+	        level="${HDN_ONTOP_OWL_LOG_LEVEL:-WARN}"/>
+
+	<root level="${ONTOP_LOG_LEVEL:-INFO}">
+		<appender-ref ref="FILE"/>
+	</root>
+</configuration>

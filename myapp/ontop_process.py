@@ -31,7 +31,12 @@ PROPS_FILE = ONTOP_DIR / "hereditary_ontology_2.properties"
 # scarica all'avvio e senza rete non parte (vedi obda/imports/README).
 XML_CATALOG = ONTOP_DIR / "imports" / "catalog-v001.xml"
 PID_FILE = ONTOP_DIR / "ontop.pid"
+# Log di Ontop, scritto da logback con rotazione (obda/log/logback-endpoint.xml).
 LOG_FILE = ONTOP_DIR / "ontop.log"
+LOG_CONFIG = ONTOP_DIR / "log" / "logback-endpoint.xml"
+# stdout/stderr della JVM: banner ed errori precedenti all'avvio di logback
+# (es. Java assente). Riscritto a ogni avvio, quindi di dimensione limitata.
+CONSOLE_FILE = ONTOP_DIR / "ontop.console.log"
 
 STOP_TIMEOUT = 30.0
 START_TIMEOUT = 180.0
@@ -133,18 +138,27 @@ def command():
             "-x", str(XML_CATALOG)]
 
 
+def environment():
+    """Ambiente di Ontop: configurazione di log con rotazione sul file della UI."""
+    env = dict(os.environ)
+    env["ONTOP_LOG_CONFIG"] = str(LOG_CONFIG)
+    env["HDN_ONTOP_LOG"] = str(LOG_FILE)
+    return env
+
+
 def start():
     """Avvia Ontop se non e' gia' acceso. Restituisce il PID."""
     if is_running():
         return read_pid()
-    with open(LOG_FILE, "a") as log:
-        log.write(f"\n===== avvio {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n")
-        log.flush()
+    with open(CONSOLE_FILE, "w") as console:
+        console.write(f"===== avvio {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n")
+        console.flush()
         proc = subprocess.Popen(
             command(),
             cwd=str(ONTOP_DIR),
-            stdout=log, stderr=subprocess.STDOUT,
+            stdout=console, stderr=subprocess.STDOUT,
             start_new_session=True,
+            env=environment(),
         )
     _children[proc.pid] = proc
     Path(PID_FILE).write_text(str(proc.pid))
