@@ -25,7 +25,12 @@ Central (l'``id`` dei suoi form) e il livello, come nelle figure di D3.2.
 """
 
 import hashlib
+import json
+import logging
+import os
 import re
+import threading
+from pathlib import Path
 from dataclasses import dataclass
 from types import MappingProxyType
 
@@ -604,31 +609,205 @@ def _compile(template):
     return re.compile("".join(parts))
 
 
-_COMPILED = tuple((t, _compile(t)) for t in CATALOG)
+# ---------------------------------------------------------------------------
+# Catalogo attivo
+#
+# Il catalogo qui sopra e' la versione 0, quella con cui l'endpoint parte.
+# HDN Central puo' distribuirne uno aggiornato (protocollo "catalog", vedi
+# myapp/network_views.py): il documento ricevuto, gia' verificato, viene
+# salvato in HDN_STATE_DIR/catalog.json e da quel momento e' il catalogo
+# attivo per tutti i processi, che ne rileggono il file quando cambia.
+#
+# Un catalogo ricevuto puo' cambiare testi, livelli e descrizioni, ma non le
+# grammatiche: ogni parametro si riferisce per nome a uno dei tipi definiti
+# in questo modulo (PARAM_TYPES), cosi' che un parametro resti sempre un
+# valore chiuso e non possa aggiungere SPARQL alla query.
+# ---------------------------------------------------------------------------
+
+PARAM_TYPES = MappingProxyType({t.name: t for t in (DISEASE, AGE, SEX, ALSFRS_QUESTION)})
+
+_PROLOGUE_LINE_RE = re.compile(
+    r"PREFIX[ \t]+([A-Za-z][A-Za-z0-9_-]*):[ \t]*<([^<>\"{}|^`\\\x00-\x20]+)>")
+_KEY_RE = re.compile(r"[A-Za-z0-9_-]{1,40}")
+MAX_TEMPLATES = 500
 
 
-def _split_prologue(query):
+class Catalog:
+    """Insieme immutabile di template con il prologo rispetto a cui sono scritti."""
+
+    def __init__(self, version, templates, prologue=PROLOGUE):
+        templates = tuple(templates)
+        verify(templates)
+        self.version = version
+        self.templates = templates
+        self.prologue = prologue
+        self.prefixes = MappingProxyType(dict(
+            re.findall(r"PREFIX\s+([A-Za-z][A-Za-z0-9_-]*):\s*<([^>]*)>", prologue)))
+        self.by_key = MappingProxyType({t.key: t for t in templates})
+        self.compiled = tuple((t, _compile(t)) for t in templates)
+        self.by_any_hash = MappingProxyType(
+            {**{t.wire_sha512: t for t in templates}, **{t.sha512: t for t in templates}})
+
+    def to_document(self):
+        names = {v: k for k, v in PARAM_TYPES.items()}
+        return {
+            "version": self.version,
+            "prologue": self.prologue,
+            "templates": [
+                {"key": t.key, "level": t.level, "description": t.description,
+                 "params": {p: names[ty] for p, ty in t.params.items()},
+                 "sha512": t.sha512, "sparql": t.sparql}
+                for t in self.templates
+            ],
+        }
+
+    def content_digest(self):
+        """Hash del contenuto, versione esclusa."""
+        doc = self.to_document()
+        doc.pop("version")
+        return hashlib.sha256(json.dumps(doc, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def from_document(doc):
+    """Catalog da un documento JSON; CatalogIntegrityError con l'elenco dei problemi."""
+    problems = []
+    if not isinstance(doc, dict):
+        raise CatalogIntegrityError("il catalogo deve essere un oggetto JSON")
+    version = doc.get("version")
+    if not isinstance(version, int) or isinstance(version, bool) or version < 1:
+        problems.append("version deve essere un intero >= 1")
+    prologue = doc.get("prologue", PROLOGUE)
+    if not isinstance(prologue, str) or not all(
+            _PROLOGUE_LINE_RE.fullmatch(line) for line in prologue.split("\n") if line):
+        problems.append("prologue deve contenere solo righe PREFIX nome: <iri>")
+    raw = doc.get("templates")
+    if not isinstance(raw, list) or not raw or len(raw) > MAX_TEMPLATES:
+        problems.append(f"templates deve essere una lista di 1..{MAX_TEMPLATES} elementi")
+        raw = []
+    templates = []
+    for i, t in enumerate(raw):
+        where = f"templates[{i}]"
+        if not isinstance(t, dict):
+            problems.append(f"{where}: non e' un oggetto")
+            continue
+        key, level, sparql = t.get("key"), t.get("level"), t.get("sparql")
+        desc, params = t.get("description", ""), t.get("params", {})
+        if not isinstance(key, str) or not _KEY_RE.fullmatch(key):
+            problems.append(f"{where}: key non valida")
+            continue
+        if not isinstance(level, int) or isinstance(level, bool):
+            problems.append(f"{key}: level deve essere un intero")
+            continue
+        if not isinstance(sparql, str) or not sparql.strip() or len(sparql) > MAX_QUERY_CHARS:
+            problems.append(f"{key}: sparql mancante o troppo lungo")
+            continue
+        if not isinstance(desc, str) or not isinstance(params, dict):
+            problems.append(f"{key}: description o params non validi")
+            continue
+        unknown = sorted(str(ty) for ty in params.values() if ty not in PARAM_TYPES)
+        if unknown:
+            problems.append(f"{key}: tipi di parametro sconosciuti {unknown}; "
+                            f"ammessi {sorted(PARAM_TYPES)}")
+            continue
+        digest = hashlib.sha512(sparql.encode("utf-8")).hexdigest()
+        if t.get("sha512", digest) != digest:
+            problems.append(f"{key}: sha512 non corrisponde al testo")
+            continue
+        templates.append(Template(
+            key=key, level=level, description=desc[:500],
+            params={str(p): PARAM_TYPES[ty] for p, ty in params.items()},
+            sha512=digest, sparql=sparql))
+    if problems:
+        raise CatalogIntegrityError("\n".join(problems))
+    return Catalog(version, templates, prologue)  # verify() sugli invarianti restanti
+
+
+BASE = Catalog(0, CATALOG, PROLOGUE)
+_COMPILED = BASE.compiled
+_BY_ANY_HASH = BASE.by_any_hash
+
+_active = {"stamp": None, "catalog": BASE}
+_active_lock = threading.Lock()
+
+
+def _active_path():
+    from django.conf import settings
+    return Path(settings.HDN_STATE_DIR) / "catalog.json"
+
+
+def active():
+    """Catalogo in vigore: l'ultimo ricevuto da Central, o BASE."""
+    path = _active_path()
+    try:
+        st = path.stat()
+        stamp = (str(path), st.st_mtime_ns, st.st_size)
+    except FileNotFoundError:
+        return BASE
+    with _active_lock:
+        if _active["stamp"] != stamp:
+            try:
+                cat = from_document(json.loads(path.read_text(encoding="utf-8")))
+            except (OSError, ValueError, CatalogIntegrityError) as exc:
+                # Il file e' scritto solo dopo la verifica: se non si carica e'
+                # danneggiato. Si torna al catalogo di base e lo si registra.
+                logging.getLogger("hdn.audit").error(
+                    "catalog-file-unreadable path=%s error=%s: using base catalog",
+                    path, type(exc).__name__)
+                cat = BASE
+            _active.update(stamp=stamp, catalog=cat)
+        return _active["catalog"]
+
+
+class StaleCatalog(ValueError):
+    def __init__(self, installed):
+        super().__init__(f"versione installata {installed}")
+        self.installed = installed
+
+
+def install(doc):
+    """Verifica ``doc`` e lo rende il catalogo attivo; restituisce (nuovo, precedente).
+
+    La versione deve essere maggiore di quella attiva (StaleCatalog altrimenti):
+    un catalogo vecchio, anche se firmato, non puo' tornare in vigore.
+    """
+    new = from_document(doc)
+    current = active()
+    if new.version <= current.version:
+        raise StaleCatalog(current.version)
+    path = _active_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".json.tmp")
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(new.to_document(), fh, ensure_ascii=False, indent=1)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+    return new, current
+
+
+def _split_prologue(query, prefixes=None):
     """Separa le dichiarazioni PREFIX iniziali dal corpo della query.
 
     Sono ammessi solo i prefissi del prologo di Central, ciascuno con lo stesso
     IRI: ridefinire bto: o NCIT: cambierebbe il significato della query anche a
     parita' di testo del corpo.
     """
+    prefixes = PREFIXES if prefixes is None else prefixes
     pos = 0
     while True:
         m = _PREFIX_DECL_RE.match(query, pos)
         if not m:
             break
         name, iri = m.group(1) or "", m.group(2)
-        if name not in PREFIXES:
+        if name not in prefixes:
             raise RejectedQuery("prefix-not-allowed", prefix=name or ":")
-        if PREFIXES[name] != iri:
+        if prefixes[name] != iri:
             raise RejectedQuery("prefix-redefined", prefix=name)
         pos = m.end()
     return query[pos:]
 
 
-def instantiate(template, bindings):
+def instantiate(template, bindings, prologue=PROLOGUE):
     """Query eseguibile: prologo di Central piu' template con i valori sostituiti.
 
     La sostituzione avviene in un solo passaggio, quindi un valore non puo'
@@ -641,23 +820,24 @@ def instantiate(template, bindings):
         if not template.params[name].accepts(value):
             raise ValueError(f"{template.key}: valore non ammesso per {name}")
     body = PLACEHOLDER_RE.sub(lambda m: bindings[m.group(1)], template.sparql)
-    return PROLOGUE + body
+    return prologue + body
 
 
-def match_query(query):
+def match_query(query, catalog=None):
     """Template e valori da cui ``query`` e' stata istanziata.
 
     Solleva RejectedQuery se la query non e' l'istanza di un template del
-    catalogo con valori ammessi. Se piu' template corrispondono vale il piu'
-    restrittivo, cioe' quello di livello piu' alto.
+    catalogo attivo con valori ammessi. Se piu' template corrispondono vale il
+    piu' restrittivo, cioe' quello di livello piu' alto.
     """
+    cat = catalog or active()
     if len(query) > MAX_QUERY_CHARS:
         raise RejectedQuery("query-too-large", chars=len(query))
 
-    body = _normalize(_split_prologue(query))
+    body = _normalize(_split_prologue(query, cat.prefixes))
 
     matches = []
-    for template, regex in _COMPILED:
+    for template, regex in cat.compiled:
         m = regex.fullmatch(body)
         if m:
             matches.append((template, m.groupdict()))
@@ -666,10 +846,10 @@ def match_query(query):
 
     matches.sort(key=lambda tb: tb[0].level, reverse=True)
     template, bindings = matches[0]
-    canonical = instantiate(template, bindings)
+    canonical = instantiate(template, bindings, cat.prologue)
 
     # Invariante: la query ricostruita e' quella ricevuta, a meno degli spazi.
-    if _normalize(canonical[len(PROLOGUE):]) != body:
+    if _normalize(canonical[len(cat.prologue):]) != body:
         raise RejectedQuery("canonical-mismatch", template=template.key)
 
     return QueryMatch(
@@ -680,16 +860,11 @@ def match_query(query):
     )
 
 
-def lookup_by_template_text(text):
+def lookup_by_template_text(text, catalog=None):
     """Template il cui testo, in chiaro o mascherato da Central, ha hash ``text``.
 
     E' il riconoscimento che l'endpoint ha sempre fatto sul campo ``template``
     della richiesta. Restituisce None se il testo non e' nel catalogo.
     """
     h = hashlib.sha512(text.encode("utf-8")).hexdigest()
-    return _BY_ANY_HASH.get(h)
-
-
-_BY_ANY_HASH = MappingProxyType(
-    {**{t.wire_sha512: t for t in CATALOG}, **{t.sha512: t for t in CATALOG}}
-)
+    return (catalog or active()).by_any_hash.get(h)

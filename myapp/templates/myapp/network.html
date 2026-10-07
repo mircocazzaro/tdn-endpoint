@@ -5,6 +5,9 @@
   This endpoint's key: <code>{{ identity.fingerprint }}</code>.
   The Central manager sees this fingerprint when approving the application.
 </p>
+<p class="small" id="installed-versions">
+  Query catalog: {% if catalog_version %}v{{ catalog_version }} (received from Central){% else %}built-in (v0){% endif %}
+</p>
 
 <div class="card mb-4">
   <div class="card-body">
