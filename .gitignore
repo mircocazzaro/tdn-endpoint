@@ -37,14 +37,9 @@ audit.log
 
 # ---------------------------------------------------------------------------
 # uploads/ ospita i CSV caricati dall'amministratore locale, che sono dati.
-# Restano versionati solo il catalogo delle query ammesse e la sua esportazione
-# testuale, che per D3.2 sez. 2.2.3 sono condivisi con HDN Central.
-# Nota: level.duckdb contiene la policy di disclosure del singolo sito e
-# dovrebbe diventare configurazione locale con default L0; allowed_queries.duckdb
-# dovrebbe tornare a essere un artefatto derivato dal catalogo in
-# myapp/management/queries_catalog.md. Entrambi sono oggetto dei punti 8 e 9.
+# Il catalogo delle query ammesse e' codice (myapp/catalog.py) e non passa piu'
+# da qui. Resta versionato solo level.duckdb, la policy di disclosure del
+# singolo sito, che dovrebbe diventare configurazione locale con default L0.
 # ---------------------------------------------------------------------------
 uploads/*
-!uploads/allowed_queries.duckdb
 !uploads/level.duckdb
-!uploads/allquery.csv
