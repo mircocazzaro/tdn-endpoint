@@ -746,16 +746,22 @@ def sparql_query_view(request):
             resp = requests.post(
                 settings.ONTOP_SPARQL_ENDPOINT,
                 data={'query': sparql_query},
-                headers={'Accept': 'application/sparql-results+json'}
+                headers={'Accept': 'application/sparql-results+json'},
+                timeout=60,
             )
             resp.raise_for_status()
             data = resp.json()
-            vars_ = data['head']['vars']
-            rows = [
-                [binding.get(v, {}).get('value', '') for v in vars_]
-                for binding in data['results']['bindings']
-            ]
-            sparql_results = {'vars': vars_, 'rows': rows}
+            if 'boolean' in data:
+                # Risposta di una ASK: nessuna variabile, un solo booleano.
+                sparql_results = {'vars': ['boolean'],
+                                  'rows': [[str(data['boolean']).lower()]]}
+            else:
+                vars_ = data.get('head', {}).get('vars', [])
+                rows = [
+                    [binding.get(v, {}).get('value', '') for v in vars_]
+                    for binding in data.get('results', {}).get('bindings', [])
+                ]
+                sparql_results = {'vars': vars_, 'rows': rows}
         except Exception as e:
             sparql_error = str(e)
 
