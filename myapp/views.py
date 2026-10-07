@@ -14,6 +14,12 @@ import sqlparse
 from typing import List
 
 from .sparql_results import empty_result
+from .obda_mapping import (
+    split_collection,
+    substitute_identifiers,
+    substitute_target_placeholders,
+    unresolved_placeholders,
+)
 
 # Audit log locale. Registra le decisioni di disclosure che verso l'esterno
 # restano invisibili: senza questo, un endpoint che rifiuta tutto e' indistin-
@@ -211,9 +217,9 @@ LOG_FILE      = os.path.join(ONTOP_DIR, 'ontop.log')
 
 def field_mapping_view(request):
     # 1) Parse the OBDA template into header + mapping blocks
-    tpl = open(TEMPLATE_OBDA, 'r', encoding='utf-8').read()
-    header, rest = tpl.split('[MappingDeclaration]', 1)
-    inner = re.search(r'@collection\s*\[\[(.*)\]\]', rest, re.S).group(1)
+    with open(TEMPLATE_OBDA, 'r', encoding='utf-8') as f:
+        tpl = f.read()
+    header, inner = split_collection(tpl)
 
     mapping_blocks = []
     for raw in re.split(r'\n\s*\nmappingId', inner.strip()):
@@ -289,10 +295,21 @@ def field_mapping_view(request):
     # 3) Parse existing OBDA mappings, extract var→column pairs
     existing = {}
     existing_placeholders = {}
+    inner_existing = ''
     if os.path.exists(OBDA_FILE):
-        raw_obda = open(OBDA_FILE, 'r', encoding='utf-8').read()
-        _, body = raw_obda.split('[MappingDeclaration]', 1)
-        inner_existing = re.search(r'@collection\s*\[\[(.*)\]\]', body, re.S).group(1)
+        with open(OBDA_FILE, 'r', encoding='utf-8') as f:
+            raw_obda = f.read()
+        try:
+            _, inner_existing = split_collection(raw_obda)
+        except ValueError as exc:
+            # Un file attivo illeggibile non deve impedire di aprire la pagina:
+            # altrimenti l'unico strumento per ripararlo diventa inaccessibile.
+            messages.error(
+                request,
+                f"Mapping attivo non interpretabile ({exc}); la pagina mostra "
+                f"il template senza le associazioni salvate."
+            )
+    if inner_existing:
         for chunk in re.split(r'\n\s*\nmappingId', inner_existing.strip()):
             blk_txt = chunk.strip()
             if not blk_txt:
@@ -420,6 +437,7 @@ def field_mapping_view(request):
     if request.method == 'POST' and form.is_valid():
         data = form.cleaned_data
         lines = [header.strip(), '\n[MappingDeclaration] @collection [[']
+        problems = []
 
         for blk in mapping_blocks:
             mid = blk['mappingId']
@@ -430,8 +448,16 @@ def field_mapping_view(request):
                 continue
             src = re.sub(r'FROM\s+"[^"]+"', f'FROM "{tbl}"', src)
 
-            raw = request.POST.get(f"connections_{mid}", '{}')
-            parsed = json.loads(raw)
+            raw = request.POST.get(f"connections_{mid}", '') or '{}'
+            try:
+                parsed = json.loads(raw)
+            except ValueError:
+                # Il campo nascosto viene azzerato dalla UI durante il
+                # caricamento delle colonne: un submit in quella finestra
+                # inviava una stringa vuota e faceva fallire la richiesta.
+                problems.append(f"{mid}: associazioni non leggibili, riprova")
+                continue
+
             cols = tables_columns.get(tbl, [])
             conn_map = {}
             for key, val in parsed.items():
@@ -444,14 +470,22 @@ def field_mapping_view(request):
                     var_name, col_name = key, val
                 conn_map[var_name] = col_name
 
-            # substitute each placeholder *everywhere* in target & source
-            for var, col in conn_map.items():
-                # replace every occurrence of {var} (including the braces)
-                tgt_inst = tgt_inst.replace(f'{{{var}}}', '{' + col + '}')
-                src = src.replace(var + ',' , col + ',')
-                src = src.replace(var + ' ' , col + ' ')
-                src = src.replace(var + ')' , col + ')')
-                src = src.replace('(' + var, '(' + col)
+            # Sostituzione simultanea e consapevole dei token, sia nel target
+            # sia nel source: ogni identificatore viene riscritto una volta
+            # sola e mai dentro un literal o un nome di tabella quotato.
+            tgt_inst = substitute_target_placeholders(tgt_inst, conn_map)
+            src = substitute_identifiers(src, conn_map)
+
+            # Nessun blocco viene scritto se il target proietta un segnaposto
+            # che il source non produce: e' la condizione che permetteva al
+            # file di divergere in silenzio dallo schema locale.
+            missing = unresolved_placeholders(tgt_inst, src)
+            if missing:
+                problems.append(
+                    f"{mid}: i segnaposto {missing} non corrispondono a nessuna "
+                    f"colonna prodotta dalla query sorgente"
+                )
+                continue
 
             lines += [
                 f"mappingId\t{mid}",
@@ -461,13 +495,21 @@ def field_mapping_view(request):
                 ""
             ]
 
-        lines.append(']]')
-        os.makedirs(ONTOP_DIR, exist_ok=True)
-        with open(OBDA_FILE, 'w', encoding='utf-8') as f:
-            f.write("\n".join(lines))
+        if problems:
+            for problem in problems:
+                messages.error(request, problem)
+            messages.error(
+                request,
+                "Mapping non salvato: il file attivo e' stato lasciato invariato."
+            )
+        else:
+            lines.append(']]')
+            os.makedirs(ONTOP_DIR, exist_ok=True)
+            with open(OBDA_FILE, 'w', encoding='utf-8') as f:
+                f.write("\n".join(lines))
 
-        messages.success(request, "✅ Mappings definition stored!")
-        return redirect('map_fields')
+            messages.success(request, "✅ Mappings definition stored!")
+            return redirect('map_fields')
 
     # 8) Build mapping_ui with per-block JSON for the hidden inputs
     mapping_ui = []
