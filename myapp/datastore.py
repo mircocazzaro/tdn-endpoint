@@ -108,3 +108,36 @@ def tables_columns(path, timeout=None):
             t: [c[1] for c in con.execute(f"PRAGMA table_info('{t}')").fetchall()]
             for t in tables
         }
+
+
+def column_types(path, timeout=None):
+    """Tipi delle colonne: {tabella: {colonna: tipo DuckDB}}, vuoto se il file non esiste."""
+    with read_connection(path, timeout=timeout) as con:
+        if con is None:
+            return {}
+        tables = [r[0] for r in con.execute("SHOW TABLES").fetchall()]
+        return {
+            t: {c[1]: c[2] for c in con.execute(f"PRAGMA table_info('{t}')").fetchall()}
+            for t in tables
+        }
+
+
+def failing_sources(path, sources, timeout=None):
+    """Esegue ogni source sul database del sito, in sola lettura.
+
+    ``sources`` e' una lista di coppie (id, sql). Restituisce {id: errore} per
+    i source che non eseguono. L'esecuzione e' completa (count su tutto il
+    risultato) perche' alcuni errori, come le conversioni di tipo, emergono
+    solo leggendo le righe e non in fase di binding.
+    """
+    failing = {}
+    with read_connection(path, timeout=timeout) as con:
+        if con is None:
+            return {mid: "il database del sito non contiene ancora tabelle"
+                    for mid, _ in sources}
+        for mid, sql in sources:
+            try:
+                con.execute(f"SELECT count(*) FROM ({sql}) AS hdn_check").fetchone()
+            except duckdb.Error as exc:
+                failing[mid] = f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
+    return failing

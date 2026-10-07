@@ -210,20 +210,11 @@ def _split_top_level(text, separator=","):
     return [p.strip() for p in parts if p.strip()]
 
 
-def projected_columns(sql):
-    """Nomi delle colonne che una query SELECT produce, piu' un flag wildcard.
-
-    Restituisce ``(nomi_minuscoli, ha_wildcard)``. Considera solo la proiezione
-    di primo livello: una colonna citata soltanto in una WHERE o in una
-    sottoquery non viene prodotta dalla query e non puo' soddisfare un
-    segnaposto del target.
-
-    Con ``SELECT *`` l'insieme non e' determinabile offline e il flag wildcard
-    segnala che non si possono trarre conclusioni.
-    """
+def _projection_span(sql):
+    """(inizio, fine) della lista di proiezione di primo livello, o None."""
     m = _SELECT_KW_RE.search(sql)
     if not m:
-        return set(), True
+        return None
 
     i = m.end()
     mod = _PROJECTION_MODIFIER_RE.match(sql, i)
@@ -257,6 +248,24 @@ def projected_columns(sql):
                 end = j
                 break
         j += 1
+    return i, end
+
+
+def projected_columns(sql):
+    """Nomi delle colonne che una query SELECT produce, piu' un flag wildcard.
+
+    Restituisce ``(nomi_minuscoli, ha_wildcard)``. Considera solo la proiezione
+    di primo livello: una colonna citata soltanto in una WHERE o in una
+    sottoquery non viene prodotta dalla query e non puo' soddisfare un
+    segnaposto del target.
+
+    Con ``SELECT *`` l'insieme non e' determinabile offline e il flag wildcard
+    segnala che non si possono trarre conclusioni.
+    """
+    span = _projection_span(sql)
+    if span is None:
+        return set(), True
+    i, end = span
 
     names, wildcard = set(), False
     for item in _split_top_level(sql[i:end]):
@@ -295,3 +304,89 @@ def unresolved_placeholders(target, source):
         return []
     return [p for p in _TARGET_PLACEHOLDER_RE.findall(target)
             if p.lower() not in produced]
+
+
+# ---------------------------------------------------------------------------
+# isnan() su colonne testuali
+#
+# Il template usa ``NOT isnan(col)`` come filtro "valore numerico presente",
+# pensato per colonne DOUBLE. Al caricamento di un CSV basta una sola cella non
+# numerica (es. un codice di valore mancante come 'u') perche' DuckDB tipizzi
+# l'intera colonna come VARCHAR, e su VARCHAR isnan() non esiste: il mapping
+# generato fallisce in Ontop, e con lui ogni query che Ontop espande in una
+# union che lo comprende.
+#
+# Su queste colonne il generatore sostituisce isnan() con un controllo
+# sintattico "il testo e' un numero decimale", e nella proiezione converte la
+# colonna in DOUBLE solo quando lo e'. TRY_CAST sarebbe piu' semplice ma il
+# parser SQL di Ontop 5.3 non lo riconosce e l'endpoint non si avvia; questa
+# forma e' stata verificata con Ontop 5.3.0 e DuckDB.
+# ---------------------------------------------------------------------------
+
+NUMERIC_TEXT_PATTERN = r"'[+-]?[0-9]+(\.[0-9]+)?'"
+
+TEXT_TYPES = {"VARCHAR", "TEXT", "STRING", "CHAR", "BPCHAR"}
+
+_ISNAN_RE = re.compile(
+    r'(?P<not>\bNOT\s+)?\bisnan\s*\(\s*(?P<q>"?)(?P<col>[A-Za-z_]\w*)(?P=q)\s*\)',
+    re.IGNORECASE,
+)
+
+
+def _is_text(sql_type):
+    return (sql_type or "").upper().split("(")[0].strip() in TEXT_TYPES
+
+
+def _numeric_text(col):
+    return f"regexp_full_match(CAST({col} AS VARCHAR), {NUMERIC_TEXT_PATTERN})"
+
+
+def adapt_isnan(source, column_types):
+    """Riscrive isnan() sulle colonne che nel database del sito sono testo.
+
+    ``column_types`` mappa nome di colonna (qualunque maiuscola) a tipo DuckDB
+    per la tabella del source. Restituisce ``(source, colonne_riscritte)``.
+
+    - ``NOT isnan(c)`` diventa ``regexp_full_match(CAST(c AS VARCHAR), ...)``;
+    - ``isnan(c)`` diventa ``(NOT regexp_full_match(...))``;
+    - nella proiezione di primo livello ``c`` diventa
+      ``CASE WHEN <c numerico> THEN CAST(c AS DOUBLE) END AS c``, cosi' che il
+      target riceva sempre un numero o NULL, mai il testo non numerico.
+
+    Le colonne numeriche restano invariate: isnan() su DOUBLE e' corretto, e
+    su interi DuckDB lo applica con un cast implicito.
+    """
+    types = {k.lower(): v for k, v in column_types.items()}
+    rewritten = []
+
+    def _replace(m):
+        col = m.group("col")
+        sql_type = types.get(col.lower())
+        if not _is_text(sql_type):
+            return m.group(0)
+        if col not in rewritten:
+            rewritten.append(col)
+        check = _numeric_text(col)
+        return check if m.group("not") else f"(NOT {check})"
+
+    out = _ISNAN_RE.sub(_replace, source)
+    if not rewritten:
+        return source, []
+
+    span = _projection_span(out)
+    if span is not None:
+        start, end = span
+        items = _split_top_level(out[start:end])
+        targets = {c.lower(): c for c in rewritten}
+        new_items = []
+        for item in items:
+            plain = _PLAIN_COLUMN_RE.match(item)
+            name = plain.group(1).strip('"') if plain else None
+            if name is not None and name.lower() in targets:
+                col = name
+                item = (f'CASE WHEN {_numeric_text(col)} '
+                        f"THEN CAST({col} AS DOUBLE) END AS {col}")
+            new_items.append(item)
+        out = out[:start] + " " + ", ".join(new_items) + " " + out[end:]
+
+    return out, rewritten

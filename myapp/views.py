@@ -18,6 +18,7 @@ from contextlib import contextmanager
 from . import catalog, datastore, ontop_process
 from .sparql_results import empty_result
 from .obda_mapping import (
+    adapt_isnan,
     split_collection,
     substitute_identifiers,
     substitute_target_placeholders,
@@ -494,6 +495,13 @@ def field_mapping_view(request):
         data = form.cleaned_data
         lines = [header.strip(), '\n[MappingDeclaration] @collection [[']
         problems = []
+        generated_sources = []
+        adapted_cols = []
+        try:
+            site_types = datastore.column_types(DUCKDB_PATH)
+        except datastore.DataStoreBusy:
+            site_types = {}
+            problems.append(BUSY_MESSAGE)
 
         for blk in mapping_blocks:
             mid = blk['mappingId']
@@ -532,6 +540,13 @@ def field_mapping_view(request):
             tgt_inst = substitute_target_placeholders(tgt_inst, conn_map)
             src = substitute_identifiers(src, conn_map)
 
+            # isnan() del template presuppone colonne numeriche: dove nel sito
+            # la colonna e' testo viene sostituito con un controllo "e' un
+            # numero" compatibile con Ontop.
+            src, adapted = adapt_isnan(src, site_types.get(tbl, {}))
+            if adapted:
+                adapted_cols.append(f"{mid} ({', '.join(adapted)})")
+
             # Nessun blocco viene scritto se il target proietta un segnaposto
             # che il source non produce: e' la condizione che permetteva al
             # file di divergere in silenzio dallo schema locale.
@@ -550,6 +565,19 @@ def field_mapping_view(request):
                 f"source\t\t{src}",
                 ""
             ]
+            generated_sources.append((mid, src))
+
+        # Ogni source viene eseguito sul database del sito prima di salvare:
+        # Ontop lo inoltra verbatim, e un source che non esegue rompe anche le
+        # query che lo includono in una union.
+        if not problems and generated_sources:
+            try:
+                failing = datastore.failing_sources(DUCKDB_PATH, generated_sources)
+            except datastore.DataStoreBusy:
+                failing = {}
+                problems.append(BUSY_MESSAGE)
+            for mid, error in failing.items():
+                problems.append(f"{mid}: la query sorgente non esegue sui dati locali: {error}")
 
         if problems:
             for problem in problems:
@@ -564,6 +592,12 @@ def field_mapping_view(request):
             with open(OBDA_FILE, 'w', encoding='utf-8') as f:
                 f.write("\n".join(lines))
 
+            if adapted_cols:
+                messages.info(
+                    request,
+                    "Numeric checks adapted to text columns: " + "; ".join(adapted_cols)
+                    + ". Non-numeric values in these columns are treated as missing."
+                )
             messages.success(request, "✅ Mappings definition stored!")
             return redirect('map_fields')
 
