@@ -3,12 +3,7 @@
 {% block content %}
 <div class="card">
   <div class="card-body">
-    <img 
-    src="{% static 'myapp/ontop.png' %}" 
-    alt="Logo" 
-    height="40" 
-    class="d-inline-block align-text-center me-2"
-    >
+    <img src="{% static 'myapp/ontop.png' %}" alt="Ontop" height="40" class="d-inline-block align-text-center me-2">
     <h2>Ontop Endpoint Monitor</h2>
 
     <div class="form-check form-switch mb-3">
@@ -16,48 +11,77 @@
       <label class="form-check-label" for="ontopToggle">Running</label>
     </div>
 
-    <div id="ontopStatus" class="mb-3">Status: <strong>unknown</strong></div>
+    <div id="ontopStatus" class="mb-3" aria-live="polite">Status: <strong>unknown</strong></div>
+    <div id="ontopAlert" class="alert alert-warning d-none" role="alert"></div>
 
     <h5>Console Output:</h5>
-    <pre id="ontopLog" style="height: 100vh; overflow-y: auto; background:#222; color:#0f0; padding:0.5rem;"></pre>
+    <pre id="ontopLog" style="height: 70vh; overflow-y: auto; background:#222; color:#0f0; padding:0.5rem;"></pre>
   </div>
 </div>
 
+<script src="{% static 'myapp/ontop_monitor.js' %}"></script>
 <script>
-(function(){
-  const toggle    = document.getElementById('ontopToggle');
-  const statusEl  = document.getElementById('ontopStatus');
-  const logEl     = document.getElementById('ontopLog');
+(function () {
+  var M = window.HdnOntopMonitor;
+  var toggle = document.getElementById('ontopToggle');
+  var statusEl = document.getElementById('ontopStatus');
+  var alertEl = document.getElementById('ontopAlert');
+  var logEl = document.getElementById('ontopLog');
+  var statusUrl = "{% url 'ontop_status' %}";
+  var logsUrl = "{% url 'ontop_logs' %}";
+  var controlUrl = "{% url 'ontop_control' %}";
+  var csrf = "{{ csrf_token }}";
+  var pending = false;
 
-  // refresh status every 2s
-  setInterval(() => {
-    fetch("{% url 'ontop_status' %}")
-      .then(r => r.json())
-      .then(j => {
-        statusEl.innerHTML = 'Status: <strong>' + j.status + '</strong>';
-        toggle.checked = (j.status === 'running');
-      });
-  }, 2000);
+  function showAlert(text) {
+    alertEl.textContent = text;
+    alertEl.classList.toggle('d-none', !text);
+  }
 
-  // refresh logs every 3s
-  setInterval(() => {
-    fetch("{% url 'ontop_logs' %}")
-      .then(r => r.json())
-      .then(j => {
-        logEl.textContent = j.lines.join('\n');
-        logEl.scrollTop = logEl.scrollHeight;
-      });
-  }, 3000);
+  function renderStatus(status) {
+    statusEl.textContent = 'Status: ';
+    var strong = document.createElement('strong');
+    strong.textContent = status;
+    statusEl.appendChild(strong);
+    if (!pending) toggle.checked = (status === 'running');
+  }
 
-  // user flips the switch → start or stop
-  toggle.addEventListener('change', () => {
-    const action = toggle.checked ? 'start' : 'stop';
-    fetch("{% url 'ontop_control' %}", {
-      method: 'POST',
-      headers: {'X-CSRFToken': '{{ csrf_token }}','Content-Type':'application/x-www-form-urlencoded'},
-      body: 'action=' + action
-    });
+  var statusPoller = M.createPoller({
+    interval: 2000,
+    fn: function () {
+      return M.getJson(fetch, statusUrl).then(function (j) { renderStatus(j.status); });
+    },
+    onError: function (err, n) {
+      renderStatus('unknown');
+      showAlert('The admin interface is not reachable (' + err.message + '). Retrying...');
+    },
+    onRecover: function () { showAlert(''); }
   });
+
+  var logPoller = M.createPoller({
+    interval: 3000,
+    fn: function () {
+      return M.getJson(fetch, logsUrl).then(function (j) {
+        M.stickToBottom(logEl, function () { logEl.textContent = (j.lines || []).join('\n'); });
+      });
+    }
+  });
+
+  toggle.addEventListener('change', function () {
+    var wanted = toggle.checked;
+    pending = true;
+    toggle.disabled = true;
+    M.postAction(fetch, controlUrl, csrf, wanted ? 'start' : 'stop')
+      .then(function () { showAlert(''); })
+      .catch(function (err) {
+        toggle.checked = !wanted;
+        showAlert('Could not ' + (wanted ? 'start' : 'stop') + ' Ontop (' + err.message + ').');
+      })
+      .then(function () { pending = false; toggle.disabled = false; });
+  });
+
+  statusPoller.start();
+  logPoller.start();
 })();
 </script>
 {% endblock %}
