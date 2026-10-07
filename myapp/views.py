@@ -17,6 +17,7 @@ from .schema_diagram import er_diagram
 from .sparql_results import empty_result
 from .obda_mapping import (
     adapt_isnan,
+    save_active_mapping,
     split_collection,
     substitute_identifiers,
     substitute_target_placeholders,
@@ -48,6 +49,11 @@ LOG_FILE      = str(ontop_process.LOG_FILE)
 # hereditary_ontology_2.properties e' relativo a ONTOP_DIR.
 DUCKDB_PATH   = os.path.join(ONTOP_DIR, 'mydatabase.duckdb')
 TEMPLATE_OBDA = os.path.join(os.path.dirname(__file__), 'mappings', 'template.obda')
+
+
+def mapping_backup_dir():
+    """Versioni precedenti del mapping attivo, accanto al mapping stesso."""
+    return os.path.join(os.path.dirname(OBDA_FILE), 'mapping-backups')
 
 def extract_columns_from_sql(sql: str, available_cols: list[str]) -> list[str]:
     """
@@ -117,6 +123,30 @@ def ontop_paused(request):
                 messages.error(request,
                                "Ontop did not restart. Check Ontop Monitor and its log: "
                                "the endpoint is not answering HDN Central.")
+
+
+def restart_ontop_for_new_mapping(request):
+    """Riavvia Ontop, se acceso, perche' carichi il mapping appena salvato."""
+    if not ontop_process.is_running():
+        messages.info(request, "Ontop is not running: the new mapping will be used "
+                               "when it is started from Ontop Monitor.")
+        return
+    if not ontop_process.stop():
+        messages.error(request, "Ontop did not stop in time: it is still answering "
+                                "with the previous mapping. Restart it from Ontop Monitor.")
+        return
+    messages.info(request, "Ontop was running: restarting it to load the new mapping.")
+    try:
+        ontop_process.start()
+        ready = ontop_process.wait_ready()
+    except Exception as exc:
+        audit.warning("ontop-restart-failed error=%s", type(exc).__name__)
+        ready = False
+    if ready:
+        messages.success(request, "Ontop restarted with the new mapping.")
+    else:
+        messages.error(request, "Ontop did not restart with the new mapping. Check Ontop "
+                                "Monitor and its log: the endpoint is not answering HDN Central.")
 
 
 def home_view(request):
@@ -595,9 +625,7 @@ def field_mapping_view(request):
             )
         else:
             lines.append(']]')
-            os.makedirs(ONTOP_DIR, exist_ok=True)
-            with open(OBDA_FILE, 'w', encoding='utf-8') as f:
-                f.write("\n".join(lines))
+            backup = save_active_mapping(OBDA_FILE, "\n".join(lines), mapping_backup_dir())
 
             if adapted_cols:
                 messages.info(
@@ -605,7 +633,14 @@ def field_mapping_view(request):
                     "Numeric checks adapted to text columns: " + "; ".join(adapted_cols)
                     + ". Non-numeric values in these columns are treated as missing."
                 )
-            messages.success(request, "✅ Mappings definition stored!")
+            messages.success(
+                request,
+                "Mappings definition stored."
+                + (f" Previous version kept as {os.path.basename(backup)}." if backup else "")
+            )
+            # Ontop legge il mapping solo all'avvio: se e' acceso va riavviato,
+            # altrimenti continuerebbe a rispondere con il mapping precedente.
+            restart_ontop_for_new_mapping(request)
             return redirect('map_fields')
 
     # 8) Build mapping_ui with per-block JSON for the hidden inputs

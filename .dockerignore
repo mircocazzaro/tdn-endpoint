@@ -16,6 +16,7 @@ uploads/
 *.sqlite3
 myapp/obda/hereditary_ontology_2.obda
 myapp/obda/*_old.obda
+myapp/obda/mapping-backups/
 myapp/obda/ontop.pid
 
 # Log e audit
