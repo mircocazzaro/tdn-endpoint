@@ -32,3 +32,14 @@ def level_choices(request):
         #'level_options': [f"L{i}" for i in range(7)],
         'level_options': levels,
     }
+
+
+def notifications(request):
+    """Numero di notifiche non lette, per il badge nella navbar."""
+    from .models import Notification
+    from django.db import DatabaseError
+    try:
+        unread = Notification.objects.filter(read=False).count()
+    except DatabaseError:  # migrazioni non ancora applicate
+        unread = 0
+    return {'unread_notifications': unread}
