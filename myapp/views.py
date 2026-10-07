@@ -640,16 +640,16 @@ def get_columns(request):
     table = request.GET.get('table')
     if not table:
         return JsonResponse({'columns': []})
-    # Introspect DuckDB (sola lettura: convive con Ontop)
+    # Il nome viene dalla querystring: non entra mai nel testo SQL. Lo schema si
+    # legge da information_schema e il nome si usa solo come chiave. Prima era
+    # interpolato in PRAGMA table_info('{table}'), e DuckDB esegue piu'
+    # istruzioni in un'unica execute: anche in sola lettura un COPY ... TO
+    # scriveva su disco il contenuto di qualunque tabella.
     try:
-        with datastore.read_connection(DUCKDB_PATH) as conn:
-            if conn is None:
-                return JsonResponse({'columns': []})
-            rows = conn.execute(f"PRAGMA table_info('{table}')").fetchall()
+        schema = datastore.tables_columns(DUCKDB_PATH)
     except datastore.DataStoreBusy:
         return JsonResponse({'columns': [], 'error': BUSY_MESSAGE}, status=503)
-    cols = [r[1] for r in rows]  # r = (cid, name, type, ...)
-    return JsonResponse({'columns': cols})
+    return JsonResponse({'columns': schema.get(table, [])})
 
 def ontop_control_view(request):
     # Avvio e arresto passano da myapp/ontop_process.py, la stessa logica usata
@@ -950,7 +950,7 @@ def delete_table_view(request, table_name):
                 with datastore.write_connection(DUCKDB_PATH) as conn:
                     existing = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
                     if table_name in existing:
-                        conn.execute(f'DROP TABLE "{table_name}"')
+                        conn.execute(f'DROP TABLE {datastore.quote_identifier(table_name)}')
                         messages.success(request, f"Tables updated: `{table_name}` deleted.")
                     else:
                         messages.error(request, f"Table `{table_name}` does not exist.")
