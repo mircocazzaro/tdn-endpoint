@@ -237,7 +237,13 @@ def receive_catalog(membership, payload):
     lines = [f"{len(new.templates)} queries (was {len(old.templates)})."]
     for label, keys in (("Added", added), ("Removed", removed), ("Changed", changed)):
         if keys:
-            lines.append(f"{label}: {', '.join(keys)}")
+            # Derived templates (d_...) can be hundreds: list the named ones
+            # and count the rest.
+            named = [k for k in keys if not k.startswith("d_")]
+            derived = len(keys) - len(named)
+            shown = ", ".join(named[:30]) + (f" and {len(named) - 30} more" if len(named) > 30 else "")
+            extra = f"{derived} derived" if derived else ""
+            lines.append(f"{label}: {', '.join(x for x in (shown, extra) if x)}")
     notify(Notification.CATALOG,
            f"New query catalog v{new.version} from {membership.central_name or membership.central_url}",
            "\n".join(lines), Notification.INFO)

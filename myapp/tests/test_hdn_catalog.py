@@ -104,6 +104,24 @@ class CatalogProtocolTests(StateDirMixin, TestCase):
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(catalog.active().version, 0)
 
+    def test_large_catalog_with_derived_templates(self):
+        # Central publishes hundreds of derived sub-patterns (d_...) next to the
+        # hand-written templates: they are accepted and summarized in the notification.
+        import hashlib
+        doc = base_doc(1)
+        for i in range(700):
+            text = f"SELECT ?p{i} ?s WHERE {{\n  ?p{i} a bto:Patient .\n  ?p{i} bto:sex ?s .\n}}"
+            doc["templates"].append({"key": f"d_{i:016x}", "level": 5, "description": "derived",
+                                     "params": {}, "sha512": hashlib.sha512(text.encode()).hexdigest(),
+                                     "sparql": text, "derived": True, "parents": ["q09_L4"]})
+        self.assertEqual(self.send(doc).status_code, 200)
+        self.assertEqual(len(catalog.active().templates), len(catalog.CATALOG) + 700)
+        body = Notification.objects.get(kind=Notification.CATALOG).body
+        self.assertIn("Added: 700 derived", body)
+        self.assertLess(len(body), 500)
+        q = catalog.PROLOGUE + "SELECT ?p7 ?s WHERE { ?p7 a bto:Patient . ?p7 bto:sex ?s . }"
+        self.assertEqual(catalog.match_query(q).template.key, f"d_{7:016x}")
+
     def test_corrupted_file_falls_back_to_base(self):
         self.send(base_doc(1))
         with open(os.path.join(self._state.name, "catalog.json"), "a") as fh:
