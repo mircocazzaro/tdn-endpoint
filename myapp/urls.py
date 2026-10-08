@@ -1,7 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
-from . import galois_views, network_views
+from . import bootstrap_views, galois_views, network_views
 from .views import (
     home_view, upload_csv_view, query_view,
     field_mapping_view, get_columns,
@@ -14,6 +14,7 @@ urlpatterns = [
     path('upload-csv/', upload_csv_view, name='upload_csv'),
     path('query/', query_view, name='query'),
     path('map-fields/', field_mapping_view, name='map_fields'),
+    path('map-fields/bootstrap/', bootstrap_views.bootstrap_view, name='map_fields_bootstrap'),
     path('ontop-control/',    ontop_control_view, name='ontop_control'),
     path('ontop/status/',     ontop_status,       name='ontop_status'),
     path('ontop/logs/',       ontop_logs,         name='ontop_logs'),

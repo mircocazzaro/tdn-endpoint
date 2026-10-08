@@ -297,11 +297,14 @@ class FieldMappingForm(forms.Form):
 
 
 
-def field_mapping_view(request):
-    if galois_store.enabled():
-        messages.info(request, "Galois mode is on: the mapping is fixed and generated from "
-                               "the Galois schema. It is shown on the Galois page.")
-        return redirect('galois')
+def template_mapping_blocks(tables_columns):
+    """``(header, blocks)`` of the active mapping template, as Map Data to HERO shows them.
+
+    Each block: mappingId, target, source_tpl, table_default and the
+    placeholders the administrator binds to columns of a local table.
+    Shared with the LLM bootstrap (myapp/bootstrap), which must propose
+    bindings for exactly the same placeholders.
+    """
     # 1) Parse the OBDA template into header + mapping blocks
     # Il template ricevuto da Central con l'ultima ontologia, se c'e'.
     with open(ontology.template_path(TEMPLATE_OBDA), 'r', encoding='utf-8') as f:
@@ -350,13 +353,6 @@ def field_mapping_view(request):
             'placeholders':  vars_,
         })
 
-    # 2) Introspect DuckDB for tables and columns (sola lettura: convive con Ontop)
-    try:
-        tables_columns = datastore.tables_columns(DUCKDB_PATH)
-    except datastore.DataStoreBusy:
-        tables_columns = {}
-        messages.warning(request, BUSY_MESSAGE)
-    
     # 2b) NOW that tables_columns exists, pull out any filter‐only cols
     for blk in mapping_blocks:
         # 1) canonicalize the table name so we actually hit tables_columns
@@ -382,6 +378,23 @@ def field_mapping_view(request):
             if col.lower() not in known:
                 blk['placeholders'].append(col)
                 known.add(col.lower())
+
+    return header, mapping_blocks
+
+
+def field_mapping_view(request):
+    if galois_store.enabled():
+        messages.info(request, "Galois mode is on: the mapping is fixed and generated from "
+                               "the Galois schema. It is shown on the Galois page.")
+        return redirect('galois')
+    # 2) Introspect DuckDB for tables and columns (sola lettura: convive con Ontop)
+    try:
+        tables_columns = datastore.tables_columns(DUCKDB_PATH)
+    except datastore.DataStoreBusy:
+        tables_columns = {}
+        messages.warning(request, BUSY_MESSAGE)
+    
+    header, mapping_blocks = template_mapping_blocks(tables_columns)
 
     # 3) Parse existing OBDA mappings, extract var→column pairs
     existing = {}
@@ -465,6 +478,24 @@ def field_mapping_view(request):
                 continue
             
     
+    # 3b) Suggerimenti del bootstrap LLM (myapp/bootstrap), validi solo per lo
+    #     stesso template e lo stesso schema locale. Non sostituiscono mai le
+    #     associazioni salvate: valgono per le regole ancora senza mapping.
+    from .bootstrap import run as bootstrap_run
+    from .bootstrap.schema import Schema as BootstrapSchema
+    from . import azure_settings
+    try:
+        bschema = BootstrapSchema.from_site(tables_columns, datastore.column_types(DUCKDB_PATH))
+    except datastore.DataStoreBusy:
+        bschema = BootstrapSchema.from_site(tables_columns)
+    stored = bootstrap_run.load(bootstrap_run.fingerprint(header, mapping_blocks, bschema))
+    suggested = {}
+    if stored:
+        for mid, sug in stored['suggestions'].items():
+            if mid not in existing and sug['table'] in tables_columns:
+                existing[mid] = {'table': sug['table'], 'placeholders': dict(sug['pairs'])}
+                suggested[mid] = sug
+
     # 4) Associazioni salvate per la UI: {mid: {'table': t, 'pairs': {var: col}}}.
     #    Nomi, mai indici, e legate alla tabella a cui si riferiscono: la UI le
     #    ridisegna solo se e' selezionata quella tabella.
@@ -663,6 +694,7 @@ def field_mapping_view(request):
             # tabella selezionata all'apertura e' quella a cui si riferiscono.
             'connections_json': json.dumps(
                 saved['pairs'] if form[f"{mid}__table"].value() == saved['table'] else {}),
+            'suggested':       suggested.get(mid),
         })
 
     # 9) Render the template; le associazioni salvate arrivano via json_script
@@ -670,6 +702,9 @@ def field_mapping_view(request):
         'mapping_ui':          mapping_ui,
         'mapping_connections': mapping_connections,
         'form':                form,
+        'bootstrap':           stored,
+        'azure':               azure_settings.public(),
+        'n_suggested':         len(suggested),
     })
 
 

@@ -2,6 +2,53 @@
 {% load static %}
 {% block content %}
 <div class="container py-4">
+  <div class="card mb-4" id="bootstrap-card">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-magic me-1" aria-hidden="true"></i>Bootstrap with an LLM</h5>
+      <p class="small text-muted mb-2">
+        An LLM on Azure OpenAI proposes, for each rule of the template, the local table and the
+        column of every placeholder. Only table names, column names and types are sent, never
+        data values. Suggestions fill the rules that have no saved binding; nothing is saved until
+        you press <em>Generate OBDA File</em>.
+      </p>
+      {% if bootstrap %}
+        <div class="alert alert-info py-2 small mb-2">
+          Suggestions from {{ bootstrap.summary.suggested }} of {{ bootstrap.summary.rules }} rules
+          are available; {{ n_suggested }} are shown below, on rules without a saved binding
+          (marked <span class="badge bg-info text-dark">LLM</span>).
+        </div>
+      {% endif %}
+      <form method="post" action="{% url 'map_fields_bootstrap' %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        {% if not azure.has_key %}
+          <div class="col-md-5">
+            <label class="form-label small" for="bs-endpoint">Azure OpenAI endpoint</label>
+            <input class="form-control form-control-sm" id="bs-endpoint" name="azure_endpoint" type="url"
+                   value="{{ azure.endpoint }}" placeholder="https://your-resource.openai.azure.com/">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small" for="bs-deployment">Deployment</label>
+            <input class="form-control form-control-sm" id="bs-deployment" name="azure_deployment" value="{{ azure.deployment }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small" for="bs-version">API version</label>
+            <input class="form-control form-control-sm" id="bs-version" name="azure_api_version" value="{{ azure.api_version }}" placeholder="2024-10-21">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small" for="bs-key">API key</label>
+            <input class="form-control form-control-sm" id="bs-key" name="azure_api_key" type="password" autocomplete="off">
+          </div>
+        {% else %}
+          <div class="col-auto small text-muted">Azure OpenAI: <code>{{ azure.deployment }}</code> at {{ azure.endpoint }} (shared with Galois mode).</div>
+        {% endif %}
+        <div class="col-auto">
+          <button type="submit" name="action" value="run" class="btn btn-sm btn-outline-primary">Propose bindings</button>
+          {% if bootstrap %}<button type="submit" name="action" value="discard" class="btn btn-sm btn-link">Discard suggestions</button>{% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
   <form method="post">
     {% csrf_token %}
     {% if form.errors %}
@@ -22,7 +69,9 @@
           <div class="carousel-item{% if forloop.first %} active{% endif %}">
             <div class="card shadow-sm mapping-card" id="mapping-card-{{ blk.mappingId }}" data-mid="{{ blk.mappingId }}">
               <div class="card-header bg-white">
-                <h5 class="mb-0">{{ blk.mappingLabel }}</h5>
+                <h5 class="mb-0">{{ blk.mappingLabel }}
+                  {% if blk.suggested %}<span class="badge bg-info text-dark ms-1" title="Proposed by the LLM: review before saving">LLM{% if not blk.suggested.complete %}, partial{% endif %}</span>{% endif %}
+                </h5>
               </div>
               <div class="card-body">
                 <div class="row">

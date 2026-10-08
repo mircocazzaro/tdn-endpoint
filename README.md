@@ -233,6 +233,41 @@ Limite noto: `/sparql-protected/` non e' autenticato.
 
 ---
 
+## Bootstrap del mapping con un LLM
+
+In *Map Data to HERO*, il riquadro **Bootstrap with an LLM** chiede a un LLM
+su Azure OpenAI di proporre, per ogni regola del template, la tabella locale e
+la colonna da associare a ogni segnaposto. Il metodo e' quello di
+`mbg_bootstrap`, nel compito di *source prediction*:
+- il lato ontologia della regola resta fisso: classe, predicati, template degli
+  IRI e SQL del template;
+- l'LLM sceglie solo il lato relazionale sullo schema del sito.
+
+- **Azure.** Servono endpoint (HTTPS), deployment e API key, condivisi con la
+  modalita' Galois e salvati in `uploads/hdn/azure.json` (permessi 0600). La
+  chiave non viene mai mostrata.
+- **Cosa riceve l'LLM.** Nomi di tabelle e colonne, tipi delle colonne, le
+  regole del template e i termini dell'ontologia che usano. Mai valori dei dati.
+- **Controlli.** Tabelle e colonne inventate o di un'altra tabella vengono
+  scartate. Un segnaposto lasciato vuoto viene associato alla colonna con lo
+  stesso nome, se c'e'. Le regole vanno all'LLM a gruppi di 8; un gruppo con
+  risposta troncata viene diviso e richiesto di nuovo.
+- **Niente viene salvato da solo.** I suggerimenti compilano le regole ancora
+  senza associazioni, marcate *LLM* (*LLM, partial* se manca qualche
+  segnaposto). Le associazioni gia' salvate non vengono toccate. Si salva con
+  *Generate OBDA File*, con la validazione di sempre: ogni query sorgente viene
+  eseguita sui dati locali.
+- **Validita'.** I suggerimenti valgono solo per lo stesso template e lo stesso
+  schema locale. Se cambiano, spariscono. *Discard suggestions* li elimina.
+
+Limiti noti:
+- La qualita' delle proposte dipende dal modello. Il bootstrap e' stato
+  provato solo con un LLM simulato.
+- Una regola suggerita in modo parziale blocca il salvataggio finche' non
+  viene completata o non se ne toglie la tabella.
+
+---
+
 ## Modalita' Galois
 
 Un endpoint puo' partecipare alla rete senza dati locali, come
@@ -291,7 +326,7 @@ Costi e tempi: ogni query interroga l'LLM da 1 a 6 volte per tabella
 secondi. Central attende fino a 240 secondi (`HDN_ENDPOINT_TIMEOUT`). Le
 richieste concorrenti sulla stessa tabella non ripetono l'aggiornamento.
 
-La chiave Azure sta in `uploads/hdn/galois/azure.json` (permessi 0600), non
+La chiave Azure sta in `uploads/hdn/azure.json` (permessi 0600, condivisa con il bootstrap del mapping), non
 viene mai mostrata e viaggia solo verso l'endpoint Azure configurato, che deve
 essere HTTPS. Il client e' stato provato contro un servizio Azure simulato,
 non contro Azure reale.
@@ -309,7 +344,9 @@ non contro Azure reale.
 | `uploads/hdn/identity.pem` | chiave privata dell'endpoint nella rete HDN | no |
 | `uploads/hdn/db.sqlite3` | iscrizioni ai Central e notifiche | no |
 | `uploads/hdn/catalog.json` | catalogo delle query ricevuto da Central | no |
-| `uploads/hdn/galois/` | modalita' Galois: configurazione, chiave Azure, viste, dati, mapping fisso | no |
+| `uploads/hdn/azure.json` | impostazioni e chiave Azure OpenAI (Galois e bootstrap) | no |
+| `uploads/hdn/galois/` | modalita' Galois: configurazione, viste, dati, mapping fisso | no |
+| `uploads/hdn/bootstrap/` | suggerimenti del bootstrap del mapping | no |
 | `uploads/hdn/ontology/` | ontologia e template di mapping ricevuti da Central, versioni precedenti | no |
 | `audit.log` | decisioni dell'endpoint sulle richieste di Central | no |
 | `myapp/obda/ontop.log` | log di Ontop, con rotazione a 10 MB (5 file) | no |

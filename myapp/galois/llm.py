@@ -30,10 +30,11 @@ class LLMError(Exception):
 
 
 class LLMResponse:
-    def __init__(self, text, usage_tokens=0, latency_s=0.0):
+    def __init__(self, text, usage_tokens=0, latency_s=0.0, finish_reason=None):
         self.text = text
         self.usage_tokens = usage_tokens
         self.latency_s = latency_s
+        self.finish_reason = finish_reason
 
 
 class AzureOpenAI:
@@ -47,8 +48,10 @@ class AzureOpenAI:
         self.api_version = api_version or DEFAULT_API_VERSION
         self._http = session or requests
 
-    def _request(self, messages):
-        body = {"messages": messages, "temperature": 0, "top_p": 1, "max_tokens": MAX_TOKENS}
+    def _request(self, messages, max_tokens=MAX_TOKENS, response_format=None):
+        body = {"messages": messages, "temperature": 0, "top_p": 1, "max_tokens": max_tokens}
+        if response_format is not None:
+            body["response_format"] = response_format
         if _V1_RE.search(self.endpoint + "/"):
             url, params = self.endpoint + "/chat/completions", None
             body["model"] = self.deployment
@@ -62,7 +65,8 @@ class AzureOpenAI:
         t0 = time.time()
         for attempt in range(3):
             try:
-                resp = self._request(messages)
+                resp = self._request(messages, kwargs.get("max_tokens", MAX_TOKENS),
+                                     kwargs.get("response_format"))
             except requests.RequestException as exc:
                 raise LLMError("unreachable", type(exc).__name__)
             if resp.status_code in (429, 500, 502, 503) and attempt < 2:
@@ -82,9 +86,10 @@ class AzureOpenAI:
         try:
             data = resp.json()
             text = data["choices"][0]["message"].get("content") or ""
+            finish = data["choices"][0].get("finish_reason")
         except (ValueError, KeyError, IndexError, TypeError):
             raise LLMError("bad-response", "unexpected response format")
         usage = data.get("usage") or {}
         tokens = usage.get("total_tokens") or (
             (usage.get("prompt_tokens") or 0) + (usage.get("completion_tokens") or 0))
-        return LLMResponse(text, tokens, time.time() - t0)
+        return LLMResponse(text, tokens, time.time() - t0, finish)
