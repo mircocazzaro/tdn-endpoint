@@ -1,0 +1,96 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+<h2>Galois mode</h2>
+<p class="text-muted">
+  In Galois mode this endpoint does not expose local data. Its tables are views
+  that Galois fills by querying a large language model each time HDN Central sends
+  a query; Ontop then answers over the freshly retrieved rows. The schema covers
+  public knowledge only (no patient data) and the mapping is fixed.
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="card mb-4"><div class="card-body">
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" role="switch" id="enabled" name="enabled" {% if cfg.enabled %}checked{% endif %}>
+      <label class="form-check-label" for="enabled"><strong>Galois mode</strong></label>
+    </div>
+
+    <h5>Azure OpenAI</h5>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="azure_endpoint">Endpoint URL</label>
+        <input class="form-control" id="azure_endpoint" name="azure_endpoint" type="url"
+               value="{{ azure.endpoint }}" placeholder="https://your-resource.openai.azure.com/">
+        <div class="form-text">Azure OpenAI resource, or an URL ending in /openai/v1 (Azure AI Foundry).</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="azure_deployment">Deployment</label>
+        <input class="form-control" id="azure_deployment" name="azure_deployment" value="{{ azure.deployment }}" placeholder="gpt-4o-mini">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="azure_api_version">API version</label>
+        <input class="form-control" id="azure_api_version" name="azure_api_version" value="{{ azure.api_version }}" placeholder="2024-10-21">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="azure_api_key">API key</label>
+        <input class="form-control" id="azure_api_key" name="azure_api_key" type="password" autocomplete="off"
+               placeholder="{% if azure.has_key %}stored: leave empty to keep it{% else %}required{% endif %}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="max_iter">LLM calls per table</label>
+        <select class="form-select" id="max_iter" name="max_iter">
+          {% for n in max_iter_choices %}<option value="{{ n }}" {% if n == cfg.max_iter %}selected{% endif %}>{{ n }}</option>{% endfor %}
+        </select>
+        <div class="form-text">First request plus "list more" rounds.</div>
+      </div>
+    </div>
+  </div></div>
+
+  <h5>Schema</h5>
+  <table class="table table-sm align-middle" id="galois-schema">
+    <thead><tr><th>Table</th><th>Key</th><th>Columns</th><th>Last refresh</th><th></th></tr></thead>
+    <tbody>
+    {% for row in tables %}
+      <tr>
+        <td>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="table__{{ row.t.name }}" name="table__{{ row.t.name }}" {% if row.cfg.enabled %}checked{% endif %}>
+            <label class="form-check-label" for="table__{{ row.t.name }}"><code>{{ row.t.name }}</code></label>
+          </div>
+          <small class="text-muted">{{ row.t.description }} · <code>{{ row.t.cls }}</code></small>
+        </td>
+        <td><code>{{ row.t.key }}</code></td>
+        <td>
+          {% for col in row.columns %}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="col__{{ row.t.name }}__{{ col.c.name }}" name="col__{{ row.t.name }}__{{ col.c.name }}" {% if col.on %}checked{% endif %}>
+            <label class="form-check-label" for="col__{{ row.t.name }}__{{ col.c.name }}"><code>{{ col.c.name }}</code> <small class="text-muted">{{ col.c.description }} → <code>{{ col.c.predicate }}</code></small></label>
+          </div>
+          {% endfor %}
+        </td>
+        <td class="small">
+          {% if row.status.error %}<span class="text-danger">failed: {{ row.status.error }}</span><br>{% endif %}
+          {% if row.status.refreshed_at %}{{ row.status.refreshed_at|date:"Y-m-d H:i:s" }}<br>{{ row.status.rows }} rows, {{ row.status.tokens }} tokens{% else %}never{% endif %}
+        </td>
+        <td>
+          {% if row.cfg.enabled and cfg.enabled %}
+          <button type="submit" name="action" value="refresh:{{ row.t.name }}" class="btn btn-sm btn-outline-secondary">Refresh now</button>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <button type="submit" name="action" value="save" class="btn btn-primary">Save and apply</button>
+  <button type="submit" name="action" value="test" class="btn btn-outline-secondary">Test Azure connection</button>
+  <span class="small text-muted ms-2">Saving restarts Ontop if it is running.</span>
+</form>
+
+<h5 class="mt-4">Fixed mapping</h5>
+{% for mid, terms in excluded %}
+  <div class="alert alert-warning py-1 small">{{ mid }} left out: the ontology does not declare {{ terms|join:", " }}.</div>
+{% endfor %}
+<pre class="border rounded p-2 small" id="galois-mapping">{{ mapping }}</pre>
+{% endblock %}

@@ -233,6 +233,71 @@ Limite noto: `/sparql-protected/` non e' autenticato.
 
 ---
 
+## Modalita' Galois
+
+Un endpoint puo' partecipare alla rete senza dati locali, come
+*galois-endpoint*: le sue tabelle sono viste che
+[Galois](https://github.com/mircocazzaro/galois_repro_resources) ripopola
+interrogando un LLM su Azure OpenAI ogni volta che Central invia una query.
+
+Si attiva dalla pagina **Galois**:
+
+1. inserite endpoint Azure OpenAI, nome del deployment e API key, e verificate
+   la connessione con *Test Azure connection*;
+2. scegliete tabelle e colonne (la chiave di ogni tabella resta sempre attiva);
+3. attivate *Galois mode* e salvate. Se Ontop e' acceso viene riavviato.
+
+Schema standard. Riguarda solo conoscenza pubblica e nessuna tabella tocca
+`bto:Patient`: un LLM non conosce dati di pazienti e li inventerebbe.
+
+| tabella | chiave (IRI) | colonne attivabili |
+|---|---|---|
+| `disease` | codice NCIT (`NCIT:C34373`) | `name`, `description` |
+| `drug` | codice ATC (`UATC:N07XX02`) | `name`, `parent_atc_code` |
+| `gene` | codice NCIT | `name`, `description` |
+| `anatomical_site` | codice NCIT | `name` |
+| `hospital` | sito web | `name` |
+| `clinical_trial` | NCT id (`https://clinicaltrials.gov/study/NCT...`) | `title`, `description`, `disease_ncit_code`, `hospital_website` |
+
+Come funziona:
+- **Mapping fisso.** Il mapping e' generato dallo schema
+  (`myapp/galois/schema.py`) e mostrato nella pagina Galois. *Map Data to
+  HERO* in questa modalita' non e' disponibile. Una colonna il cui termine non
+  e' piu' dichiarato dall'ontologia attiva resta fuori dal mapping, con un
+  avviso.
+- **A ogni query di Central**, se il livello di disclosure la ammette, si
+  ricavano dal mapping le tabelle che la query usa. Galois le ripopola con una
+  TableScan: il prompt contiene solo `select <colonne> from <tabella>` e Galois
+  non vede ne' la query SPARQL ne' l'SQL di Ontop. Poi Ontop risponde sulle
+  righe appena recuperate. Se l'LLM non risponde, l'endpoint non contribuisce:
+  non serve mai dati vecchi.
+- **Query che non usano le tabelle di Galois**, come quelle sui pazienti, non
+  interrogano l'LLM.
+- **Righe valide.** Le righe con chiave assente o nel formato sbagliato
+  vengono scartate. I codici vengono normalizzati, per esempio `NCIT:C34373`
+  diventa `C34373`. Si tiene una riga per chiave.
+- **Dove stanno i dati.** I dati sono file Parquet in `uploads/hdn/galois/data/`.
+  Ontop li legge attraverso le viste di `galois.duckdb`, senza bisogno di
+  riavvio.
+- **Fatti dell'ontologia.** Ontop risponde anche con i fatti gia' presenti
+  nell'ontologia, per esempio gli individui ATC di HERO.
+- **Template.** Le query del catalogo pensate per questa modalita' sono
+  `q15_L0`–`q18_L4`, su trial clinici e farmaci, e arrivano da Central con il
+  catalogo. `q17` e `q18` sono L4: il livello di disclosure dell'endpoint va
+  alzato di conseguenza.
+
+Costi e tempi: ogni query interroga l'LLM da 1 a 6 volte per tabella
+(*LLM calls per table*, default 3), e una risposta puo' richiedere decine di
+secondi. Central attende fino a 240 secondi (`HDN_ENDPOINT_TIMEOUT`). Le
+richieste concorrenti sulla stessa tabella non ripetono l'aggiornamento.
+
+La chiave Azure sta in `uploads/hdn/galois/azure.json` (permessi 0600), non
+viene mai mostrata e viaggia solo verso l'endpoint Azure configurato, che deve
+essere HTTPS. Il client e' stato provato contro un servizio Azure simulato,
+non contro Azure reale.
+
+---
+
 ## Cosa c'e' dove
 
 | percorso | contenuto | versionato |
@@ -244,6 +309,7 @@ Limite noto: `/sparql-protected/` non e' autenticato.
 | `uploads/hdn/identity.pem` | chiave privata dell'endpoint nella rete HDN | no |
 | `uploads/hdn/db.sqlite3` | iscrizioni ai Central e notifiche | no |
 | `uploads/hdn/catalog.json` | catalogo delle query ricevuto da Central | no |
+| `uploads/hdn/galois/` | modalita' Galois: configurazione, chiave Azure, viste, dati, mapping fisso | no |
 | `uploads/hdn/ontology/` | ontologia e template di mapping ricevuti da Central, versioni precedenti | no |
 | `audit.log` | decisioni dell'endpoint sulle richieste di Central | no |
 | `myapp/obda/ontop.log` | log di Ontop, con rotazione a 10 MB (5 file) | no |

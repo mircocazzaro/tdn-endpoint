@@ -93,6 +93,15 @@ ALSFRS_QUESTION = ParamType(
     description="IRI di una domanda ALSFRS-R, da alsfrs1 a alsfrs12",
 )
 
+# Codice ATC di un gruppo o di un farmaco (es. N07 o N07XX02), usato dentro un
+# IRI http://purl.bioontology.org/ontology/UATC/{atc}: solo lettere maiuscole
+# e cifre, nella struttura a livelli dell'ATC.
+ATC_CODE = ParamType(
+    name="atc_code",
+    pattern=r"[A-Z](?:[0-9]{2}(?:[A-Z](?:[A-Z](?:[0-9]{2})?)?)?)?",
+    description="codice ATC, es. N07 o N07XX02",
+)
+
 
 @dataclass(frozen=True, eq=False)
 class Template:
@@ -624,7 +633,7 @@ def _compile(template):
 # valore chiuso e non possa aggiungere SPARQL alla query.
 # ---------------------------------------------------------------------------
 
-PARAM_TYPES = MappingProxyType({t.name: t for t in (DISEASE, AGE, SEX, ALSFRS_QUESTION)})
+PARAM_TYPES = MappingProxyType({t.name: t for t in (DISEASE, AGE, SEX, ALSFRS_QUESTION, ATC_CODE)})
 
 _PROLOGUE_LINE_RE = re.compile(
     r"PREFIX[ \t]+([A-Za-z][A-Za-z0-9_-]*):[ \t]*<([^<>\"{}|^`\\\x00-\x20]+)>")
