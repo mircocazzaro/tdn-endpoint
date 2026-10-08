@@ -4,6 +4,13 @@ L'ontologia di partenza e' quella del repository (ontop_process.TTL_FILE). Una
 ricevuta da Central viene salvata in HDN_STATE_DIR/ontology/active.ttl e da
 quel momento e' quella che Ontop carica.
 
+Central distribuisce l'ontologia sempre insieme al template di mapping scritto
+per essa (i blocchi modello che *Map Data to HERO* propone). Il template di
+partenza e' myapp/mappings/template.obda; quello ricevuto viene salvato in
+HDN_STATE_DIR/ontology/template.obda. Il template deve usare solo termini che
+la nuova ontologia dichiara, fuori dai vocabolari standard (xsd, rdf, rdfs,
+owl), altrimenti l'aggiornamento intero viene rifiutato.
+
 Una nuova ontologia puo' rendere non validi i mapping del sito. Un blocco di
 mapping viene eliminato se il suo target usa un termine (classe, proprieta',
 individuo) che l'ontologia precedente dichiarava e la nuova non dichiara piu'.
@@ -53,12 +60,18 @@ def active_path():
     return p if p.is_file() else Path(ontop_process.TTL_FILE)
 
 
+def template_path(default):
+    """Template di mapping da proporre: quello ricevuto con l'ontologia, o ``default``."""
+    p = _dir() / "template.obda"
+    return str(p) if p.is_file() else default
+
+
 def installed():
-    """``{"version": n, "sha256": ...}`` dell'ontologia attiva (0 = quella del repository)."""
+    """Versione e hash dell'ontologia e del template attivi (0 = quelli del repository)."""
     try:
         return json.loads((_dir() / "state.json").read_text(encoding="utf-8"))
     except (FileNotFoundError, ValueError):
-        return {"version": 0, "sha256": None}
+        return {"version": 0, "sha256": None, "template_sha256": None}
 
 
 def _atomic_write(path, data):
@@ -135,6 +148,58 @@ def target_terms(target, prefixes):
     return terms
 
 
+# Vocabolari standard: i loro termini (es. xsd:float) non devono essere
+# dichiarati dall'ontologia.
+STANDARD_NAMESPACES = frozenset({
+    "http://www.w3.org/2001/XMLSchema#",
+    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "http://www.w3.org/2000/01/rdf-schema#",
+    "http://www.w3.org/2002/07/owl#",
+})
+
+
+def namespace(iri):
+    cut = max(iri.rfind("#"), iri.rfind("/"))
+    return iri[:cut + 1]
+
+
+def undeclared_terms(obda_text, terms):
+    """``{termine: [mappingId]}`` dei termini usati nei target ma non dichiarati.
+
+    Contano solo i termini nei namespace in cui l'ontologia dichiara qualcosa
+    (es. bto:), esclusi i vocabolari standard: un IRI di un vocabolario
+    esterno, come una costante NCIT, non e' un errore.
+    """
+    header, _ = split_collection(obda_text)
+    prefixes = mapping_prefixes(header)
+    spaces = {namespace(t) for t in terms} - STANDARD_NAMESPACES
+    out = {}
+    for block in parse_mappings(obda_text):
+        for t in sorted(target_terms(block.target, prefixes)):
+            if t not in terms and namespace(t) in spaces:
+                out.setdefault(t, []).append(block.mapping_id)
+    return out
+
+
+def validate_template(text, terms):
+    """InvalidOntology se ``text`` non e' un template di mapping valido per ``terms``."""
+    try:
+        blocks = parse_mappings(text)
+    except ValueError as exc:
+        raise InvalidOntology(f"mapping template: {exc}")
+    if not blocks:
+        raise InvalidOntology("mapping template: no mapping block")
+    ids = [b.mapping_id for b in blocks]
+    dup = sorted({i for i in ids if ids.count(i) > 1})
+    if dup:
+        raise InvalidOntology("mapping template: duplicate mappingId " + ", ".join(dup))
+    bad = undeclared_terms(text, terms)
+    if bad:
+        detail = "; ".join(f"{t} ({', '.join(ids[:3])})" for t, ids in sorted(bad.items())[:10])
+        raise InvalidOntology("mapping template uses terms the ontology does not declare: " + detail)
+    return blocks
+
+
 def filter_mapping(obda_text, removed):
     """``(testo_nuovo, mantenuti, eliminati)``; eliminati = [(id, [termini])].
 
@@ -159,8 +224,21 @@ def filter_mapping(obda_text, removed):
 
 # --- installazione ----------------------------------------------------------
 
-def install(ttl_bytes, version):
-    """Rende ``ttl_bytes`` l'ontologia attiva e adegua il mapping.
+def _utf8(data, what, limit=MAX_TTL_BYTES):
+    if len(data) > limit:
+        raise InvalidOntology(f"{what} too large")
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        raise InvalidOntology(f"{what} is not UTF-8")
+
+
+def install(ttl_bytes, version, template_bytes):
+    """Rende ``ttl_bytes`` l'ontologia attiva, con il suo template di mapping,
+    e adegua il mapping del sito.
+
+    Ontologia e template sono verificati entrambi prima di scrivere qualunque
+    file: se uno dei due non e' valido non cambia nulla.
 
     Restituisce un dizionario con l'esito. Non tocca Ontop: il riavvio spetta
     al chiamante (vedi network.receive_ontology).
@@ -170,12 +248,8 @@ def install(ttl_bytes, version):
     current = installed()
     if version <= current["version"]:
         raise StaleOntology(current["version"])
-    if len(ttl_bytes) > MAX_TTL_BYTES:
-        raise InvalidOntology("ontology too large")
-    try:
-        text = ttl_bytes.decode("utf-8")
-    except UnicodeDecodeError:
-        raise InvalidOntology("ontology is not UTF-8")
+    text = _utf8(ttl_bytes, "ontology")
+    template_text = _utf8(template_bytes, "mapping template")
 
     new_graph = parse(text)
     new_terms = declared_terms(new_graph)
@@ -185,6 +259,7 @@ def install(ttl_bytes, version):
     if missing:
         raise InvalidOntology(
             "owl:imports not available offline (Ontop would not start): " + ", ".join(missing))
+    template_blocks = validate_template(template_text, new_terms)
 
     old_terms = declared_terms(parse(active_path().read_text(encoding="utf-8")))
     removed = old_terms - new_terms
@@ -203,9 +278,15 @@ def install(ttl_bytes, version):
         backups = d / "backups"
         backups.mkdir(parents=True, exist_ok=True)
         os.replace(d / "active.ttl", backups / f"v{current['version']}.ttl")
+    if (d / "template.obda").is_file():
+        backups = d / "backups"
+        backups.mkdir(parents=True, exist_ok=True)
+        os.replace(d / "template.obda", backups / f"v{current['version']}.template.obda")
     _atomic_write(d / "active.ttl", ttl_bytes)
+    _atomic_write(d / "template.obda", template_bytes)
     _atomic_write(d / "state.json", json.dumps({
-        "version": version, "sha256": hashlib.sha256(ttl_bytes).hexdigest()}).encode())
+        "version": version, "sha256": hashlib.sha256(ttl_bytes).hexdigest(),
+        "template_sha256": hashlib.sha256(template_bytes).hexdigest()}).encode())
 
     # Mapping: copia di sicurezza in ogni caso in cui cambia.
     if outcome["mapping"] in ("reduced", "emptied"):
@@ -216,6 +297,7 @@ def install(ttl_bytes, version):
             os.makedirs(backup_dir, exist_ok=True)
             os.replace(obda, os.path.join(backup_dir, f"{obda.stem}.before-ontology-v{version}.obda"))
     outcome["removed_terms"] = len(removed)
+    outcome["template_blocks"] = len(template_blocks)
     audit.info("ontology-installed version=%s removed_terms=%d mapping=%s dropped=%d",
                version, len(removed), outcome["mapping"], len(outcome["dropped"]))
     return outcome

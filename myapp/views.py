@@ -11,7 +11,7 @@ import pandas as pd
 
 from contextlib import contextmanager
 
-from . import catalog, datastore, ontop_process
+from . import catalog, datastore, ontology, ontop_process
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
 from .sparql_results import empty_result
@@ -298,7 +298,8 @@ class FieldMappingForm(forms.Form):
 
 def field_mapping_view(request):
     # 1) Parse the OBDA template into header + mapping blocks
-    with open(TEMPLATE_OBDA, 'r', encoding='utf-8') as f:
+    # Il template ricevuto da Central con l'ultima ontologia, se c'e'.
+    with open(ontology.template_path(TEMPLATE_OBDA), 'r', encoding='utf-8') as f:
         tpl = f.read()
     header, inner = split_collection(tpl)
 
