@@ -252,6 +252,10 @@ la colonna da associare a ogni segnaposto. Il metodo e' quello di
   scartate. Un segnaposto lasciato vuoto viene associato alla colonna con lo
   stesso nome, se c'e'. Le regole vanno all'LLM a gruppi di 8; un gruppo con
   risposta troncata viene diviso e richiesto di nuovo.
+- **Regole parziali.** Una regola con segnaposto senza colonna viene scritta
+  senza i predicati che li usano (il sito non ha quel dato). Se il segnaposto
+  e' nel soggetto o in un filtro la regola non viene scritta, e le altre si
+  salvano lo stesso; la pagina dice quali.
 - **Niente viene salvato da solo.** I suggerimenti compilano le regole ancora
   senza associazioni, marcate *LLM* (*LLM, partial* se manca qualche
   segnaposto). Le associazioni gia' salvate non vengono toccate. Si salva con
@@ -263,8 +267,6 @@ la colonna da associare a ogni segnaposto. Il metodo e' quello di
 Limiti noti:
 - La qualita' delle proposte dipende dal modello. Il bootstrap e' stato
   provato solo con un LLM simulato.
-- Una regola suggerita in modo parziale blocca il salvataggio finche' non
-  viene completata o non se ne toglie la tabella.
 
 ---
 

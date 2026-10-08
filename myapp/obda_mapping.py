@@ -449,3 +449,190 @@ def save_active_mapping(path, text, backup_dir, keep=BACKUPS_KEPT):
         for p in old[:-keep] if keep else old:
             p.unlink()
     return backup
+
+
+# ---------------------------------------------------------------------------
+# Struttura del target
+#
+# Un target e' una sequenza di statement Turtle-like:
+#     <soggetto> <pred> <obj> ; <pred> <obj> . <soggetto> ...
+# dove soggetto e oggetti possono contenere segnaposto {x}. Serve a due cose:
+# - ritrovare, in un mapping salvato, quale colonna occupa il posto di ogni
+#   segnaposto del template, anche se il sito ha tolto qualche predicato;
+# - togliere da una regola i predicati i cui segnaposto il sito non associa.
+# ---------------------------------------------------------------------------
+
+def _target_tokens(target):
+    tokens, buf, i, n = [], [], 0, len(target)
+    in_quote = in_iri = False
+    while i < n:
+        c = target[i]
+        if in_quote:
+            buf.append(c)
+            if c == "\\" and i + 1 < n:
+                buf.append(target[i + 1])
+                i += 2
+                continue
+            if c == '"':
+                in_quote = False
+        elif in_iri:
+            buf.append(c)
+            if c == ">":
+                in_iri = False
+        elif c == '"':
+            in_quote = True
+            buf.append(c)
+        elif c == "<":
+            in_iri = True
+            buf.append(c)
+        elif c.isspace():
+            if buf:
+                tokens.append("".join(buf))
+                buf = []
+        elif c in ";." and (i + 1 == n or target[i + 1].isspace()):
+            # ';' e '.' chiudono una coppia o uno statement solo se seguiti da
+            # spazio (o fine): dentro un nome prefissato non lo sono mai.
+            if buf:
+                tokens.append("".join(buf))
+                buf = []
+            tokens.append(c)
+        else:
+            buf.append(c)
+        i += 1
+    if buf:
+        tokens.append("".join(buf))
+    return tokens
+
+
+def parse_target(target):
+    """``[(soggetto, [(predicato, oggetto), ...]), ...]``."""
+    stmts, cur, pending = [], None, []
+    for tok in _target_tokens(target):
+        if tok == ".":
+            if cur is not None:
+                stmts.append(cur)
+            cur, pending = None, []
+            continue
+        if tok == ";":
+            pending = []
+            continue
+        if cur is None:
+            cur = (tok, [])
+            continue
+        pending.append(tok)
+        if len(pending) == 2:
+            cur[1].append((pending[0], pending[1]))
+            pending = []
+    if cur is not None:
+        stmts.append(cur)
+    return stmts
+
+
+def render_target(stmts):
+    parts = []
+    for subj, pairs in stmts:
+        parts.append(subj + " " + " ; ".join(f"{p} {o}" for p, o in pairs) + " .")
+    return " ".join(parts)
+
+
+def _shape(token):
+    return _TARGET_PLACEHOLDER_RE.sub("{}", token)
+
+
+def _positions(target):
+    """``{chiave_strutturale: [segnaposto]}`` di un target."""
+    out, seen = {}, {}
+    for subj, pairs in parse_target(target):
+        ks = ("S", _shape(subj))
+        n = seen[ks] = seen.get(ks, 0) + 1
+        out.setdefault(ks + (n,), _TARGET_PLACEHOLDER_RE.findall(subj))
+        for pred, obj in pairs:
+            ko = ("O", _shape(subj), pred, _shape(obj))
+            m = seen[ko] = seen.get(ko, 0) + 1
+            out.setdefault(ko + (m,), _TARGET_PLACEHOLDER_RE.findall(obj))
+    return out
+
+
+def align_target_placeholders(template_target, saved_target):
+    """``{segnaposto_del_template: colonna}`` ricavato dalla struttura.
+
+    Il segnaposto e la colonna occupano lo stesso posto: soggetto con lo
+    stesso template di IRI, o oggetto dello stesso predicato nello stesso
+    statement. I predicati presenti solo nel template non producono nulla,
+    invece di far scorrere le associazioni successive.
+    """
+    tpl, saved = _positions(template_target), _positions(saved_target)
+    out = {}
+    for key, names in tpl.items():
+        cols = saved.get(key)
+        if not cols or len(cols) != len(names):
+            continue
+        for name, col in zip(names, cols):
+            out.setdefault(name, col)
+    return out
+
+
+def prune_unbound(target, source, unbound):
+    """Regola senza i predicati i cui segnaposto non sono associati.
+
+    ``target`` e ``source`` sono quelli del template, prima delle rinomine.
+    Restituisce ``(target, source, predicati_tolti)``, oppure None se la regola
+    non si puo' ridurre: un segnaposto non associato sta nel soggetto
+    principale, o il source lo usa fuori dalla proiezione (es. in una WHERE),
+    o non resta nulla da mappare.
+    """
+    # Un segnaposto che il source produce da se', con un'espressione e un
+    # alias (es. 'C34373' AS disease), non richiede una colonna del sito.
+    unbound = {u.lower() for u in unbound} - aliased_projections(source)
+    if not unbound:
+        return target, source, []
+
+    def uses(token):
+        return any(p.lower() in unbound for p in _TARGET_PLACEHOLDER_RE.findall(token))
+
+    stmts = parse_target(target)
+    if not stmts or uses(stmts[0][0]):
+        return None
+    kept, dropped = [], []
+    for subj, pairs in stmts:
+        if uses(subj):
+            dropped += [p for p, _ in pairs]
+            continue
+        rest = [(p, o) for p, o in pairs if not uses(o)]
+        dropped += [p for p, o in pairs if uses(o)]
+        if rest:
+            kept.append((subj, rest))
+    if not kept:
+        return None
+
+    span = _projection_span(source)
+    if span is None:
+        return None
+    i, end = span
+    items = _split_top_level(source[i:end])
+    keep_items = []
+    for item in items:
+        plain = _PLAIN_COLUMN_RE.match(item)
+        if plain and plain.group(1).strip('"').lower() in unbound:
+            continue
+        keep_items.append(item)
+    if not keep_items:
+        return None
+    new_source = source[:i] + " " + ", ".join(keep_items) + " " + source[end:].lstrip()
+    if source_identifiers(new_source) & unbound:
+        return None
+    return render_target(kept), new_source, dropped
+
+
+def aliased_projections(sql):
+    """Nomi (minuscoli) che la proiezione produce con ``espressione AS nome``,
+    quando l'espressione non e' una semplice colonna."""
+    span = _projection_span(sql)
+    if span is None:
+        return set()
+    out = set()
+    for item in _split_top_level(sql[span[0]:span[1]]):
+        alias = _AS_TAIL_RE.search(item)
+        if alias and not _PLAIN_COLUMN_RE.match(item[:alias.start()].strip()):
+            out.add(alias.group(1).strip('"').lower())
+    return out
