@@ -227,3 +227,14 @@ def post_signed(identity, url, action, audience_key_b64, payload, timeout=30, se
     except (UnicodeDecodeError, ValueError):
         data = None
     return resp.status_code, data
+
+
+# URL di un nodo: http(s), host anche di una sola etichetta (nomi di servizio
+# Docker o di rete interna, es. http://hdn-central:8000/), porta opzionale.
+NODE_URL_RE = re.compile(
+    r"https?://[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?(?::[0-9]{1,5})?(?:/[^\s]*)?",
+    re.IGNORECASE)
+
+
+def valid_node_url(url):
+    return isinstance(url, str) and len(url) <= 500 and NODE_URL_RE.fullmatch(url) is not None

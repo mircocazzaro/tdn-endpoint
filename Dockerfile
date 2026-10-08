@@ -15,6 +15,9 @@ RUN apt-get update \
 RUN useradd --create-home --uid 10001 hdn
 
 WORKDIR /app
+# WORKDIR e' creata da root: va all'utente dell'endpoint, che vi scrive
+# uploads/ e static/.
+RUN chown hdn:hdn /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --only-binary=:all: -r requirements.txt

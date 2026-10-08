@@ -294,14 +294,27 @@ nuove query ricevono risposte vuote.
 
 ## Docker
 
-E' disponibile un `Dockerfile` che avvia interfaccia e servizio protetto con
-supervisor, con un utente senza privilegi. Il build dell'immagine non e' ancora
-stato verificato; l'installazione descritta sopra si'. Anche nel container
-Ontop si avvia da *Ontop Monitor*: il programma `ontop` di `supervisord.conf`
-non va usato.
+Il `Dockerfile` avvia interfaccia (porta 8000) e servizio per Central (porta
+8084) con supervisor, con un utente senza privilegi:
 
-Rendete persistenti `myapp/obda/` e `uploads/` (volumi), altrimenti dati e
-mapping si perdono ricreando il container.
+```bash
+docker build -t hdn-endpoint .
+docker run -d --name hdn-endpoint -p 8000:8000 -p 8084:8084 \
+  -v hdn-endpoint-uploads:/app/uploads hdn-endpoint
+```
+
+Il volume su `uploads/` conserva iscrizioni, notifiche, chiave dell'endpoint,
+catalogo e ontologia ricevuti. Anche nel container Ontop si avvia da *Ontop
+Monitor*: il programma `ontop` di `supervisord.conf` non va usato.
+
+Limite noto: dati caricati (`myapp/obda/mydatabase.duckdb`) e mapping attivo
+stanno ancora in `myapp/obda/`, accanto alla distribuzione di Ontop, e si
+perdono ricreando il container. Montare un volume su `myapp/obda/` non va
+bene, perche' nasconderebbe Ontop aggiornato dalle nuove immagini.
+
+Se Central e l'endpoint sono sulla stessa rete Docker, gli URL possono usare
+i nomi dei container, ad esempio `http://hdn-central:8000/` e
+`http://hdn-endpoint:8084/`.
 
 ---
 
