@@ -276,7 +276,8 @@ class GaloisPageTests(StateDirMixin, TestCase):
     def test_save_stores_key_privately_and_never_shows_it(self):
         self.client.post("/galois/", self.form())
         self.assertTrue(store.enabled())
-        path = store.base_dir() / "azure.json"
+        from myapp import azure_settings
+        path = azure_settings.path()
         self.assertEqual(stat.S_IMODE(os.stat(path).st_mode), 0o600)
         self.assertEqual(store.load_azure()["api_key"], "TOPSECRET")
         page = self.client.get("/galois/").content.decode()

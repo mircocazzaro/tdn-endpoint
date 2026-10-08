@@ -2,7 +2,7 @@
 
 File in HDN_STATE_DIR/galois/:
 - config.json      modalita' attiva, tabelle e colonne, iterazioni
-- azure.json       endpoint, deployment, versione API e chiave (permessi 0600)
+  (la chiave Azure e' in HDN_STATE_DIR/azure.json, condivisa: myapp/azure_settings.py)
 - galois.duckdb    solo viste: CREATE VIEW t AS SELECT * FROM read_parquet(...)
 - data/<t>.parquet righe della tabella t, riscritte a ogni aggiornamento
 - galois.obda      mapping fisso generato dallo schema
@@ -28,7 +28,7 @@ import duckdb
 from django.conf import settings
 
 from . import schema
-from .llm import AzureOpenAI, LLMError
+from .llm import LLMError
 from .scan import TableScan
 
 audit = logging.getLogger("hdn.audit")
@@ -114,23 +114,21 @@ def enabled():
 
 
 def load_azure():
-    return _read_json(base_dir() / "azure.json", {})
+    # Impostazioni Azure condivise con il bootstrap dei mapping (myapp/azure_settings.py).
+    from .. import azure_settings
+    return azure_settings.load()
 
 
 def save_azure(endpoint, deployment, api_version, api_key=None):
     """Salva la configurazione Azure; ``api_key`` None conserva quella esistente."""
-    current = load_azure()
-    data = {"endpoint": endpoint.strip(), "deployment": deployment.strip(),
-            "api_version": (api_version or "").strip() or None,
-            "api_key": api_key.strip() if api_key else current.get("api_key", "")}
-    _write_json(base_dir() / "azure.json", data, mode=0o600)
+    from .. import azure_settings
+    azure_settings.save(endpoint, deployment, api_version, api_key)
 
 
 def llm_client():
-    a = load_azure()
+    from .. import azure_settings
     try:
-        return AzureOpenAI(a.get("endpoint"), a.get("deployment"), a.get("api_key"),
-                           a.get("api_version"))
+        return azure_settings.client()
     except LLMError as exc:
         raise GaloisError(exc.code, exc.detail)
 
