@@ -214,18 +214,22 @@ volta.
   dei template. Non puo' introdurre nuove grammatiche dei parametri: un
   parametro resta sempre un valore chiuso. Il catalogo nel codice
   (`myapp/catalog.py`) e' la versione 0.
-- **Ontologia.** Sono ammessi solo `owl:imports` risolvibili offline
-  (`myapp/obda/imports/`). Viene eliminato ogni blocco di mapping che usa un
-  termine dichiarato dall'ontologia precedente e non piu' dalla nuova. La
-  versione precedente del mapping resta in `mapping-backups/`. Se non resta
-  alcun blocco, Ontop non viene riavviato e il mapping va rifatto.
+- **Ontologia.** Central la invia sempre insieme al template di mapping
+  scritto per essa, cioe' i blocchi che *Map Data to HERO* propone. Il template
+  nel repository (`myapp/mappings/template.obda`) vale solo finche' non ne
+  arriva uno da Central. L'aggiornamento viene rifiutato per intero, senza
+  cambiare nulla, in due casi:
+  - l'ontologia ha `owl:imports` non risolvibili offline (`myapp/obda/imports/`);
+  - il template usa termini che l'ontologia non dichiara.
+
+  Dal mapping del sito viene eliminato ogni blocco che usa un termine
+  dichiarato dall'ontologia precedente e non piu' dalla nuova. La versione
+  precedente del mapping resta in `mapping-backups/`. Se non resta alcun
+  blocco, Ontop non viene riavviato e il mapping va rifatto.
 - **Notifiche.** Iscrizione, cataloghi e ontologie ricevuti o rifiutati, e
   l'esito del riavvio di Ontop, compaiono nella pagina **Notifications**.
 
-Limiti noti:
-- dopo una nuova ontologia, *Map Data to HERO* propone ancora i blocchi del
-  template che usano termini rimossi;
-- `/sparql-protected/` non e' autenticato.
+Limite noto: `/sparql-protected/` non e' autenticato.
 
 ---
 
@@ -240,7 +244,7 @@ Limiti noti:
 | `uploads/hdn/identity.pem` | chiave privata dell'endpoint nella rete HDN | no |
 | `uploads/hdn/db.sqlite3` | iscrizioni ai Central e notifiche | no |
 | `uploads/hdn/catalog.json` | catalogo delle query ricevuto da Central | no |
-| `uploads/hdn/ontology/` | ontologia ricevuta da Central e versioni precedenti | no |
+| `uploads/hdn/ontology/` | ontologia e template di mapping ricevuti da Central, versioni precedenti | no |
 | `audit.log` | decisioni dell'endpoint sulle richieste di Central | no |
 | `myapp/obda/ontop.log` | log di Ontop, con rotazione a 10 MB (5 file) | no |
 | `myapp/obda/ontop.console.log` | output della JVM all'ultimo avvio di Ontop | no |

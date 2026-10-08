@@ -294,16 +294,21 @@ def receive_ontology(membership, payload):
 
     who = membership.central_name or membership.central_url
     version, ttl, digest = payload.get("version"), payload.get("ttl"), payload.get("sha256")
-    if not isinstance(ttl, str) or not isinstance(digest, str):
-        return 400, {"error": "version, ttl and sha256 are required"}
-    data = ttl.encode("utf-8")
+    tpl, tpl_digest = payload.get("mapping_template"), payload.get("template_sha256")
+    if not all(isinstance(x, str) for x in (ttl, digest, tpl, tpl_digest)):
+        return 400, {"error": "version, ttl, sha256, mapping_template and template_sha256 "
+                              "are required: an ontology is always sent with its mapping template"}
+    data, tpl_data = ttl.encode("utf-8"), tpl.encode("utf-8")
     if hashlib.sha256(data).hexdigest() != digest:
         return 400, {"error": "sha256 does not match the ontology"}
+    if hashlib.sha256(tpl_data).hexdigest() != tpl_digest:
+        return 400, {"error": "template_sha256 does not match the mapping template"}
     current = ontology.installed()
-    if version == current["version"] and digest == current["sha256"]:
+    if (version == current["version"] and digest == current["sha256"]
+            and tpl_digest == current.get("template_sha256")):
         return 200, {"status": "current", "version": version}
     try:
-        outcome = ontology.install(data, version)
+        outcome = ontology.install(data, version, tpl_data)
     except ontology.StaleOntology as exc:
         return 409, {"error": "stale ontology", "installed": exc.installed}
     except ontology.InvalidOntology as exc:
@@ -311,7 +316,8 @@ def receive_ontology(membership, payload):
                str(exc), Notification.ERROR)
         return 422, {"error": str(exc)}
 
-    lines = []
+    lines = [f"Mapping template updated: {outcome['template_blocks']} blocks are now "
+             "offered by \"Map Data to HERO\"."]
     if outcome["mapping"] == "none":
         lines.append("No mapping was defined yet.")
     elif outcome["mapping"] == "unchanged":

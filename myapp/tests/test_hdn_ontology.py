@@ -48,6 +48,20 @@ source		SELECT patient FROM "P"
 """
 
 
+# Template di mapping minimo, valido per tutte le ontologie dei test (bto:sex
+# resta sempre dichiarato; bto:Patient{patient} e' un template di IRI).
+MIN_TEMPLATE = """[PrefixDeclaration]
+bto:		https://w3id.org/brainteaser/ontology/schema/
+xsd:		http://www.w3.org/2001/XMLSchema#
+
+[MappingDeclaration] @collection [[
+mappingId	MAPID-SEX-V2
+target		bto:Patient{patient} bto:sex {sex}^^xsd:string .
+source		SELECT patient, sex FROM "P"
+]]
+"""
+
+
 class FilterTests(SimpleTestCase):
     def test_target_terms_ignore_templates_and_literals(self):
         prefixes = {"bto": BTO, "xsd": "http://www.w3.org/2001/XMLSchema#"}
@@ -95,10 +109,55 @@ class OntologyProtocolTests(StateDirMixin, TestCase):
             p.start()
             self.addCleanup(p.stop)
 
-    def send(self, ttl, version, digest=None):
-        return self.central.post(self.client, "/hdn/ontology/", "ontology", {
-            "version": version, "ttl": ttl,
-            "sha256": digest or hashlib.sha256(ttl.encode()).hexdigest()})
+    def send(self, ttl, version, digest=None, template=MIN_TEMPLATE):
+        payload = {"version": version, "ttl": ttl,
+                   "sha256": digest or hashlib.sha256(ttl.encode()).hexdigest()}
+        if template is not None:
+            payload.update(mapping_template=template,
+                           template_sha256=hashlib.sha256(template.encode()).hexdigest())
+        return self.central.post(self.client, "/hdn/ontology/", "ontology", payload)
+
+    def test_template_installed_and_offered_by_map_fields(self):
+        from myapp import views
+        self.assertEqual(ontology.template_path(views.TEMPLATE_OBDA), views.TEMPLATE_OBDA)
+        self.assertEqual(self.send(NEW_TTL, 1).status_code, 200)
+        path = ontology.template_path(views.TEMPLATE_OBDA)
+        self.assertEqual(Path(path).read_text(), MIN_TEMPLATE)
+        self.assertEqual(ontology.installed()["template_sha256"],
+                         hashlib.sha256(MIN_TEMPLATE.encode()).hexdigest())
+        import duckdb
+        db = str(self.obda_dir / "site.duckdb")
+        duckdb.connect(db).close()
+        with mock.patch.object(views, "DUCKDB_PATH", db):
+            page = self.client.get("/map-fields/").content.decode()
+        self.assertIn("MAPID-SEX-V2", page)
+        self.assertNotIn("MAPID-ONSET", page)
+        self.assertIn("Mapping template updated: 1 blocks",
+                      Notification.objects.get(kind=Notification.ONTOLOGY).body)
+
+    def test_template_is_required_and_must_match_the_ontology(self):
+        self.assertEqual(self.send(NEW_TTL, 1, template=None).status_code, 400)
+        # MAPPING usa bto:ageOnset, che NEW_TTL non dichiara piu'
+        resp = self.send(NEW_TTL, 1, template=MAPPING)
+        self.assertEqual(resp.status_code, 422)
+        self.assertIn("does not declare", json.loads(resp.content)["error"])
+        self.assertIn(BTO + "ageOnset", json.loads(resp.content)["error"])
+        dup = MIN_TEMPLATE.replace("]]", "\nmappingId\tMAPID-SEX-V2\ntarget\t\tbto:Patient{p} bto:sex {s} .\n"
+                                         "source\t\tSELECT p, s FROM \"P\"\n]]")
+        self.assertEqual(self.send(NEW_TTL, 1, template=dup).status_code, 422)
+        self.assertEqual(self.send(NEW_TTL, 1, template="not a template").status_code, 422)
+        # nulla e' cambiato
+        self.assertEqual(ontology.installed()["version"], 0)
+        self.assertEqual(self.obda.read_text(), MAPPING)
+        self.assertFalse((Path(self._state.name) / "ontology" / "template.obda").exists())
+
+    def test_same_ontology_new_template_is_a_new_version(self):
+        self.assertEqual(self.send(NEW_TTL, 1).status_code, 200)
+        other = MIN_TEMPLATE.replace("MAPID-SEX-V2", "MAPID-SEX-V3")
+        same = self.send(NEW_TTL, 1, template=other)
+        self.assertEqual(same.status_code, 409)  # stessa versione, contenuto diverso
+        self.assertEqual(self.send(NEW_TTL, 2, template=other).status_code, 200)
+        self.assertTrue((Path(self._state.name) / "ontology" / "backups" / "v1.template.obda").is_file())
 
     def test_install_filters_mapping_backs_up_and_notifies(self):
         resp = self.send(NEW_TTL, 1)
