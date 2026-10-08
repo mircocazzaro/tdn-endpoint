@@ -7,9 +7,10 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
+
 from django import forms
 
-from . import catalog, network, ontology
+from . import catalog, hdnsig, network, ontology
 from .models import CentralMembership, Notification
 
 
@@ -37,11 +38,30 @@ def hdn_ontology(request):
 
 # --- pagine dell'amministratore -------------------------------------------
 
+class _AnyHostURLField(forms.URLField):
+    """URL http/https che ammette anche host di una sola etichetta.
+
+    URLField di Django richiede un dominio con punto (o localhost/IP): in
+    Docker e nelle reti interne Central ed endpoint si chiamano spesso per
+    nome di servizio, es. http://hdn-central:8000/.
+    """
+    default_validators = []
+
+    def validate(self, value):
+        super().validate(value)
+        if value and not hdnsig.valid_node_url(value):
+            raise forms.ValidationError("Enter a valid http(s) URL.")
+
+    def to_python(self, value):
+        # Nessuna normalizzazione: l'URL resta come l'ha scritto l'amministratore.
+        return forms.CharField.to_python(self, value)
+
+
 class ApplyForm(forms.Form):
-    central_url = forms.URLField(label="HDN Central URL",
+    central_url = _AnyHostURLField(label="HDN Central URL",
                                  widget=forms.URLInput(attrs={"class": "form-control",
                                                               "placeholder": "https://central.example.org/"}))
-    endpoint_url = forms.URLField(label="URL of this endpoint, as Central will reach it",
+    endpoint_url = _AnyHostURLField(label="URL of this endpoint, as Central will reach it",
                                   widget=forms.URLInput(attrs={"class": "form-control",
                                                                "placeholder": "https://endpoint.example.org:8084/"}))
     endpoint_name = forms.CharField(label="Name of this endpoint", max_length=100,

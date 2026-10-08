@@ -192,3 +192,19 @@ class PortSeparationTests(SimpleTestCase):
             for path in ("/hdn/catalog/", "/network/", "/notifications/"):
                 sparql_wsgi.application({"PATH_INFO": path}, lambda *a: None)
         self.assertEqual(calls, ["/hdn/catalog/"])
+
+
+class NodeUrlTests(SimpleTestCase):
+    """Nomi di servizio Docker/rete interna sono URL validi per Central ed endpoint."""
+
+    def test_single_label_hosts_accepted(self):
+        from myapp.network_views import ApplyForm
+        f = ApplyForm({"central_url": "http://hdn-central:8000/",
+                       "endpoint_url": "http://hdn-endpoint:8084/", "endpoint_name": "E"})
+        self.assertTrue(f.is_valid(), f.errors)
+        self.assertEqual(f.cleaned_data["central_url"], "http://hdn-central:8000/")
+
+    def test_invalid_urls_refused(self):
+        for url in ("ftp://x/", "http://", "javascript:alert(1)", "http://a b/", "hdn-central:8000"):
+            with self.subTest(url):
+                self.assertFalse(hdnsig.valid_node_url(url))
