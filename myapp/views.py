@@ -18,6 +18,8 @@ from .schema_diagram import er_diagram
 from .sparql_results import empty_result
 from .obda_mapping import (
     adapt_isnan,
+ align_target_placeholders,
+ prune_unbound,
     save_active_mapping,
     split_collection,
     substitute_identifiers,
@@ -423,7 +425,7 @@ def field_mapping_view(request):
 
             try:
                 mid       = re.search(r'mappingId\s+(\S+)', blk_txt).group(1)
-                tgt_exist = re.search(r'target\s+(.*?)\n', blk_txt, re.S).group(1).strip()
+                tgt_exist = re.search(r'target\s+(.*?)\n\s*source\b', blk_txt, re.S).group(1).strip()
                 saved_vars = list(dict.fromkeys(
                     re.findall(r'\{(\w+)\}', tgt_exist)
                 ))
@@ -432,12 +434,19 @@ def field_mapping_view(request):
                 src_line  = re.search(r'source\s+(.*)', blk_txt, re.S).group(1).strip()
                 tbl = (re.search(r'FROM\s+"([^"]+)"', src_line) or [None, None])[1]
 
-                # build placeholder map exactly as before…
+                # Colonna di ogni segnaposto: prima per posizione nella
+                # struttura del target (stesso soggetto, stesso predicato),
+                # poi per alias o nome nel source. L'ordine dei segnaposto
+                # non basta: se il sito ha tolto un predicato del template,
+                # tutte le associazioni successive scorrerebbero di un posto.
                 ph_map = {}
                 for blk in mapping_blocks:
                     if blk['mappingId'] != mid:
                         continue
+                    ph_map.update(align_target_placeholders(blk['target'], tgt_exist))
                     for var in blk['placeholders']:
+                        if var in ph_map:
+                            continue
                         # same AS‐alias and positional logic…
                         m = re.search(
                             rf"([^\s,]+)\s+AS\s+{re.escape(var)}\b",
@@ -451,9 +460,11 @@ def field_mapping_view(request):
                         elif re.search(rf"\b{re.escape(var)}\b", src_line):
                             ph_map[var] = var
                     missing = [v for v in blk['placeholders'] if v not in ph_map]
-                    if missing and len(saved_vars) == len(blk['placeholders']):
-                        for i, orig in enumerate(blk['placeholders']):
-                            ph_map[orig] = saved_vars[i]
+                    target_vars = list(dict.fromkeys(re.findall(r'\{(\w+)\}', blk['target'])))
+                    if missing and len(saved_vars) == len(target_vars):
+                        # stessa forma: l'ordine dei segnaposto e' affidabile
+                        for orig, col in zip(target_vars, saved_vars):
+                            ph_map.setdefault(orig, col)
                     break
 
                 # pick up WHERE‐only mappings
@@ -510,9 +521,6 @@ def field_mapping_view(request):
         for idx, var in enumerate(blk['placeholders']):
             # if no existing mapping, info.get('placeholders') is {} → no KeyError
             col = existing.get(mid, {}).get('placeholders', {}).get(var)
-            # if still missing, fall back to positional fill
-            if col is None and idx < len(saved_vars):
-                col = saved_vars[idx]
             if not col:
                 continue
 
@@ -566,6 +574,8 @@ def field_mapping_view(request):
         problems = []
         generated_sources = []
         adapted_cols = []
+        skipped = []    # regole non scritte: segnaposto senza colonna non eliminabili
+        reduced = []    # regole scritte senza i predicati di cui il sito non ha dati
         try:
             site_types = datastore.column_types(DUCKDB_PATH)
         except datastore.DataStoreBusy:
@@ -608,6 +618,25 @@ def field_mapping_view(request):
                     continue
                 conn_map[var_name] = col_name
 
+            # Un segnaposto senza colonna associata vale come associato se la
+            # tabella ha una colonna con lo stesso nome.
+            lower_cols = {c.lower(): c for c in cols}
+            for var in blk['placeholders']:
+                if var not in conn_map and var.lower() in lower_cols:
+                    conn_map[var] = lower_cols[var.lower()]
+            # Segnaposto ancora senza colonna: il sito non ha quel dato. Si
+            # tolgono i predicati che lo usano; se non si puo' (soggetto,
+            # filtro nella WHERE, nulla da mappare) la regola non viene scritta
+            # e le altre si salvano lo stesso.
+            unbound = [v for v in blk['placeholders'] if v not in conn_map]
+            if unbound:
+                pruned = prune_unbound(tgt_inst, src, unbound)
+                if pruned is None:
+                    skipped.append(f"{mid} (no column for {', '.join(unbound)})")
+                    continue
+                tgt_inst, src, dropped = pruned
+                if dropped:
+                    reduced.append(f"{mid}: {', '.join(dropped)}")
             # Sostituzione simultanea e consapevole dei token, sia nel target
             # sia nel source: ogni identificatore viene riscritto una volta
             # sola e mai dentro un literal o un nome di tabella quotato.
@@ -644,6 +673,9 @@ def field_mapping_view(request):
         # Ogni source viene eseguito sul database del sito prima di salvare:
         # Ontop lo inoltra verbatim, e un source che non esegue rompe anche le
         # query che lo includono in una union.
+        if not problems and not generated_sources and skipped:
+            problems.append("No rule could be written, placeholders without a column: "
+                            + "; ".join(skipped) + ".")
         if not problems and generated_sources:
             try:
                 failing = datastore.failing_sources(DUCKDB_PATH, generated_sources)
@@ -664,6 +696,12 @@ def field_mapping_view(request):
             lines.append(']]')
             backup = save_active_mapping(OBDA_FILE, "\n".join(lines), mapping_backup_dir())
 
+            if reduced:
+                messages.info(request, "Written without the predicates whose placeholders have "
+                                       "no column: " + "; ".join(reduced) + ".")
+            if skipped:
+                messages.warning(request, "Not written, bind the missing placeholders to include "
+                                          "them: " + "; ".join(skipped) + ".")
             if adapted_cols:
                 messages.info(
                     request,

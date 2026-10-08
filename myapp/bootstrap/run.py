@@ -28,6 +28,7 @@ from django.conf import settings
 
 from .. import ontology
 from ..galois.llm import LLMError
+from ..obda_mapping import aliased_projections
 from . import prompt as P
 
 audit = logging.getLogger("hdn.audit")
@@ -169,8 +170,11 @@ def bootstrap(llm, header, blocks, schema):
     for i, b in indexed:
         table, pairs, notes = validate(by_index.get(i, {}), b, schema)
         if table and pairs:
+            # placeholders the template source produces itself ('C34373' AS disease)
+            own = aliased_projections(b["source_tpl"])
+            complete = all(p in pairs or p.lower() in own for p in b["placeholders"])
             suggestions[b["mappingId"]] = {"table": table, "pairs": pairs, "notes": notes,
-                                           "complete": len(pairs) == len(b["placeholders"])}
+                                           "complete": complete}
         elif notes:
             problems += [f"{b['mappingId']}: {n}" for n in notes]
     summary = {"rules": len(blocks), "suggested": len(suggestions),
