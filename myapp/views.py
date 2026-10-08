@@ -12,6 +12,7 @@ import pandas as pd
 from contextlib import contextmanager
 
 from . import catalog, datastore, ontology, ontop_process
+from .galois import store as galois_store
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
 from .sparql_results import empty_result
@@ -297,6 +298,10 @@ class FieldMappingForm(forms.Form):
 
 
 def field_mapping_view(request):
+    if galois_store.enabled():
+        messages.info(request, "Galois mode is on: the mapping is fixed and generated from "
+                               "the Galois schema. It is shown on the Galois page.")
+        return redirect('galois')
     # 1) Parse the OBDA template into header + mapping blocks
     # Il template ricevuto da Central con l'ultima ontologia, se c'e'.
     with open(ontology.template_path(TEMPLATE_OBDA), 'r', encoding='utf-8') as f:
@@ -883,6 +888,16 @@ def protected_sparql(request):
     if allowed_level > local_max_level:
         return no_contribution('disclosure-refused',
                                requested=allowed_level, local_max=local_max_level)
+
+    # Modalita' Galois: prima di interrogare Ontop si ripopolano dall'LLM le
+    # tabelle che la query usa. Senza dati appena recuperati non si risponde.
+    if galois_store.enabled():
+        try:
+            refreshed = galois_store.refresh_for_query(
+                template.sparql, catalog.active().prefixes)
+        except galois_store.GaloisError as exc:
+            return no_contribution('galois-error', error=exc.code)
+        audit.info("galois-tables template=%s tables=%s", template.key, ",".join(refreshed))
 
     # 4) KL-divergence analytics
     if analytics_key == 'klDiv':

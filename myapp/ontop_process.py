@@ -135,8 +135,14 @@ def command():
     """Riga di comando con cui la UI avvia Ontop."""
     # L'ontologia ricevuta da Central, se c'e', sostituisce quella del repository.
     from .ontology import active_path
+    from .galois import store as galois
+    # In modalita' Galois Ontop usa il mapping fisso e le viste di Galois.
+    if galois.enabled():
+        mapping, props = galois.mapping_path(), galois.properties_path()
+    else:
+        mapping, props = OBDA_FILE, PROPS_FILE
     return [str(ONTOP_CMD), "endpoint",
-            "-m", str(OBDA_FILE), "-t", str(active_path()), "-p", str(PROPS_FILE),
+            "-m", str(mapping), "-t", str(active_path()), "-p", str(props),
             "-x", str(XML_CATALOG)]
 
 

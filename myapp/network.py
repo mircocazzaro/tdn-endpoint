@@ -330,6 +330,16 @@ def receive_ontology(membership, payload):
         lines.append("The previous mapping is saved in mapping-backups.")
         if outcome["mapping"] == "emptied":
             lines.append("No mapping is left: map the data again from \"Map Data to HERO\".")
+    from .galois import store as galois
+    galois_mode = galois.enabled()
+    if galois_mode:
+        # Il mapping di Galois e' generato dallo schema: si rigenera contro la
+        # nuova ontologia, escludendo le colonne che usano termini rimossi.
+        text, excluded = galois.build_mapping()
+        galois.mapping_path().write_text(text, encoding="utf-8")
+        lines.append("Galois mode: the fixed Galois mapping was regenerated."
+                     + (f" Excluded because the ontology no longer declares their terms: "
+                        f"{', '.join(mid for mid, _ in excluded)}." if excluded else ""))
     running = ontop_process.is_running()
     lines.append("Ontop is being restarted with the new ontology." if running
                  else "Ontop is not running: the new ontology will be used when it starts.")
@@ -340,6 +350,7 @@ def receive_ontology(membership, payload):
     # dell'installazione, quello del riavvio arriva nel centro notifiche.
     if running:
         threading.Thread(target=_restart_ontop_after_ontology,
-                         args=(version, outcome["mapping"] != "emptied"), daemon=True).start()
+                         args=(version, galois_mode or outcome["mapping"] != "emptied"),
+                         daemon=True).start()
     return 200, {"status": "installed", "version": version, "mapping": outcome["mapping"],
                  "kept": len(outcome["kept"]), "dropped": len(outcome["dropped"])}

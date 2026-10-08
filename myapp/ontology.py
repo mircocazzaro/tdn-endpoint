@@ -116,6 +116,32 @@ def declared_terms(graph):
             if isinstance(s, rdflib.URIRef)}
 
 
+_import_terms_cache = {}
+
+
+def offline_import_terms(graph):
+    """Termini dichiarati dagli owl:imports di ``graph``, letti dalle copie offline.
+
+    Es. skos:broaderTransitive e' dichiarato da skos-core.rdf, non da HERO.
+    """
+    import rdflib
+    root = ET.parse(ontop_process.XML_CATALOG).getroot()
+    local = {e.get("name"): Path(ontop_process.XML_CATALOG).parent / e.get("uri")
+             for e in root.iter(_CATALOG_NS + "uri")}
+    out = set()
+    for iri in imports(graph):
+        path = local.get(iri)
+        if path is None or not path.is_file():
+            continue
+        key = (str(path), path.stat().st_mtime_ns)
+        if key not in _import_terms_cache:
+            g = rdflib.Graph()
+            g.parse(str(path), format=rdflib.util.guess_format(str(path)) or "xml")
+            _import_terms_cache[key] = frozenset(declared_terms(g))
+        out |= _import_terms_cache[key]
+    return out
+
+
 def imports(graph):
     from rdflib.namespace import OWL
     return {str(o) for o in graph.objects(None, OWL.imports)}
@@ -259,7 +285,7 @@ def install(ttl_bytes, version, template_bytes):
     if missing:
         raise InvalidOntology(
             "owl:imports not available offline (Ontop would not start): " + ", ".join(missing))
-    template_blocks = validate_template(template_text, new_terms)
+    template_blocks = validate_template(template_text, new_terms | offline_import_terms(new_graph))
 
     old_terms = declared_terms(parse(active_path().read_text(encoding="utf-8")))
     removed = old_terms - new_terms
