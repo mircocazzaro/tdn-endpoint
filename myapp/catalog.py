@@ -638,7 +638,9 @@ PARAM_TYPES = MappingProxyType({t.name: t for t in (DISEASE, AGE, SEX, ALSFRS_QU
 _PROLOGUE_LINE_RE = re.compile(
     r"PREFIX[ \t]+([A-Za-z][A-Za-z0-9_-]*):[ \t]*<([^<>\"{}|^`\\\x00-\x20]+)>")
 _KEY_RE = re.compile(r"[A-Za-z0-9_-]{1,40}")
-MAX_TEMPLATES = 500
+# Central publishes, besides the hand-written templates, their derived
+# sub-patterns (query rewriting): the catalog can hold thousands of entries.
+MAX_TEMPLATES = 20000
 
 
 class Catalog:
