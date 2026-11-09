@@ -69,18 +69,6 @@
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <!-- Example links; add or remove as needed -->
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'home' %}">Upload CSV</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'query' %}">Run Relational Queries</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'map_fields' %}">Map Data to HERO</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'ontop_control' %}">Ontop Monitor</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="{% url 'galois' %}">Galois</a>
             </li>
             <li class="nav-item">
@@ -126,6 +114,9 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'ontop_control' %}"><img src="{% static 'myapp/ontop-small.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Ontop Monitor</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'ontology' %}"><i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>Ontology</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'query' %}"><img src="{% static 'myapp/duckdb-logo.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Run Relational Queries</a>
