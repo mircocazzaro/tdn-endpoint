@@ -295,8 +295,7 @@ def _restart_ontop_after_ontology(version, has_mapping):
 def receive_ontology(membership, payload):
     """Ontologia distribuita da Central (azione ``ontology``): installata subito."""
     import hashlib
-    import threading
-    from . import ontology, ontop_process
+    from . import ontology
 
     who = membership.central_name or membership.central_url
     version, ttl, digest = payload.get("version"), payload.get("ttl"), payload.get("sha256")
@@ -314,13 +313,29 @@ def receive_ontology(membership, payload):
             and tpl_digest == current.get("template_sha256")):
         return 200, {"status": "current", "version": version}
     try:
-        outcome = ontology.install(data, version, tpl_data)
+        outcome = install_ontology(data, version, tpl_data, who)
     except ontology.StaleOntology as exc:
         return 409, {"error": "stale ontology", "installed": exc.installed}
     except ontology.InvalidOntology as exc:
         notify(Notification.ONTOLOGY, f"Refused ontology v{version} from {who}",
                str(exc), Notification.ERROR)
         return 422, {"error": str(exc)}
+
+    return 200, {"status": "installed", "version": version, "mapping": outcome["mapping"],
+                 "kept": len(outcome["kept"]), "dropped": len(outcome["dropped"])}
+
+
+def install_ontology(data, version, tpl_data, who):
+    """Installa ontologia e template (ontology.install), adegua il mapping e notifica.
+
+    Usata sia dal protocollo di Central sia dal caricamento locale. Solleva
+    ontology.InvalidOntology o StaleOntology senza cambiare nulla. Se Ontop e'
+    acceso lo riavvia in background; l'esito arriva nel centro notifiche.
+    """
+    import threading
+    from . import ontology, ontop_process
+
+    outcome = ontology.install(data, version, tpl_data)
 
     lines = [f"Mapping template updated: {outcome['template_blocks']} blocks are now "
              "offered by \"Map Data to HERO\"."]
@@ -358,5 +373,4 @@ def receive_ontology(membership, payload):
         threading.Thread(target=_restart_ontop_after_ontology,
                          args=(version, galois_mode or outcome["mapping"] != "emptied"),
                          daemon=True).start()
-    return 200, {"status": "installed", "version": version, "mapping": outcome["mapping"],
-                 "kept": len(outcome["kept"]), "dropped": len(outcome["dropped"])}
+    return outcome

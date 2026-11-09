@@ -25,6 +25,7 @@ urlpatterns = [
     path('delete-table/<str:table_name>/', delete_table_view, name='delete_table'),
     # Rete HDN: pagine dell'amministratore
     path('network/', network_views.network_view, name='network'),
+    path('ontology/', network_views.ontology_view, name='ontology'),
     path('galois/', galois_views.galois_view, name='galois'),
     path('notifications/', network_views.notifications_view, name='notifications'),
     path('notifications/read/', network_views.notifications_read, name='notifications_read'),

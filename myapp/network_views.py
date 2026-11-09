@@ -93,6 +93,68 @@ def network_view(request):
     })
 
 
+class OntologyUploadForm(forms.Form):
+    ontology_file = forms.FileField(
+        label="Ontology (Turtle, .ttl)",
+        widget=forms.ClearableFileInput(attrs={"class": "form-control", "accept": ".ttl,text/turtle"}))
+    mapping_file = forms.FileField(
+        label="Mapping template (.obda, optional)", required=False,
+        help_text="Blocks offered by \"Map Data to HERO\" for this ontology. If left empty, the "
+                  "current template is kept, provided it only uses terms the new ontology declares.",
+        widget=forms.ClearableFileInput(attrs={"class": "form-control", "accept": ".obda"}))
+
+    def clean_ontology_file(self):
+        f = self.cleaned_data["ontology_file"]
+        if not f.name.lower().endswith(".ttl"):
+            raise forms.ValidationError("The ontology must be a Turtle file (.ttl).")
+        return f
+
+    def clean_mapping_file(self):
+        f = self.cleaned_data.get("mapping_file")
+        if f and not f.name.lower().endswith(".obda"):
+            raise forms.ValidationError("The mapping template must be an .obda file.")
+        return f
+
+
+@require_http_methods(["GET", "POST"])
+def ontology_view(request):
+    """Carica un'ontologia Turtle e la rende attiva, come se l'avesse distribuita Central."""
+    from pathlib import Path
+    from .views import TEMPLATE_OBDA
+
+    form = OntologyUploadForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        ttl_file = form.cleaned_data["ontology_file"]
+        tpl_file = form.cleaned_data["mapping_file"]
+        data = ttl_file.read()
+        if tpl_file:
+            tpl_data = tpl_file.read()
+        else:
+            tpl_data = Path(ontology.template_path(TEMPLATE_OBDA)).read_bytes()
+        # Ogni caricamento e' una versione nuova, come per le ontologie di Central:
+        # le versioni successive di Central dovranno superare questa.
+        version = ontology.installed()["version"] + 1
+        try:
+            outcome = network.install_ontology(data, version, tpl_data,
+                                               who=f"local upload {ttl_file.name}")
+        except ontology.InvalidOntology as exc:
+            messages.error(request, f"Ontology rejected, nothing was changed: {exc}")
+        except ontology.StaleOntology as exc:
+            messages.error(request, f"Ontology rejected, nothing was changed: installed "
+                                    f"version {exc.installed} changed during the upload. Retry.")
+        else:
+            messages.success(request, f"Ontology v{version} installed"
+                                      f" ({outcome['mapping']} mapping). Details in notifications.")
+            return redirect("ontology")
+    installed = ontology.installed()
+    return render(request, "myapp/ontology.html", {
+        "form": form,
+        "ontology_version": installed["version"],
+        "ontology_sha256": installed["sha256"],
+        "template_is_received": Path(ontology.template_path(TEMPLATE_OBDA)) != Path(TEMPLATE_OBDA),
+    })
+
+
 def notifications_view(request):
     return render(request, "myapp/notifications.html", {
         "notifications": Notification.objects.all()[:200],

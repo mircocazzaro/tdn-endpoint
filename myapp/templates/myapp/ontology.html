@@ -1,0 +1,33 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+<h2>Ontology</h2>
+<p class="small" id="ontology-installed">
+  Active ontology: <strong>v{{ ontology_version }}</strong>{% if ontology_version == 0 %} (built-in, from the repository){% endif %}
+  {% if ontology_sha256 %}· SHA-256 <code>{{ ontology_sha256 }}</code>{% endif %}
+  · Mapping template: {% if template_is_received %}received with the ontology{% else %}built-in{% endif %}
+</p>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Upload a new ontology</h5>
+    <p class="text-muted small">
+      The Turtle file becomes the ontology loaded by Ontop, and the endpoint installs it the same way as an
+      ontology sent by HDN Central. Mappings that use classes or properties the new ontology no longer
+      declares are removed (a copy of the previous mapping is kept in <code>mapping-backups</code>).
+      If Ontop is running it is restarted with the new ontology.
+    </p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% for f in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+          {{ f }}
+          {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+          {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Upload and install</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
