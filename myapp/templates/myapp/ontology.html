@@ -2,11 +2,11 @@
 {% load static %}
 {% block content %}
 <h2>Ontology Monitor</h2>
-<p class="small" id="ontology-installed">
+<!--<p class="small" id="ontology-installed">
   Active ontology: <strong>v{{ ontology_version }}</strong>{% if ontology_version == 0 %} (built-in, from the repository){% endif %}
   {% if ontology_sha256 %}· SHA-256 <code>{{ ontology_sha256 }}</code>{% endif %}
   · Mapping template: {% if template_is_received %}received with the ontology{% else %}built-in{% endif %}
-</p>
+</p>-->
 
 {% if index_error %}
   <div class="alert alert-danger" role="alert">The active ontology cannot be read: {{ index_error }}</div>
@@ -26,6 +26,22 @@
       </select>
       <span class="small text-muted" id="ontCount"></span>
     </div>
+
+    <form id="ontFind" class="row g-2 align-items-end mb-3" aria-label="Find properties by domain and range">
+      <div class="col-md-4">
+        <label class="form-label small mb-1" for="ontDomain">Domain <span class="text-danger">*</span></label>
+        <select id="ontDomain" class="form-select form-select-sm" required></select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-1" for="ontRange">Range <span class="text-muted">(optional)</span></label>
+        <select id="ontRange" class="form-select form-select-sm"></select>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" id="ontFindApply" class="btn btn-sm btn-primary" disabled>Find properties</button>
+        <button type="button" id="ontFindClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+      <div class="col-12 small text-muted" id="ontFindStatus"></div>
+    </form>
 
     <div class="row g-3">
       <div class="col-lg-4">
