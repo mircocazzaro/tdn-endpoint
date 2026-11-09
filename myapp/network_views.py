@@ -4,13 +4,14 @@
 - /network/ e /notifications/: pagine dell'amministratore locale (porta 8000).
 """
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from django import forms
 
-from . import catalog, hdnsig, network, ontology
+from . import catalog, hdnsig, network, ontology, ontology_monitor
 from .models import CentralMembership, Notification
 
 
@@ -147,12 +148,33 @@ def ontology_view(request):
                                       f" ({outcome['mapping']} mapping). Details in notifications.")
             return redirect("ontology")
     installed = ontology.installed()
+    try:
+        index = ontology_monitor.index()
+        index_error = None
+    except ontology.InvalidOntology as exc:
+        index, index_error = None, str(exc)
     return render(request, "myapp/ontology.html", {
         "form": form,
         "ontology_version": installed["version"],
         "ontology_sha256": installed["sha256"],
         "template_is_received": Path(ontology.template_path(TEMPLATE_OBDA)) != Path(TEMPLATE_OBDA),
+        "index": index,
+        "index_error": index_error,
     })
+
+
+@require_GET
+def ontology_graph(request):
+    """Diagramma Mermaid di un termine dell'ontologia attiva (?iri=...)."""
+    try:
+        data = ontology_monitor.index()
+    except ontology.InvalidOntology as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+    try:
+        text, truncated = ontology_monitor.graph(data, request.GET.get("iri", ""))
+    except KeyError:
+        return JsonResponse({"error": "unknown term"}, status=404)
+    return JsonResponse({"mermaid": text, "truncated": truncated})
 
 
 def notifications_view(request):
