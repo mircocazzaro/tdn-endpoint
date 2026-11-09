@@ -66,10 +66,18 @@ class IndexTests(SimpleTestCase):
         text, truncated = ontology_monitor.graph(self.data, BASE + "Disease")
         self.assertFalse(truncated)
         self.assertTrue(text.startswith("flowchart LR"))
-        self.assertIn('["Disease"]', text)
-        self.assertIn('["Rare disease"]', text)
+        self.assertIn('["★ Disease"]:::kclass', text)
+        self.assertIn('["Rare disease"]:::kclass', text)
         self.assertIn("|subClassOf|", text)
-        self.assertIn("class n0 focus", text)
+
+    def test_class_graph_shows_its_datatype_and_object_properties(self):
+        text, _ = ontology_monitor.graph(self.data, BASE + "Patient")
+        self.assertIn('["age"]:::kdatatype', text)
+        self.assertIn('["has disease"]:::kobject', text)
+        self.assertIn("-.->|domain|", text)
+        # una proprieta' di Patient non e' sul diagramma di Disease
+        disease, _ = ontology_monitor.graph(self.data, BASE + "Disease")
+        self.assertNotIn("age", disease)
 
     def test_graph_of_a_property_is_dashed_to_domain_and_range(self):
         text, _ = ontology_monitor.graph(self.data, BASE + "hasDisease")
@@ -78,7 +86,7 @@ class IndexTests(SimpleTestCase):
 
     def test_labels_are_escaped_for_mermaid(self):
         text, _ = ontology_monitor.graph(self.data, BASE + "alice")
-        self.assertIn("[\"Alice 'A'\"]", text)
+        self.assertIn("[\"★ Alice 'A'\"]:::kindividual", text)
         self.assertNotIn('"A"', text)
 
     def test_graph_is_truncated_at_the_node_limit(self):
@@ -87,6 +95,7 @@ class IndexTests(SimpleTestCase):
         self.assertTrue(truncated)
         self.assertEqual(text.count('["'), 1)
         self.assertNotIn("alice", text)
+        self.assertNotIn("age", text)
 
     def test_unknown_term_raises_key_error(self):
         with self.assertRaises(KeyError):

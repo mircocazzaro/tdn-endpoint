@@ -25,6 +25,24 @@ _DECLARED = (
 )
 KINDS = tuple(k for k, _ in _DECLARED) + ("individual",)
 MAX_GRAPH_NODES = 40
+PROPERTY_KINDS = ("object_property", "datatype_property", "annotation_property", "property")
+# Stile Mermaid per tipo: stessi colori dei badge della pagina (Bootstrap).
+NODE_STYLE = {
+    "class": "kclass",
+    "object_property": "kobject",
+    "datatype_property": "kdatatype",
+    "annotation_property": "kannotation",
+    "property": "kproperty",
+    "individual": "kindividual",
+}
+CLASS_DEFS = (
+    "  classDef kclass fill:#cfe2ff,stroke:#0a58ca,color:#000",
+    "  classDef kobject fill:#d1e7dd,stroke:#198754,color:#000",
+    "  classDef kdatatype fill:#fff3cd,stroke:#b58105,color:#000",
+    "  classDef kannotation fill:#cff4fc,stroke:#0aa2c0,color:#000",
+    "  classDef kproperty fill:#e9ecef,stroke:#495057,color:#000",
+    "  classDef kindividual fill:#f8d7da,stroke:#b02a37,color:#000",
+)
 
 _cache = {}
 _lock = threading.Lock()
@@ -150,6 +168,12 @@ def graph(data, iri, max_nodes=MAX_GRAPH_NODES):
     for ty in focus["types"]:
         if ty in by_iri:
             edges.append((focus["iri"], ty, "type", True))
+    if focus["kind"] in ("class", "individual"):
+        # proprieta' dichiarate su questa classe (anche datatype), prima delle istanze
+        # perche' il limite di nodi non le escluda
+        for t in data["terms"]:
+            if t["kind"] in PROPERTY_KINDS and focus["iri"] in t["domain"]:
+                edges.append((t["iri"], focus["iri"], "domain", True))
     for i in focus["instances"]:
         edges.append((i, focus["iri"], "type", True))
 
@@ -165,8 +189,7 @@ def graph(data, iri, max_nodes=MAX_GRAPH_NODES):
             ids[node_iri] = f"n{len(ids)}"
         return ids[node_iri]
 
-    lines = ["flowchart LR",
-             "  classDef focus fill:#ffe08a,stroke:#333,color:#000"]
+    lines = ["flowchart LR", *CLASS_DEFS]
     body = []
     for src, dst, label, dashed in edges:
         a, b = node_id(src), node_id(dst)
@@ -176,7 +199,8 @@ def graph(data, iri, max_nodes=MAX_GRAPH_NODES):
         body.append(f"  {a} {arrow}|{_label_for_mermaid(label)}| {b}")
     for node_iri, nid in ids.items():
         t = by_iri[node_iri]
-        lines.append(f'  {nid}["{_label_for_mermaid(t["label"])}"]')
+        mark = "★ " if node_iri == focus["iri"] else ""
+        style = NODE_STYLE.get(t["kind"], "kclass")
+        lines.append(f'  {nid}["{mark}{_label_for_mermaid(t["label"])}"]:::{style}')
     lines.extend(body)
-    lines.append("  class n0 focus")
     return "\n".join(lines) + "\n", truncated
