@@ -1,11 +1,54 @@
 {% extends 'myapp/base.html' %}
+{% load static %}
 {% block content %}
-<h2>Ontology</h2>
+<h2>Ontology Monitor</h2>
 <p class="small" id="ontology-installed">
   Active ontology: <strong>v{{ ontology_version }}</strong>{% if ontology_version == 0 %} (built-in, from the repository){% endif %}
   {% if ontology_sha256 %}· SHA-256 <code>{{ ontology_sha256 }}</code>{% endif %}
   · Mapping template: {% if template_is_received %}received with the ontology{% else %}built-in{% endif %}
 </p>
+
+{% if index_error %}
+  <div class="alert alert-danger" role="alert">The active ontology cannot be read: {{ index_error }}</div>
+{% elif index %}
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <input type="search" id="ontSearch" class="form-control" style="max-width: 24rem;"
+             placeholder="Search by label or IRI" aria-label="Search ontology terms">
+      <select id="ontKind" class="form-select" style="max-width: 14rem;" aria-label="Filter by type">
+        <option value="">All types</option>
+        <option value="class">Classes ({{ index.counts.class|default:0 }})</option>
+        <option value="object_property">Object properties ({{ index.counts.object_property|default:0 }})</option>
+        <option value="datatype_property">Datatype properties ({{ index.counts.datatype_property|default:0 }})</option>
+        <option value="annotation_property">Annotation properties ({{ index.counts.annotation_property|default:0 }})</option>
+        <option value="individual">Individuals ({{ index.counts.individual|default:0 }})</option>
+      </select>
+      <span class="small text-muted" id="ontCount"></span>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-4">
+        <div id="ontResults" class="list-group" style="max-height: 70vh; overflow-y: auto;"></div>
+      </div>
+      <div class="col-lg-8">
+        <div id="ontDetail" class="mb-3">
+          <p class="text-muted">Select a term to inspect it.</p>
+        </div>
+        <div class="border rounded p-2 bg-white" style="overflow: auto; min-height: 12rem;">
+          <div id="ontDiagram" class="text-center text-muted small">Diagram appears here.</div>
+          <div id="ontDiagramNote" class="small text-warning"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ index|json_script:"ontology-index" }}
+<div id="ontology-explorer" data-graph-url="{% url 'ontology_graph' %}"></div>
+<script src="{% static 'myapp/vendor/mermaid-11.4.1/mermaid.min.js' %}"></script>
+<script src="{% static 'myapp/ontology_monitor.js' %}"></script>
+{% endif %}
 
 <div class="card mb-4">
   <div class="card-body">
