@@ -10,8 +10,9 @@ import tempfile
 import pandas as pd
 
 from contextlib import contextmanager
+from datetime import datetime
 
-from . import catalog, datastore, ontology, ontop_process
+from . import catalog, datastore, exports, ontology, ontop_process
 from .galois import store as galois_store
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
@@ -35,7 +36,7 @@ audit = logging.getLogger('hdn.audit')
 from django import forms
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -228,8 +229,10 @@ def query_view(request):
     query_text = ""
     columns = []
 
+    export = ''
     if request.method == 'POST':
         query_text = request.POST.get('sql_query', '')
+        export = request.POST.get('export', '')
         try:
             with datastore.read_connection(DUCKDB_PATH) as conn:
                 if conn is None:
@@ -242,6 +245,8 @@ def query_view(request):
             error = BUSY_MESSAGE
         except Exception as e:
             error = str(e)
+        if export in exports.EXPORT_FORMATS and error is None:
+            return export_response(export, 'sql-results', 'SQL results', columns, results)
 
     context = {
         'query_text': query_text,
@@ -251,6 +256,15 @@ def query_view(request):
         'sql_schema': sql_schema(),
     }
     return render(request, 'myapp/query.html', context)
+
+
+def export_response(fmt, base_name, title, columns, rows):
+    """File scaricabile con i risultati di una query, nel formato richiesto."""
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    response = HttpResponse(exports.render(fmt, title, columns, rows),
+                            content_type=exports.CONTENT_TYPES[fmt])
+    response['Content-Disposition'] = f'attachment; filename="{base_name}-{stamp}.{fmt}"'
+    return response
 
 
 def sql_schema():
@@ -895,6 +909,10 @@ def sparql_query_view(request):
                 sparql_results = {'vars': vars_, 'rows': rows}
         except Exception as e:
             sparql_error = str(e)
+        export = request.POST.get('export', '')
+        if export in exports.EXPORT_FORMATS and sparql_error is None and sparql_results:
+            return export_response(export, 'sparql-results', 'SPARQL results',
+                                   sparql_results['vars'], sparql_results['rows'])
 
     return render(request, 'myapp/sparql.html', {
         'sparql_query':   sparql_query,
