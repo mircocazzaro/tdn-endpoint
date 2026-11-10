@@ -250,3 +250,42 @@ class GaloisProviderChoiceTests(StateDirMixin, TestCase):
         self.assertIn('id="llmPicker"', page)
         self.assertIn('name="llm_default"', page)
         self.assertIn('data-llm-action="refresh:', page)
+
+
+class FoundryAnthropicTests(StateDirMixin, TestCase):
+    URL = "https://codingfoundrygms.services.ai.azure.com/anthropic/v1/messages"
+
+    def test_messages_request_with_x_api_key_and_no_api_version(self):
+        http = mock.Mock()
+        http.post.return_value = _resp(payload={
+            "content": [{"type": "text", "text": "OK"}], "stop_reason": "end_turn",
+            "usage": {"input_tokens": 3, "output_tokens": 2}})
+        c = llm_adapters.AnthropicFoundry(self.URL, "claude-haiku-5-5-mirco", "KEY", session=http)
+        r = c.chat([{"role": "system", "content": "sys"}, {"role": "user", "content": "hi"}],
+                   max_tokens=20)
+        self.assertEqual(http.post.call_args.args[0], self.URL)
+        headers = http.post.call_args.kwargs["headers"]
+        self.assertEqual(headers["x-api-key"], "KEY")
+        self.assertEqual(headers["anthropic-version"], llm_adapters.ANTHROPIC_VERSION)
+        body = http.post.call_args.kwargs["json"]
+        self.assertEqual(body["model"], "claude-haiku-5-5-mirco")
+        self.assertEqual(body["system"], "sys")
+        self.assertEqual(body["messages"], [{"role": "user", "content": "hi"}])
+        self.assertEqual((r.text, r.usage_tokens, r.finish_reason), ("OK", 5, "end_turn"))
+
+    def test_url_without_messages_suffix_is_completed(self):
+        c = llm_adapters.AnthropicFoundry(self.URL.replace("/v1/messages", ""), "m", "k")
+        self.assertEqual(c.url, self.URL)
+
+    def test_client_factory_routes_by_url(self):
+        from myapp.galois.llm import AzureOpenAI
+        azure_settings.save(self.URL.replace("/v1/messages", ""), "claude-haiku-5-5-mirco", "", "k")
+        self.assertIsInstance(azure_settings.client(), llm_adapters.AnthropicFoundry)
+        azure_settings.save("https://res.openai.azure.com/", "gpt", "2024-10-21", "k")
+        self.assertIsInstance(azure_settings.client(), AzureOpenAI)
+
+    def test_anthropic_path_detection(self):
+        self.assertTrue(llm_adapters.is_anthropic_url(self.URL))
+        self.assertTrue(llm_adapters.is_anthropic_url("https://x.example/anthropic"))
+        self.assertFalse(llm_adapters.is_anthropic_url("https://x.openai.azure.com/anthropics"))
+        self.assertFalse(llm_adapters.is_anthropic_url("https://res.openai.azure.com/openai/v1"))
