@@ -14,6 +14,7 @@ from pathlib import Path
 from django.conf import settings
 
 from .galois.llm import AzureOpenAI
+from .llm_adapters import AnthropicFoundry, is_anthropic_url
 
 _LOCAL_HTTP_RE = re.compile(r"http://(127\.0\.0\.1|localhost)[:/]")
 
@@ -82,6 +83,11 @@ def public():
 
 
 def client():
-    """AzureOpenAI client; galois.llm.LLMError('not-configured') if settings are missing."""
+    """Client Foundry: Messages di Anthropic se l'URL e' .../anthropic, altrimenti Azure OpenAI.
+
+    galois.llm.LLMError('not-configured') se mancano le impostazioni.
+    """
     a = load()
+    if is_anthropic_url(a.get("endpoint")):
+        return AnthropicFoundry(a.get("endpoint"), a.get("deployment"), a.get("api_key"))
     return AzureOpenAI(a.get("endpoint"), a.get("deployment"), a.get("api_key"), a.get("api_version"))

@@ -8,6 +8,7 @@ I formati delle richieste seguono la documentazione dei provider; non sono
 verificati contro servizi reali in questo ambiente (test con risposte simulate).
 """
 import time
+from urllib.parse import urlparse
 
 import requests
 
@@ -30,6 +31,61 @@ def _http_error(status, text_hint=""):
     if status == 404:
         return LLMError("not-found", "HTTP 404: check the URL, the project and the model")
     return LLMError("http-error", f"HTTP {status}: {text_hint[:200]}")
+
+
+ANTHROPIC_VERSION = "2023-06-01"
+
+
+def is_anthropic_url(url):
+    """Endpoint Foundry che parla il protocollo Messages di Anthropic (.../anthropic)."""
+    if not url:
+        return False
+    path = urlparse(url).path.rstrip("/")
+    return path == "/anthropic" or path.startswith("/anthropic/")
+
+
+class AnthropicFoundry:
+    """Microsoft Foundry, modelli Claude: POST {base}/v1/messages con header x-api-key.
+
+    Non serve una API version: l'header anthropic-version e' fisso. Accetta l'URL
+    con o senza il suffisso /v1/messages.
+    """
+
+    def __init__(self, endpoint, deployment, api_key, session=None):
+        if not (endpoint and deployment and api_key):
+            raise LLMError("not-configured", "endpoint, model and API key are required")
+        base = endpoint.rstrip("/")
+        self.url = base if base.endswith("/v1/messages") else base + "/v1/messages"
+        self.model = deployment
+        self._key = api_key
+        self._http = session or requests
+
+    def chat(self, messages, **kwargs):
+        t0 = time.time()
+        system, rest = _split_system(messages)
+        body = {"model": self.model,
+                "max_tokens": kwargs.get("max_tokens", MAX_TOKENS),
+                "temperature": 0, "top_p": 1,
+                "messages": [{"role": m["role"], "content": m["content"]} for m in rest]}
+        if system:
+            body["system"] = system
+        try:
+            resp = self._http.post(self.url, json=body, timeout=TIMEOUT, headers={
+                "x-api-key": self._key, "anthropic-version": ANTHROPIC_VERSION,
+                "content-type": "application/json"})
+        except requests.RequestException as exc:
+            raise LLMError("unreachable", type(exc).__name__)
+        if resp.status_code >= 400:
+            raise _http_error(resp.status_code, resp.text)
+        try:
+            data = resp.json()
+            text = "".join(b.get("text", "") for b in data["content"] if b.get("type") == "text")
+            usage = data.get("usage") or {}
+            tokens = (usage.get("input_tokens") or 0) + (usage.get("output_tokens") or 0)
+            stop = data.get("stop_reason")
+        except (ValueError, KeyError, TypeError):
+            raise LLMError("bad-response", "unexpected response format")
+        return LLMResponse(text, tokens, time.time() - t0, stop)
 
 
 class BedrockClient:

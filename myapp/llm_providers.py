@@ -26,9 +26,9 @@ Field = namedtuple("Field", "name label secret required placeholder textarea", d
 
 PROVIDERS = {
     FOUNDRY: ("Microsoft Foundry", [
-        Field("endpoint", "Endpoint URL", placeholder="https://your-resource.openai.azure.com/ or .../openai/v1"),
+        Field("endpoint", "Endpoint URL", placeholder="https://<resource>.openai.azure.com/, .../openai/v1, or .../anthropic (Claude)"),
         Field("deployment", "Deployment", placeholder="gpt-4o-mini"),
-        Field("api_version", "API version", placeholder="2024-10-21", required=False),
+        Field("api_version", "API version", placeholder="2024-10-21 (OpenAI endpoints only)", required=False),
         Field("api_key", "API key", secret=True),
     ]),
     BEDROCK: ("Amazon Bedrock", [
