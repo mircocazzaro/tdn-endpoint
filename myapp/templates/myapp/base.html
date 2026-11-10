@@ -119,13 +119,16 @@
           <a class="nav-link" href="{% url 'sparql_query' %}"><img src="{% static 'myapp/sparql.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Run SPARQL Query</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="{% url 'galois' %}"><i class="bi bi-cloud-download me-2" aria-hidden="true"></i>Galois</a>
+        </li>
+        <li class="nav-item">
           <button class="nav-link w-100 text-start d-flex align-items-center border-0 bg-transparent" type="button"
                   data-bs-toggle="collapse" data-bs-target="#settingsMenu" aria-expanded="false" aria-controls="settingsMenu">
             <i class="bi bi-gear me-2" aria-hidden="true"></i>Settings
             <i class="bi bi-chevron-down ms-auto small" aria-hidden="true"></i>
           </button>
           {% with rn=request.resolver_match.url_name %}
-          <div class="collapse{% if rn == 'settings' or rn == 'ontop_control' or rn == 'ontology' %} show{% endif %}" id="settingsMenu">
+          <div class="collapse{% if rn == 'settings' or rn == 'ontop_control' or rn == 'ontology' or rn == 'network' %} show{% endif %}" id="settingsMenu">
             <ul class="nav flex-column ps-3">
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'ontop_control' %}"><img src="{% static 'myapp/ontop-small.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Ontop Monitor</a>
@@ -135,6 +138,9 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'settings' %}"><i class="bi bi-cpu me-2" aria-hidden="true"></i>Endpoint configuration</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'network' %}"><i class="bi bi-broadcast me-2" aria-hidden="true"></i>Apply to HDN</a>
               </li>
             </ul>
           </div>
