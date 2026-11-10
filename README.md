@@ -170,7 +170,7 @@ Other names are supported by associating template blocks with the appropriate ta
 
 ### 2. Map data to HERO
 
-In *Map Data to HERO*, select a table for each template block, then click each placeholder and its corresponding column. Click *Generate OBDA File*.
+In *Map Data to HERO*, select a table for each template block, then click each placeholder and its corresponding column. Click *Save*.
 
 Source queries are executed against local data before saving. A failing block prevents the mapping from being saved and produces an explanation. Numeric columns loaded as text, for example because they contain missing-value codes such as `u`, receive an adjusted validation check and a notification.
 
@@ -236,7 +236,7 @@ Azure settings are shared with Galois and stored in `uploads/hdn/azure.json` wit
 
 Prompts include schema metadata, template rules and relevant ontology descriptions, without local row values. Rules are requested in groups of eight; truncated groups are split and retried. Invented tables, invented columns and columns from another table are rejected. An unassigned placeholder can fall back to a same-named column.
 
-Partial rules omit predicates whose placeholders remain unassigned. If a missing placeholder is needed in the subject or a filter, the rule is omitted. Suggestions populate only rules without saved associations, marked *LLM* or *LLM, partial*. Nothing is saved until *Generate OBDA File* performs normal validation.
+Partial rules omit predicates whose placeholders remain unassigned. If a missing placeholder is needed in the subject or a filter, the rule is omitted. Suggestions populate only rules without saved associations, marked *LLM* or *LLM, partial*. Nothing is saved until *Save* performs normal validation.
 
 Suggestions expire if the schema or template changes. *Discard suggestions* removes them. Quality depends on the external model; the documented bootstrap tests use a simulated LLM.
 

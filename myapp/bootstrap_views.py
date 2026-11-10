@@ -57,7 +57,7 @@ def bootstrap_view(request):
         f"The LLM proposed a table for {summary['suggested']} of {summary['rules']} rules "
         f"({summary['complete']} with every placeholder bound; {summary['tokens']} tokens, "
         f"{summary['seconds']} s). Rules already mapped keep their saved bindings. "
-        "Review the suggestions, then press Generate OBDA File to save.")
+        "Review the suggestions, then press Save to save.")
     for p in summary["problems"][:10]:
         messages.warning(request, f"Discarded: {p}")
     return redirect("map_fields")
