@@ -1,11 +1,15 @@
-"""Pagina dell'amministratore per la modalita' Galois (solo porta 8000)."""
+"""Pagina dell'amministratore per la modalita' Galois (solo porta 8000).
+
+Le credenziali degli LLM stanno in Settings > Endpoint configuration; qui si
+sceglie solo il provider predefinito, usato dalle query di HDN Central.
+"""
 import datetime
-import re
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
+from . import llm_providers
 from .galois import schema, store
 from .galois.llm import LLMError
 from .views import OntopDidNotStop, ontop_paused
@@ -47,49 +51,42 @@ def _form_config(post, cfg):
 @require_http_methods(["GET", "POST"])
 def galois_view(request):
     cfg = store.load_config()
+    choices = llm_providers.choices()
+    ids = [c["id"] for c in choices]
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action == "save":
-            endpoint = request.POST.get("azure_endpoint", "").strip()
-            deployment = request.POST.get("azure_deployment", "").strip()
-            key = request.POST.get("azure_api_key", "")
             new = _form_config(request.POST, cfg)
-            has_key = bool(key.strip() or store.load_azure().get("api_key"))
-            if new["enabled"] and not (endpoint and deployment and has_key):
-                messages.error(request, "Galois mode needs the Azure OpenAI endpoint, the "
-                                        "deployment name and the API key.")
+            default = request.POST.get("llm_default", "")
+            if len(ids) == 1:
+                default = ids[0]
+            new["llm_provider"] = default if default in ids else ""
+            if new["enabled"] and not ids:
+                messages.error(request, "Galois mode needs an LLM provider: configure one in "
+                                        "Settings > Endpoint configuration.")
                 return redirect("galois")
-            # La chiave viaggia nell'header: solo HTTPS, salvo un proxy locale.
-            if endpoint and not re.match(r"https://|http://(127\.0\.0\.1|localhost)[:/]", endpoint):
-                messages.error(request, "The Azure endpoint must be an https:// URL.")
+            if new["enabled"] and len(ids) > 1 and not new["llm_provider"]:
+                messages.error(request, "Galois mode needs a default LLM provider for the "
+                                        "queries of HDN Central: choose one.")
                 return redirect("galois")
-            store.save_azure(endpoint, deployment, request.POST.get("azure_api_version", ""),
-                             key or None)
             _apply(request, new)
             messages.success(request, "Galois mode is on." if new["enabled"]
                              else "Configuration saved. Galois mode is off.")
-        elif action == "test":
-            try:
-                r = store.llm_client().chat([{"role": "user", "content": "Reply with the word OK."}])
-                messages.success(request, f"Azure OpenAI answered ({r.usage_tokens} tokens, "
-                                          f"{r.latency_s:.1f}s).")
-            except (store.GaloisError, LLMError) as exc:
-                messages.error(request, f"Azure OpenAI test failed: {exc}")
         elif action.startswith("refresh:"):
             name = action.split(":", 1)[1]
             if name not in schema.BY_NAME or not cfg["tables"][name]["enabled"]:
                 messages.error(request, "Unknown or disabled table.")
             else:
                 try:
-                    st = store.refresh_table(name)
+                    llm = store.llm_client(request.POST.get("llm_provider", ""))
+                    st = store.refresh_table(name, llm=llm)
                     messages.success(request, f"{name}: {st['rows']} rows from the LLM "
                                               f"({st['raw_rows']} returned, {st['tokens']} tokens, "
                                               f"{st['calls']} calls).")
-                except store.GaloisError as exc:
+                except (store.GaloisError, LLMError) as exc:
                     messages.error(request, f"{name}: refresh failed ({exc}).")
         return redirect("galois")
 
-    azure = store.load_azure()
     st = store.status()
     tables = []
     for t in schema.TABLES:
@@ -105,8 +102,7 @@ def galois_view(request):
         mapping, excluded = "", []
     return render(request, "myapp/galois.html", {
         "cfg": cfg, "tables": tables, "mapping": mapping, "excluded": excluded,
-        "azure": {"endpoint": azure.get("endpoint", ""), "deployment": azure.get("deployment", ""),
-                  "api_version": azure.get("api_version") or "",
-                  "has_key": bool(azure.get("api_key"))},
+        "llm_choices": choices,
+        "llm_default": cfg.get("llm_provider", ""),
         "max_iter_choices": range(1, store.MAX_ITER + 1),
     })

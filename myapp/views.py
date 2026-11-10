@@ -12,7 +12,7 @@ import pandas as pd
 from contextlib import contextmanager
 from datetime import datetime
 
-from . import catalog, datastore, exports, ontology, ontop_process
+from . import catalog, datastore, exports, llm_providers, ontology, ontop_process
 from .galois import store as galois_store
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
@@ -530,7 +530,6 @@ def field_mapping_view(request):
     #     associazioni salvate: valgono per le regole ancora senza mapping.
     from .bootstrap import run as bootstrap_run
     from .bootstrap.schema import Schema as BootstrapSchema
-    from . import azure_settings
     try:
         bschema = BootstrapSchema.from_site(tables_columns, datastore.column_types(DUCKDB_PATH))
     except datastore.DataStoreBusy:
@@ -777,7 +776,7 @@ def field_mapping_view(request):
         'mapping_connections': mapping_connections,
         'form':                form,
         'bootstrap':           stored,
-        'azure':               azure_settings.public(),
+        'llm_choices':         llm_providers.choices(),
         'n_suggested':         len(suggested),
     })
 

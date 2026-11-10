@@ -155,14 +155,21 @@ class PipelineTests(BootstrapTestBase):
 
 class PageTests(BootstrapTestBase):
     def run_bootstrap(self, **form):
+        if not azure_settings.configured():
+            azure_settings.save("https://res.openai.azure.com/", "gpt", "", "k")
         with mock.patch.object(azure_settings, "client", lambda: FakeAzure()):
             return self.client.post("/map-fields/bootstrap/", dict(action="run", **form), follow=True)
 
-    def test_requires_azure_settings_and_https(self):
-        r = self.run_bootstrap()
-        self.assertContains(r, "needs the Azure OpenAI endpoint")
-        r = self.run_bootstrap(azure_endpoint="http://evil.example/", azure_deployment="d", azure_api_key="k")
-        self.assertContains(r, "must be an https:// URL")
+    def test_requires_a_configured_provider(self):
+        r = self.client.post("/map-fields/bootstrap/", {"action": "run"}, follow=True)
+        self.assertContains(r, "no LLM provider is configured")
+
+    def test_https_is_enforced_in_the_settings_page(self):
+        r = self.client.post("/settings/", {"provider": "foundry", "action": "save",
+                                            "endpoint": "http://evil.example/", "deployment": "d",
+                                            "api_key": "k"}, follow=True)
+        self.assertContains(r, "must be https://")
+        self.assertFalse(azure_settings.configured())
         self.assertFalse(azure_settings.configured())
 
     def test_suggestions_prefill_page_and_save_through_normal_validation(self):
@@ -171,7 +178,7 @@ class PageTests(BootstrapTestBase):
         self.assertContains(r, "proposed a table for 3 of 3 rules")
         page = self.client.get("/map-fields/").content.decode()
         self.assertNotIn("KEY-123", page)
-        self.assertIn("shared with Galois mode", page)
+        self.assertIn('id="bootstrap-run"', page)
         self.assertEqual(page.count('title="Proposed by the LLM'), 3)
         # ogni regola suggerita ha un pulsante che porta alla sua slide del carosello
         self.assertEqual(page.count('data-bs-slide-to="'), 3)
@@ -220,12 +227,12 @@ class PageTests(BootstrapTestBase):
                 raise LLMError("unauthorized", "HTTP 401: check the API key")
         with mock.patch.object(azure_settings, "client", lambda: Broken()):
             r = self.client.post("/map-fields/bootstrap/", {"action": "run"}, follow=True)
-        self.assertContains(r, "Azure OpenAI failed")
+        self.assertContains(r, "Microsoft Foundry failed")
 
     def test_settings_shared_with_galois(self):
-        from myapp.galois import store
+        from myapp import llm_providers
         azure_settings.save("https://res.openai.azure.com/", "gpt", "", "k")
-        self.assertEqual(store.load_azure()["deployment"], "gpt")
+        self.assertEqual(llm_providers.load("foundry")["deployment"], "gpt")
 
     def test_legacy_galois_settings_migrated(self):
         legacy = Path(self._state.name) / "galois" / "azure.json"

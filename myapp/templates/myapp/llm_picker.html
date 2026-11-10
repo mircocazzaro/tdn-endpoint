@@ -1,0 +1,41 @@
+{% comment %}
+Scelta del provider LLM per un task (include con modal_id e submit_label).
+Compare solo se i provider disponibili sono piu' di uno: con un solo provider il
+task usa quello senza chiedere. Il pulsante che apre il modal porta
+data-llm-action, copiato nel pulsante di conferma (name="action").
+{% endcomment %}
+{% if llm_choices|length > 1 %}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="{{ modal_id }}Title">Which model?</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% for c in llm_choices %}
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="llm_provider" value="{{ c.id }}"
+                   id="{{ modal_id }}-{{ c.id }}" {% if forloop.first %}checked{% endif %}>
+            <label class="form-check-label" for="{{ modal_id }}-{{ c.id }}">
+              {{ c.label }}{% if c.model %} <small class="text-muted">{{ c.model }}</small>{% endif %}
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer py-2">
+        <button type="submit" name="action" value="" class="btn btn-primary btn-sm llm-picker-submit">{{ submit_label }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    var modal = document.getElementById('{{ modal_id }}');
+    modal.addEventListener('show.bs.modal', function (ev) {
+      var action = ev.relatedTarget && ev.relatedTarget.dataset.llmAction;
+      modal.querySelector('.llm-picker-submit').value = action || '';
+    });
+  })();
+</script>
+{% endif %}

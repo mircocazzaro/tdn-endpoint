@@ -102,7 +102,9 @@ def load_config():
         max_iter = min(max(int(cfg.get("max_iter", DEFAULT_MAX_ITER)), 1), MAX_ITER)
     except (TypeError, ValueError):
         max_iter = DEFAULT_MAX_ITER
-    return {"enabled": bool(cfg.get("enabled", False)), "tables": tables, "max_iter": max_iter}
+    return {"enabled": bool(cfg.get("enabled", False)), "tables": tables, "max_iter": max_iter,
+            # provider predefinito per le query di HDN Central ("" = non scelto)
+            "llm_provider": str(cfg.get("llm_provider") or "")}
 
 
 def save_config(cfg):
@@ -113,22 +115,16 @@ def enabled():
     return load_config()["enabled"]
 
 
-def load_azure():
-    # Impostazioni Azure condivise con il bootstrap dei mapping (myapp/azure_settings.py).
-    from .. import azure_settings
-    return azure_settings.load()
+def llm_client(provider=None):
+    """Client LLM: il provider richiesto, altrimenti quello predefinito di Galois.
 
-
-def save_azure(endpoint, deployment, api_version, api_key=None):
-    """Salva la configurazione Azure; ``api_key`` None conserva quella esistente."""
-    from .. import azure_settings
-    azure_settings.save(endpoint, deployment, api_version, api_key)
-
-
-def llm_client():
-    from .. import azure_settings
+    Le query di HDN Central non possono chiedere nulla all'amministratore: usano
+    sempre il predefinito salvato nella configurazione Galois.
+    """
+    from .. import llm_providers
     try:
-        return azure_settings.client()
+        pid = llm_providers.resolve(provider or load_config().get("llm_provider", ""))
+        return llm_providers.client(pid)
     except LLMError as exc:
         raise GaloisError(exc.code, exc.detail)
 

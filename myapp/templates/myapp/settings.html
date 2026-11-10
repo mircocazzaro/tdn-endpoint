@@ -1,0 +1,47 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+<h2>Endpoint configuration</h2>
+<p class="text-muted small">LLM providers. A provider is available once its required fields are saved.</p>
+
+<div class="accordion" id="llmProviders">
+{% for card in cards %}
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button {% if not card.configured %}collapsed{% endif %}" type="button"
+              data-bs-toggle="collapse" data-bs-target="#provider-{{ card.id }}"
+              aria-expanded="{% if card.configured %}true{% else %}false{% endif %}" aria-controls="provider-{{ card.id }}">
+        {{ card.label }}
+        {% if card.configured %}<span class="badge bg-success ms-2">available</span>{% else %}<span class="badge bg-secondary ms-2">not configured</span>{% endif %}
+      </button>
+    </h2>
+    <div id="provider-{{ card.id }}" class="accordion-collapse collapse {% if card.configured %}show{% endif %}" data-bs-parent="#llmProviders">
+      <div class="accordion-body">
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <input type="hidden" name="provider" value="{{ card.id }}">
+          {% for f in card.fields %}
+          <div class="{% if f.textarea %}col-12{% else %}col-md-6{% endif %}">
+            <label class="form-label" for="{{ card.id }}-{{ f.name }}">{{ f.label }}</label>
+            {% if f.textarea %}
+            <textarea class="form-control font-monospace" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" rows="4"
+                      autocomplete="off" placeholder="{% if f.has_value %}stored: leave empty to keep it{% else %}{{ f.placeholder|default:'required' }}{% endif %}"></textarea>
+            {% elif f.secret %}
+            <input class="form-control" type="password" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" autocomplete="off"
+                   placeholder="{% if f.has_value %}stored: leave empty to keep it{% else %}required{% endif %}">
+            {% else %}
+            <input class="form-control" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" value="{{ f.value }}"
+                   placeholder="{{ f.placeholder }}">
+            {% endif %}
+          </div>
+          {% endfor %}
+          <div class="col-12 d-flex gap-2">
+            <button type="submit" name="action" value="save" class="btn btn-primary btn-sm">Save</button>
+            <button type="submit" name="action" value="test" class="btn btn-outline-secondary btn-sm" {% if not card.configured %}disabled{% endif %}>Test connection</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}
