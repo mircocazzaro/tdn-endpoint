@@ -48,6 +48,14 @@
 <div class="card mt-4">
   <div class="card-body">
     <h3 class="card-title">Results</h3>
+    <form method="post" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      {% csrf_token %}
+      <textarea name="sql_query" hidden>{{ query_text }}</textarea>
+      <span class="text-muted small me-1">Download:</span>
+      <button type="submit" name="export" value="csv" class="btn btn-outline-secondary btn-sm">CSV</button>
+      <button type="submit" name="export" value="xlsx" class="btn btn-outline-secondary btn-sm">Excel</button>
+      <button type="submit" name="export" value="pdf" class="btn btn-outline-secondary btn-sm">PDF</button>
+    </form>
     <div class="table-responsive">
       <table class="table table-bordered table-striped hdn-results-source">
         <thead>
