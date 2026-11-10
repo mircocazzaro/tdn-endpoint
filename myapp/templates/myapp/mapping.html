@@ -9,7 +9,7 @@
         An LLM on Azure OpenAI proposes, for each rule of the template, the local table and the
         column of every placeholder. Only table names, column names and types are sent, never
         data values. Suggestions fill the rules that have no saved binding; nothing is saved until
-        you press <em>Generate OBDA File</em>.
+        you press <em>Save</em>.
       </p>
       {% if bootstrap %}
         <div class="alert alert-info py-2 small mb-2">
@@ -63,6 +63,21 @@
       </div>
     {% endif %}
 
+    <div class="d-flex justify-content-end mb-3">
+      <button type="submit" class="btn btn-success btn-lg px-5">Save</button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3 mapping-nav" role="group" aria-label="Navigate mapping rules">
+      <button type="button" class="btn btn-primary btn-lg mapping-nav-btn" data-bs-target="#mappingCarousel" data-bs-slide="prev">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        <span>Previous</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-lg mapping-nav-btn" data-bs-target="#mappingCarousel" data-bs-slide="next">
+        <span>Next</span>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
     <div id="mappingCarousel" class="carousel slide mb-5">
       <div class="carousel-inner">
         {% for blk in mapping_ui %}
@@ -107,19 +122,8 @@
           </div>
         {% endfor %}
       </div>
-      <button class="carousel-control-prev" type="button" data-bs-target="#mappingCarousel" data-bs-slide="prev" style="width:auto;">
-        <i class="bi bi-chevron-left fs-3 text-primary" aria-hidden="true"></i>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#mappingCarousel" data-bs-slide="next" style="width:auto;">
-        <i class="bi bi-chevron-right fs-3 text-primary" aria-hidden="true"></i>
-        <span class="visually-hidden">Next</span>
-      </button>
     </div>
 
-    <div class="text-center mb-5">
-      <button type="submit" class="btn btn-primary px-5">Generate OBDA File</button>
-    </div>
   </form>
 </div>
 
@@ -267,7 +271,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <style>
   .active-bg { background-color: #e7f1ff !important; }
-  .carousel-control-prev, .carousel-control-next { z-index: 2000; }
+  .mapping-nav-btn { min-width: 9rem; font-weight: 600; display: inline-flex; align-items: center; gap: .5rem; }
+  .mapping-nav-btn .bi { font-size: 1.5rem; line-height: 1; }
   .jtk-connector, .jtk-endpoint { z-index: 1000; }
   .carousel-item { display: block !important; visibility: hidden; position: absolute; width: 100%; top: 0; left: 0; }
   .carousel-item.active { visibility: visible; position: relative; }
