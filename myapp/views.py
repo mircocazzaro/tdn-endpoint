@@ -248,8 +248,30 @@ def query_view(request):
         'results': results,
         'columns': columns,
         'error': error,
+        'sql_schema': sql_schema(),
     }
     return render(request, 'myapp/query.html', context)
+
+
+def sql_schema():
+    """Tabelle e colonne per il completamento dell'editor SQL (vuoto se occupato)."""
+    try:
+        return {'tables': datastore.tables_columns(DUCKDB_PATH)}
+    except Exception:
+        return {'tables': {}}
+
+
+def sparql_schema():
+    """Prefissi e termini dell'ontologia attiva per il completamento SPARQL."""
+    from . import ontology_monitor
+    try:
+        data = ontology_monitor.index()
+    except Exception:
+        return {'prefixes': {}, 'terms': []}
+    return {
+        'prefixes': data.get('prefixes', {}),
+        'terms': [{'iri': t['iri'], 'label': t['label'], 'kind': t['kind']} for t in data['terms']],
+    }
 
 class FieldMappingForm(forms.Form):
     """
@@ -878,6 +900,7 @@ def sparql_query_view(request):
         'sparql_query':   sparql_query,
         'sparql_results': sparql_results,
         'sparql_error':   sparql_error,
+        'sparql_schema':  sparql_schema(),
     })
 
 

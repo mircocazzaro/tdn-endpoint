@@ -1,0 +1,153 @@
+/* Editor SQL/SPARQL con evidenziazione e tabella dei risultati interattiva. */
+
+/* --- editor: textarea trasparente sopra un overlay colorato --- */
+.hdn-editor {
+  position: relative;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  background: #fff;
+}
+.hdn-editor:focus-within {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+.hdn-editor .hdn-input,
+.hdn-editor .hdn-hl {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  box-sizing: border-box;
+  font-family: SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  letter-spacing: normal;
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.hdn-editor .hdn-input {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  color: transparent;
+  caret-color: #212529;
+  resize: vertical;
+  outline: none;
+  min-height: 12rem;
+}
+.hdn-editor .hdn-hl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: #212529;
+  background: transparent;
+}
+
+/* colori dei token */
+.hdn-tok-keyword { color: #0d6efd; font-weight: 600; }
+.hdn-tok-function { color: #6f42c1; }
+.hdn-tok-string { color: #198754; }
+.hdn-tok-number { color: #d63384; }
+.hdn-tok-comment { color: #6c757d; font-style: italic; }
+.hdn-tok-quoted { color: #0b5ed7; }
+.hdn-tok-iri { color: #0f5132; }
+.hdn-tok-variable { color: #fd7e14; }
+.hdn-tok-pname { color: #055160; }
+.hdn-tok-langtag { color: #995c00; }
+
+/* --- popup dei suggerimenti --- */
+.hdn-suggest {
+  position: absolute;
+  z-index: 5;
+  min-width: 16rem;
+  max-width: 28rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  font-size: 0.85rem;
+}
+.hdn-suggest-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+.hdn-suggest-item:hover,
+.hdn-suggest-item.active { background: #e7f1ff; }
+.hdn-suggest-label {
+  font-family: SFMono-Regular, Menlo, Consolas, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hdn-kind {
+  flex: none;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: #fff;
+  background: #6c757d;
+}
+.hdn-kind-keyword { background: #0d6efd; }
+.hdn-kind-function { background: #6f42c1; }
+.hdn-kind-table { background: #198754; }
+.hdn-kind-column { background: #0dcaf0; color: #000; }
+.hdn-kind-variable { background: #fd7e14; }
+.hdn-kind-prefix { background: #055160; }
+.hdn-kind-class { background: #0a58ca; }
+.hdn-kind-individual { background: #b02a37; }
+.hdn-kind-object_property { background: #198754; }
+.hdn-kind-datatype_property { background: #ffc107; color: #000; }
+.hdn-kind-annotation_property { background: #0dcaf0; color: #000; }
+
+/* --- tabella dei risultati --- */
+.hdn-results-wrap {
+  max-height: 65vh;
+  overflow: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+}
+.hdn-results-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.hdn-results-tools input { max-width: 22rem; }
+.hdn-results.table { margin-bottom: 0; }
+.hdn-results thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  white-space: nowrap;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+.hdn-results th.hdn-sortable { cursor: pointer; user-select: none; }
+.hdn-results th.hdn-sortable:hover { background: #e9ecef; }
+.hdn-results th.hdn-sorted { background: #dbe9ff; }
+.hdn-results th:focus-visible { outline: 2px solid #0d6efd; outline-offset: -2px; }
+.hdn-sort-ind { margin-left: 0.35rem; font-size: 0.7rem; color: #0d6efd; }
+.hdn-results tbody tr { transition: background-color 0.12s ease; }
+.hdn-results tbody tr:hover {
+  --bs-table-accent-bg: #fff3cd;
+  color: #000;
+}
+.hdn-results tbody tr:hover > * { box-shadow: inset 0 1px 0 #ffe69c, inset 0 -1px 0 #ffe69c; }
+.hdn-results td { font-variant-numeric: tabular-nums; }

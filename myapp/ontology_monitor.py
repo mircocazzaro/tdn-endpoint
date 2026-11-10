@@ -118,6 +118,7 @@ def build(ttl_text):
         "ontology": sorted(str(s) for s in graph.subjects(RDF.type, OWL.Ontology)
                            if isinstance(s, URIRef)),
         "counts": dict(Counter(t["kind"] for t in ordered)),
+        "prefixes": {p: str(ns) for p, ns in graph.namespaces() if p},
         "terms": ordered,
     }
 

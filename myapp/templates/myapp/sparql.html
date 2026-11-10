@@ -2,23 +2,25 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'myapp/query_tools.css' %}">
 <div class="card">
   <div class="card-body">
-    <img 
-      src="{% static 'myapp/sparql.png' %}" 
-      alt="Logo" 
-      height="40" 
+    <img
+      src="{% static 'myapp/sparql.png' %}"
+      alt="Logo"
+      height="40"
       class="d-inline-block align-text-center me-2"
       >
-      <img 
-      src="{% static 'myapp/query.png' %}" 
-      alt="Logo" 
-      height="40" 
+      <img
+      src="{% static 'myapp/query.png' %}"
+      alt="Logo"
+      height="40"
       class="d-inline-block align-text-center me-2"
       >
     <h2 class="card-title">Run a SPARQL Query on Ontop VKG</h2>
     <p class="card-text">
       Enter a SPARQL SELECT query below and press “Execute” to see the results.
+      Prefixes, ontology terms and variables are suggested as you type; press Ctrl+Space to ask for suggestions, and Ctrl+Enter to run.
     </p>
     <form method="post">
       {% csrf_token %}
@@ -47,7 +49,7 @@
   <div class="card-body">
     <h3 class="card-title">SPARQL Results</h3>
     <div class="table-responsive">
-      <table class="table table-bordered table-striped">
+      <table class="table table-bordered table-striped hdn-results-source">
         <thead>
           <tr>
             {% for v in sparql_results.vars %}
@@ -69,4 +71,16 @@
   </div>
 </div>
 {% endif %}
+
+{{ sparql_schema|json_script:"sparql-schema" }}
+<script src="{% static 'myapp/query_language.js' %}"></script>
+<script src="{% static 'myapp/query_editor.js' %}"></script>
+<script src="{% static 'myapp/result_table.js' %}"></script>
+<script>
+  (function () {
+    var schema = JSON.parse(document.getElementById('sparql-schema').textContent);
+    HdnQueryEditor.attach(document.getElementById('sparql_query'), schema, 'sparql');
+    HdnResultTable.enhanceAll(document);
+  })();
+</script>
 {% endblock %}
