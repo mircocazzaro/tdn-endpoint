@@ -4,60 +4,35 @@
 <div class="container py-4">
   <div class="card mb-4" id="bootstrap-card">
     <div class="card-body">
-      <h5 class="card-title"><i class="bi bi-magic me-1" aria-hidden="true"></i>Bootstrap with an LLM</h5>
-      <p class="small text-muted mb-2">
-        An LLM on Azure OpenAI proposes, for each rule of the template, the local table and the
-        column of every placeholder. Only table names, column names and types are sent, never
-        data values. Suggestions fill the rules that have no saved binding; nothing is saved until
-        you press <em>Save</em>.
-      </p>
-      {% if bootstrap %}
-        <div class="alert alert-info py-2 small mb-2">
-          Suggestions from {{ bootstrap.summary.suggested }} of {{ bootstrap.summary.rules }} rules
-          are available; {{ n_suggested }} are shown in the rule carousel below, on rules without a saved binding
-          (marked <span class="badge bg-info text-dark">LLM</span>).
-          {% if n_suggested %}
-            <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
-              <span class="me-1">Go to:</span>
-              {% for blk in mapping_ui %}
-                {% if blk.suggested %}
-                  <button type="button" class="btn btn-sm btn-info"
-                          data-bs-target="#mappingCarousel" data-bs-slide-to="{{ forloop.counter0 }}">
-                    {{ blk.mappingLabel }}
-                  </button>
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endif %}
-        </div>
-      {% endif %}
-      <form method="post" action="{% url 'map_fields_bootstrap' %}" class="row g-2 align-items-end">
+      <h5 class="card-title mb-1"><i class="bi bi-magic me-1" aria-hidden="true"></i>Bootstrap with an LLM</h5>
+      <p class="small text-muted mb-3">Proposes a table and column for each rule. Only names and types are sent. Nothing is saved until you press <em>Save</em>.</p>
+      <form method="post" action="{% url 'map_fields_bootstrap' %}" class="d-flex flex-wrap align-items-center gap-2">
         {% csrf_token %}
-        {% if not azure.has_key %}
-          <div class="col-md-5">
-            <label class="form-label small" for="bs-endpoint">Azure OpenAI endpoint</label>
-            <input class="form-control form-control-sm" id="bs-endpoint" name="azure_endpoint" type="url"
-                   value="{{ azure.endpoint }}" placeholder="https://your-resource.openai.azure.com/">
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small" for="bs-deployment">Deployment</label>
-            <input class="form-control form-control-sm" id="bs-deployment" name="azure_deployment" value="{{ azure.deployment }}">
-          </div>
-          <div class="col-md-2">
-            <label class="form-label small" for="bs-version">API version</label>
-            <input class="form-control form-control-sm" id="bs-version" name="azure_api_version" value="{{ azure.api_version }}" placeholder="2024-10-21">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small" for="bs-key">API key</label>
-            <input class="form-control form-control-sm" id="bs-key" name="azure_api_key" type="password" autocomplete="off">
-          </div>
+        {% if llm_choices|length > 1 %}
+          <button type="button" id="bootstrap-run" class="btn btn-lg {% if bootstrap %}btn-success bootstrap-done{% else %}btn-outline-primary{% endif %}"
+                  data-bs-toggle="modal" data-bs-target="#llmPickBootstrap" data-llm-action="run" {% if bootstrap %}disabled{% endif %}>
+            <i class="bi bi-magic" aria-hidden="true"></i> Bootstrap
+          </button>
         {% else %}
-          <div class="col-auto small text-muted">Azure OpenAI: <code>{{ azure.deployment }}</code> at {{ azure.endpoint }} (shared with Galois mode).</div>
+          <button type="submit" id="bootstrap-run" name="action" value="run" class="btn btn-lg {% if bootstrap %}btn-success bootstrap-done{% else %}btn-outline-primary{% endif %}"
+                  {% if bootstrap or not llm_choices %}disabled{% endif %}>
+            <i class="bi bi-magic" aria-hidden="true"></i> Bootstrap
+          </button>
         {% endif %}
-        <div class="col-auto">
-          <button type="submit" name="action" value="run" class="btn btn-sm btn-outline-primary">Propose bindings</button>
-          {% if bootstrap %}<button type="submit" name="action" value="discard" class="btn btn-sm btn-link">Discard suggestions</button>{% endif %}
-        </div>
+        {% if not llm_choices %}
+          <span class="small text-danger">No LLM provider configured: <a href="{% url 'settings' %}">Settings &gt; Endpoint configuration</a></span>
+        {% endif %}
+        {% if bootstrap %}
+          <button type="submit" name="action" value="discard" class="btn btn-sm btn-link">Discard suggestions</button>
+          <span class="small text-muted">{{ bootstrap.summary.suggested }} of {{ bootstrap.summary.rules }} rules suggested</span>
+          {% if n_suggested %}
+            <span class="small text-muted ms-2">Go to:</span>
+            {% for blk in mapping_ui %}{% if blk.suggested %}
+              <button type="button" class="btn btn-sm btn-info" data-bs-target="#mappingCarousel" data-bs-slide-to="{{ forloop.counter0 }}">{{ blk.mappingLabel }}</button>
+            {% endif %}{% endfor %}
+          {% endif %}
+        {% endif %}
+        {% with modal_id="llmPickBootstrap" submit_label="Bootstrap" %}{% include "myapp/llm_picker.html" %}{% endwith %}
       </form>
     </div>
   </div>
@@ -255,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
               state = S.toggle(state, active.dataset.var, name);
               select(null);
               redraw();
+              document.dispatchEvent(new Event('hdn:mapping-changed'));
             }
             li.addEventListener('click', choose);
             li.addEventListener('keydown', function (e) {
@@ -271,8 +247,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     card.hdnLoad = function () { whenSized(area, load); };
-    tableSelect.addEventListener('change', function () { card.hdnLoad(); });
+    tableSelect.addEventListener('change', function () {
+      card.hdnLoad();
+      document.dispatchEvent(new Event('hdn:mapping-changed'));
+    });
     if (card.closest('.carousel-item').classList.contains('active')) card.hdnLoad();
+  });
+
+  // Il bootstrap gia' eseguito si riabilita solo quando qualcuno modifica un'associazione.
+  document.addEventListener('hdn:mapping-changed', function () {
+    var run = document.getElementById('bootstrap-run');
+    if (!run || !run.disabled) return;
+    run.disabled = false;
+    run.classList.remove('btn-success', 'bootstrap-done');
+    run.classList.add('btn-outline-primary');
   });
 
   document.getElementById('mappingCarousel').addEventListener('slid.bs.carousel', function () {
@@ -284,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <style>
   .active-bg { background-color: #e7f1ff !important; }
+  .bootstrap-done:disabled { opacity: 1; }
   .mapping-nav-btn { min-width: 9rem; font-weight: 600; display: inline-flex; align-items: center; gap: .5rem; }
   .mapping-nav-btn .bi { font-size: 1.5rem; line-height: 1; }
   .jtk-connector, .jtk-endpoint { z-index: 1000; }

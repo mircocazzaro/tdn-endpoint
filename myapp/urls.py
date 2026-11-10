@@ -1,7 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
-from . import bootstrap_views, galois_views, network_views
+from . import bootstrap_views, galois_views, network_views, settings_views
 from .views import (
     home_view, upload_csv_view, query_view,
     field_mapping_view, get_columns,
@@ -28,6 +28,7 @@ urlpatterns = [
     path('ontology/', network_views.ontology_view, name='ontology'),
     path('ontology/graph/', network_views.ontology_graph, name='ontology_graph'),
     path('galois/', galois_views.galois_view, name='galois'),
+    path('settings/', settings_views.settings_view, name='settings'),
     path('notifications/', network_views.notifications_view, name='notifications'),
     path('notifications/read/', network_views.notifications_read, name='notifications_read'),
     # Rete HDN: protocolli firmati invocati da Central (anche sulla porta 8084)

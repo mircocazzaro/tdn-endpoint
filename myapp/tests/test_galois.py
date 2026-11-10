@@ -7,7 +7,7 @@ from unittest import mock
 import duckdb
 from django.test import Client, SimpleTestCase, TestCase
 
-from myapp import catalog, ontology, ontop_process
+from myapp import azure_settings, catalog, ontology, ontop_process
 from myapp.galois import llm, schema, store
 from myapp.galois.llm import LLMResponse
 
@@ -204,7 +204,7 @@ class ProtectedSparqlGaloisTests(StateDirMixin, TestCase):
         cfg = store.load_config()
         cfg["enabled"] = True
         store.save_config(cfg)
-        store.save_azure("https://res.openai.azure.com", "dep", "", "k")
+        azure_settings.save("https://res.openai.azure.com", "dep", "", "k")
         store.apply(cfg)
         self.client = Client()
         self.ontop = mock.patch("myapp.views.requests.post", return_value=mock.Mock(
@@ -257,9 +257,12 @@ class GaloisPageTests(StateDirMixin, TestCase):
             p.start()
             self.addCleanup(p.stop)
 
+    def setUp(self):
+        super().setUp()
+        azure_settings.save("https://res.openai.azure.com/", "gpt-4o-mini", "", "TOPSECRET")
+
     def form(self, **extra):
-        data = {"action": "save", "enabled": "on", "azure_endpoint": "https://res.openai.azure.com/",
-                "azure_deployment": "gpt-4o-mini", "azure_api_key": "TOPSECRET", "max_iter": "2"}
+        data = {"action": "save", "enabled": "on", "max_iter": "2"}
         for t in schema.TABLES:
             data[f"table__{t.name}"] = "on"
             for c in t.columns:
@@ -268,25 +271,21 @@ class GaloisPageTests(StateDirMixin, TestCase):
         data.update(extra)
         return data
 
-    def test_enable_requires_azure_settings(self):
-        r = self.client.post("/galois/", self.form(azure_api_key=""), follow=True)
-        self.assertContains(r, "needs the Azure OpenAI endpoint")
+    def test_enable_requires_a_configured_provider(self):
+        azure_settings.path().unlink()
+        r = self.client.post("/galois/", self.form(), follow=True)
+        self.assertContains(r, "Galois mode needs an LLM provider")
         self.assertFalse(store.enabled())
 
-    def test_save_stores_key_privately_and_never_shows_it(self):
+    def test_provider_secrets_stay_private_in_the_galois_page(self):
         self.client.post("/galois/", self.form())
         self.assertTrue(store.enabled())
-        from myapp import azure_settings
         path = azure_settings.path()
         self.assertEqual(stat.S_IMODE(os.stat(path).st_mode), 0o600)
-        self.assertEqual(store.load_azure()["api_key"], "TOPSECRET")
+        self.assertEqual(azure_settings.load()["api_key"], "TOPSECRET")
         page = self.client.get("/galois/").content.decode()
         self.assertNotIn("TOPSECRET", page)
-        self.assertIn("stored: leave empty to keep it", page)
         self.assertIn("GALOIS-clinical_trial-disease_ncit_code", page)
-        # salvataggio senza chiave: quella esistente resta
-        self.client.post("/galois/", self.form(azure_api_key=""))
-        self.assertEqual(store.load_azure()["api_key"], "TOPSECRET")
         self.assertEqual(store.load_config()["max_iter"], 2)
 
     def test_key_cannot_be_disabled_and_unknown_columns_ignored(self):

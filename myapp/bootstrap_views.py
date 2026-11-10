@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 
-from . import azure_settings, datastore
+from . import datastore, llm_providers
 from .bootstrap import run
 from .bootstrap.schema import Schema
 from .galois.llm import LLMError
@@ -23,17 +23,10 @@ def bootstrap_view(request):
         messages.info(request, "LLM suggestions discarded.")
         return redirect("map_fields")
 
-    endpoint = request.POST.get("azure_endpoint", "").strip()
-    if endpoint or request.POST.get("azure_api_key", "").strip():
-        if not azure_settings.valid_endpoint(endpoint):
-            messages.error(request, "The Azure endpoint must be an https:// URL.")
-            return redirect("map_fields")
-        azure_settings.save(endpoint, request.POST.get("azure_deployment", ""),
-                            request.POST.get("azure_api_version", ""),
-                            request.POST.get("azure_api_key") or None)
-    if not azure_settings.configured():
-        messages.error(request, "The mapping bootstrap needs the Azure OpenAI endpoint, the "
-                                "deployment name and the API key.")
+    try:
+        pid = llm_providers.resolve(request.POST.get("llm_provider", ""))
+    except LLMError as exc:
+        messages.error(request, f"Mapping bootstrap: {exc}.")
         return redirect("map_fields")
 
     try:
@@ -43,18 +36,19 @@ def bootstrap_view(request):
         return redirect("map_fields")
     header, blocks = views.template_mapping_blocks({t: [c.name for c in tb.columns]
                                                     for t, tb in schema.tables.items()})
+    label = llm_providers.label(pid)
     try:
-        suggestions, summary = run.bootstrap(azure_settings.client(), header, blocks, schema)
+        suggestions, summary = run.bootstrap(llm_providers.client(pid), header, blocks, schema)
     except run.BootstrapError as exc:
         messages.error(request, f"Mapping bootstrap: {exc}.")
         return redirect("map_fields")
     except LLMError as exc:
-        messages.error(request, f"Mapping bootstrap: Azure OpenAI failed ({exc}).")
+        messages.error(request, f"Mapping bootstrap: {label} failed ({exc}).")
         return redirect("map_fields")
     run.save(run.fingerprint(header, blocks, schema), suggestions, summary)
     messages.success(
         request,
-        f"The LLM proposed a table for {summary['suggested']} of {summary['rules']} rules "
+        f"{label} proposed a table for {summary['suggested']} of {summary['rules']} rules "
         f"({summary['complete']} with every placeholder bound; {summary['tokens']} tokens, "
         f"{summary['seconds']} s). Rules already mapped keep their saved bindings. "
         "Review the suggestions, then press Save to save.")
