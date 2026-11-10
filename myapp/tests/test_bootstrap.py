@@ -173,6 +173,8 @@ class PageTests(BootstrapTestBase):
         self.assertNotIn("KEY-123", page)
         self.assertIn("shared with Galois mode", page)
         self.assertEqual(page.count('title="Proposed by the LLM'), 3)
+        # ogni regola suggerita ha un pulsante che porta alla sua slide del carosello
+        self.assertEqual(page.count('data-bs-slide-to="'), 3)
         saved = json.loads(re.search(r'id="saved-mappings"[^>]*>(.*?)</script>', page, re.S).group(1))
         self.assertEqual(saved["MAPID-SEX"], {"table": "anagrafica",
                                               "pairs": {"patient": "id_paziente", "sex": "sesso"}})

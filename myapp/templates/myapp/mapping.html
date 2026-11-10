@@ -14,8 +14,21 @@
       {% if bootstrap %}
         <div class="alert alert-info py-2 small mb-2">
           Suggestions from {{ bootstrap.summary.suggested }} of {{ bootstrap.summary.rules }} rules
-          are available; {{ n_suggested }} are shown below, on rules without a saved binding
+          are available; {{ n_suggested }} are shown in the rule carousel below, on rules without a saved binding
           (marked <span class="badge bg-info text-dark">LLM</span>).
+          {% if n_suggested %}
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+              <span class="me-1">Go to:</span>
+              {% for blk in mapping_ui %}
+                {% if blk.suggested %}
+                  <button type="button" class="btn btn-sm btn-info"
+                          data-bs-target="#mappingCarousel" data-bs-slide-to="{{ forloop.counter0 }}">
+                    {{ blk.mappingLabel }}
+                  </button>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       {% endif %}
       <form method="post" action="{% url 'map_fields_bootstrap' %}" class="row g-2 align-items-end">
