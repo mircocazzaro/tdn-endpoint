@@ -65,7 +65,7 @@ class AnthropicFoundry:
         system, rest = _split_system(messages)
         body = {"model": self.model,
                 "max_tokens": kwargs.get("max_tokens", MAX_TOKENS),
-                "temperature": 0, "top_p": 1,
+                # niente temperature/top_p: sono deprecati per i modelli Claude recenti
                 "messages": [{"role": m["role"], "content": m["content"]} for m in rest]}
         if system:
             body["system"] = system
