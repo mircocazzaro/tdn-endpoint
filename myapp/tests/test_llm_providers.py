@@ -271,6 +271,7 @@ class FoundryAnthropicTests(StateDirMixin, TestCase):
         self.assertEqual(body["model"], "claude-haiku-5-5-mirco")
         self.assertEqual(body["system"], "sys")
         self.assertEqual(body["messages"], [{"role": "user", "content": "hi"}])
+        self.assertNotIn("temperature", body)  # deprecato per i modelli Claude recenti
         self.assertEqual((r.text, r.usage_tokens, r.finish_reason), ("OK", 5, "end_turn"))
 
     def test_url_without_messages_suffix_is_completed(self):
