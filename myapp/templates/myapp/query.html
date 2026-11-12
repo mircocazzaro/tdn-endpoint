@@ -17,7 +17,8 @@
     height="40"
     class="d-inline-block align-text-center me-2"
     >
-    <h2 class="card-title">Run a SQL Query on DuckDB</h2>
+    <h2 class="card-title">Run Relational Queries</h2>
+    <p class="small text-muted mb-2">Source: <strong>{{ source_label }}</strong>. Change it in Data source.</p>
     <p class="card-text">
       Enter a valid SQL query below and press “Execute” to see the results.
       Table and column names are suggested as you type; press Ctrl+Space to ask for suggestions, and Ctrl+Enter to run.
@@ -48,6 +49,7 @@
 <div class="card mt-4">
   <div class="card-body">
     <h3 class="card-title">Results</h3>
+    {% if truncated %}<div class="alert alert-warning py-1 small">Showing the first {{ max_rows }} rows.</div>{% endif %}
     <form method="post" class="d-flex flex-wrap align-items-center gap-2 mb-3">
       {% csrf_token %}
       <textarea name="sql_query" hidden>{{ query_text }}</textarea>

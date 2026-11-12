@@ -3,7 +3,7 @@
 from django.urls import path
 from . import bootstrap_views, datasource_views, galois_views, network_views, settings_views
 from .views import (
-    home_view, upload_csv_view, query_view,
+    home_view, upload_csv_view, query_view, knowledge_graph_view,
     field_mapping_view, get_columns,
     ontop_control_view, sparql_query_view,  # ← import the new view
     ontop_status, ontop_logs, set_level, protected_sparql, delete_table_view
@@ -20,6 +20,7 @@ urlpatterns = [
     path('ontop/logs/',       ontop_logs,         name='ontop_logs'),
     path('sparql/', sparql_query_view, name='sparql_query'),    # ← new
     path('get-columns/', get_columns, name='get_columns'),
+    path('map-fields/knowledge-graph/', knowledge_graph_view, name='knowledge_graph'),
     path('set-level/', set_level, name='set_level'),
     path('sparql-protected/', protected_sparql, name='sparql_protected'),
     path('delete-table/<str:table_name>/', delete_table_view, name='delete_table'),

@@ -23,6 +23,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --only-binary=:all: -r requirements.txt
 
 COPY --chown=hdn:hdn . .
+
+# Driver JDBC per Ontop (MySQL, PostgreSQL, Oracle, MS SQL, SQLite): scaricati e
+# verificati per SHA-256 da scripts/fetch_jdbc.py, prima di passare all'utente hdn.
+RUN python scripts/fetch_jdbc.py /app/myapp/obda/jdbc
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 USER hdn

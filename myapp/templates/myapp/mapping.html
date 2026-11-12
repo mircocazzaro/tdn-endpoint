@@ -51,7 +51,20 @@
       </div>
     {% endif %}
 
-    <div class="d-flex justify-content-end mb-3">
+    <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
+      {% if kg_status.available %}
+        <a href="{% url 'knowledge_graph' %}" class="btn btn-outline-primary btn-lg"
+           title="Materialize the mapping with Ontop and download the RDF graph (Turtle)">
+          <i class="bi bi-download" aria-hidden="true"></i> Download RDF graph
+        </a>
+        <small class="text-muted">{% if kg_status.cached %}cached: valid while the mapping and the data do not change{% else %}built on request{% endif %}</small>
+        {% if kg_status.cached and not kg_status.ontology_applied %}<small class="text-warning">built without ontology inference: {{ kg_status.ontology_note }}</small>{% endif %}
+      {% else %}
+        <button type="button" class="btn btn-outline-secondary btn-lg" disabled
+                title="Save at least one mapping rule first">
+          <i class="bi bi-download" aria-hidden="true"></i> Download RDF graph
+        </button>
+      {% endif %}
       <button type="submit" class="btn btn-success btn-lg px-5">Save</button>
     </div>
 

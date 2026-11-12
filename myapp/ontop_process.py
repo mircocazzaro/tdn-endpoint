@@ -131,16 +131,24 @@ def stop(timeout=None):
     return True
 
 
+def active_files():
+    """(mapping, proprieta') con cui Ontop lavora: Galois, sorgente remota o repository."""
+    from .galois import store as galois
+    # In modalita' Galois Ontop usa il mapping fisso e le viste di Galois.
+    if galois.enabled():
+        return galois.mapping_path(), galois.properties_path()
+    from . import site
+    # Con una sorgente remota o un file, Ontop si collega a quella sorgente:
+    # le proprieta' (con la password) stanno fuori dal repository.
+    props = PROPS_FILE if site.is_local() else site.write_ontop_properties()
+    return OBDA_FILE, props
+
+
 def command():
     """Riga di comando con cui la UI avvia Ontop."""
     # L'ontologia ricevuta da Central, se c'e', sostituisce quella del repository.
     from .ontology import active_path
-    from .galois import store as galois
-    # In modalita' Galois Ontop usa il mapping fisso e le viste di Galois.
-    if galois.enabled():
-        mapping, props = galois.mapping_path(), galois.properties_path()
-    else:
-        mapping, props = OBDA_FILE, PROPS_FILE
+    mapping, props = active_files()
     return [str(ONTOP_CMD), "endpoint",
             "-m", str(mapping), "-t", str(active_path()), "-p", str(props),
             "-x", str(XML_CATALOG)]

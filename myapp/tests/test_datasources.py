@@ -77,7 +77,7 @@ class RegistryTests(StateDirMixin, TestCase):
 
     def test_password_is_scrubbed_from_driver_errors(self):
         ds.save_remote("mysql", {"host": "h", "database": "d", "user": "u", "password": "S3CRET-PW"})
-        with mock.patch("myapp.datasources._list_mysql",
+        with mock.patch("pymysql.connect",
                         side_effect=RuntimeError("login failed for S3CRET-PW")):
             with self.assertRaises(ds.DataSourceError) as cm:
                 ds.list_tables("mysql")
@@ -138,10 +138,12 @@ class PageTests(StateDirMixin, TestCase):
     def test_remote_save_then_test_uses_the_saved_values(self):
         values = {"kind": "mysql", "action": "test", "host": "db.example", "port": "3306",
                   "database": "studi", "user": "ana", "password": "PW"}
-        with mock.patch("myapp.datasources._list_mysql", return_value=["esami"]) as lister:
+        con = mock.MagicMock()
+        con.cursor.return_value.fetchall.return_value = [("esami",)]
+        with mock.patch("pymysql.connect", return_value=con) as connect:
             r = Client().post("/data/", values, follow=True)
         self.assertContains(r, "MySQL reachable: 1 tables (esami)")
-        self.assertEqual(lister.call_args.args[0]["password"], "PW")
+        self.assertEqual(connect.call_args.kwargs["password"], "PW")
         self.assertNotIn("PW", Client().get("/data/").content.decode())
 
     def test_aurora_saves_the_chosen_engine(self):
@@ -153,8 +155,102 @@ class PageTests(StateDirMixin, TestCase):
     def test_missing_driver_is_reported(self):
         ds.save_remote("oracle", {"host": "h", "port": "1521", "database": "svc", "user": "u",
                                   "password": "p"})
-        with mock.patch("myapp.datasources._list_oracle", side_effect=ImportError("oracledb")):
+        with mock.patch.dict("sys.modules", {"oracledb": None}):
             with self.assertRaises(ds.DataSourceError) as cm:
                 ds.list_tables("oracle")
-        # l'ImportError va gestito dentro list_tables, non propagato
         self.assertEqual(cm.exception.code, "driver-missing")
+
+
+def _sqlite_with_rows(n):
+    fd, path = tempfile.mkstemp(suffix=".sqlite")
+    os.close(fd)
+    con = sqlite3.connect(path)
+    con.execute("CREATE TABLE t (id INTEGER, name TEXT)")
+    con.executemany("INSERT INTO t VALUES (?, ?)", [(i, f"n{i}") for i in range(n)])
+    con.commit()
+    con.close()
+    data = open(path, "rb").read()
+    os.unlink(path)
+    return data
+
+
+class QueryTests(StateDirMixin, TestCase):
+
+    def test_select_on_sqlite_file_returns_columns_and_rows(self):
+        ds.store_file("sqlite", [_sqlite_bytes()])
+        ds.store_file("sqlite", [_sqlite_with_rows(3)])
+        cols, rows, truncated = ds.run_query("sqlite", "SELECT id, name FROM t ORDER BY id")
+        self.assertEqual(cols, ["id", "name"])
+        self.assertEqual(rows, [[0, "n0"], [1, "n1"], [2, "n2"]])
+        self.assertFalse(truncated)
+
+    def test_sqlite_file_is_opened_read_only(self):
+        ds.store_file("sqlite", [_sqlite_with_rows(1)])
+        with self.assertRaises(ds.DataSourceError) as cm:
+            ds.run_query("sqlite", "INSERT INTO t VALUES (9, 'x')")
+        self.assertEqual(cm.exception.code, "query-error")
+
+    def test_rows_are_capped(self):
+        ds.store_file("sqlite", [_sqlite_with_rows(ds.MAX_ROWS + 10)])
+        _, rows, truncated = ds.run_query("sqlite", "SELECT id FROM t")
+        self.assertEqual(len(rows), ds.MAX_ROWS)
+        self.assertTrue(truncated)
+
+    def test_duckdb_file_query(self):
+        ds.store_file("duckdb", [_duckdb_bytes()])
+        cols, rows, _ = ds.run_query("duckdb", "SELECT 1 AS one")
+        self.assertEqual((cols, rows), (["one"], [[1]]))
+
+    def test_remote_query_uses_a_read_only_connection_and_hides_the_password(self):
+        ds.save_remote("postgresql", {"host": "h", "port": "5432", "database": "d", "user": "u",
+                                      "password": "PW-SECRET"})
+        cur = mock.Mock(description=[("n",)])
+        cur.fetchmany.return_value = [(7,)]
+        con = mock.Mock()
+        con.cursor.return_value = cur
+        with mock.patch("myapp.datasources._connect", return_value=("postgresql", con)):
+            cols, rows, _ = ds.run_query("postgresql", "SELECT 7 AS n")
+        self.assertEqual((cols, rows), (["n"], [[7]]))
+        con.close.assert_called_once()
+
+        cur.execute.side_effect = RuntimeError("syntax error near PW-SECRET")
+        with mock.patch("myapp.datasources._connect", return_value=("postgresql", con)):
+            with self.assertRaises(ds.DataSourceError) as cm:
+                ds.run_query("postgresql", "SELEC")
+        self.assertNotIn("PW-SECRET", cm.exception.detail)
+
+    def test_only_a_configured_source_can_be_activated(self):
+        self.assertEqual(ds.active(), "csv")
+        with self.assertRaises(ds.DataSourceError):
+            ds.set_active("mysql")
+        ds.store_file("sqlite", [_sqlite_bytes()])
+        ds.set_active("sqlite")
+        self.assertEqual(ds.active(), "sqlite")
+
+    def test_activate_button_switches_the_source(self):
+        ds.store_file("sqlite", [_sqlite_bytes()])
+        r = Client().post("/data/", {"kind": "sqlite", "action": "activate"}, follow=True)
+        self.assertContains(r, "is now the source for Run Relational Queries")
+        self.assertEqual(ds.active(), "sqlite")
+
+    def test_sql_page_runs_on_the_active_file_source(self):
+        ds.store_file("sqlite", [_sqlite_with_rows(2)])
+        ds.set_active("sqlite")
+        r = Client().post("/query/", {"sql_query": "SELECT id, name FROM t ORDER BY id"})
+        self.assertEqual(r.context["columns"], ["id", "name"])
+        self.assertEqual(r.context["results"], [[0, "n0"], [1, "n1"]])
+        self.assertEqual(r.context["source_label"], "SQLite file")
+        self.assertContains(r, "Source: <strong>SQLite file</strong>")
+
+    def test_sql_page_reports_query_errors_from_the_source(self):
+        ds.store_file("sqlite", [_sqlite_with_rows(1)])
+        ds.set_active("sqlite")
+        r = Client().post("/query/", {"sql_query": "SELECT nope FROM t"})
+        self.assertIn("no such column", r.context["error"])
+
+    def test_export_works_on_the_active_source(self):
+        ds.store_file("sqlite", [_sqlite_with_rows(2)])
+        ds.set_active("sqlite")
+        r = Client().post("/query/", {"sql_query": "SELECT id FROM t", "export": "csv"})
+        self.assertIn(b"id", r.content)
+        self.assertEqual(r["Content-Type"].split(";")[0], "text/csv")

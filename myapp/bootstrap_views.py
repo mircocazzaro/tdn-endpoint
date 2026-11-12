@@ -3,14 +3,14 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 
-from . import datastore, llm_providers
+from . import datastore, llm_providers, site
 from .bootstrap import run
 from .bootstrap.schema import Schema
 from .galois.llm import LLMError
 
 
 def site_schema(path):
-    return Schema.from_site(datastore.tables_columns(path), datastore.column_types(path))
+    return Schema.from_site(site.tables_columns(path), site.column_types(path))
 
 
 @require_POST
