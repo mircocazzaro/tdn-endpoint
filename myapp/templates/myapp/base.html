@@ -69,9 +69,6 @@
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <!-- Example links; add or remove as needed -->
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'network' %}">HDN Network</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="{% url 'notifications' %}" id="nav-notifications">
                 <i class="bi bi-bell" aria-hidden="true"></i>
                 <span class="visually-hidden">Notifications</span>
@@ -116,7 +113,7 @@
           <a class="nav-link" href="{% url 'sparql_query' %}"><img src="{% static 'myapp/sparql.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Run SPARQL Query</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'galois' %}"><i class="bi bi-cloud-download me-2" aria-hidden="true"></i>Galois</a>
+          <a class="nav-link" href="{% url 'galois' %}"><img src="{% static 'myapp/galoislogo.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Galois</a>
         </li>
         <li class="nav-item">
           <button class="nav-link w-100 text-start d-flex align-items-center border-0 bg-transparent" type="button"
@@ -137,7 +134,10 @@
                 <a class="nav-link" href="{% url 'settings' %}"><i class="bi bi-cpu me-2" aria-hidden="true"></i>Endpoint configuration</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'network' %}"><i class="bi bi-broadcast me-2" aria-hidden="true"></i>Apply to HDN</a>
+                <a class="nav-link" href="{% url 'network' %}"><img src="{% static 'myapp/hdnlogo.png' %}" alt="HDN logo" height="20" class="d-inline-block align-text-center me-2">HDN Network</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'network' %}"><img src="{% static 'myapp/hdnlogo.png' %}" alt="HDN logo" height="20" class="d-inline-block align-text-center me-2">Apply to HDN</a>
               </li>
             </ul>
           </div>

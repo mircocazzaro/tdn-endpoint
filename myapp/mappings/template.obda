@@ -25,7 +25,7 @@ source		SELECT patient, alive
 
 mappingId	MAPID-5b2c0dfea75d44279ce8ddde95f2a9aa
 target		bto:Patient{patient} bto:sex {sex}^^xsd:string . 
-source		SELECT patient, LCASE(sex) AS sex
+source		SELECT patient, LOWER(sex) AS sex
 			FROM "PATIENTS GENERAL DATA"
 			WHERE sex <> ''
 
@@ -63,7 +63,7 @@ source		SELECT patient, occupation
 
 mappingId	MAPID-a276932b837843dba7e633fdf5de414f
 target		bto:Patient{patient} bto:retiredAtDiagnosis {retired_at_diagnosis}^^xsd:boolean . 
-source		SELECT patient, LCASE(retired_at_diagnosis) AS retired_at_diagnosis
+source		SELECT patient, LOWER(retired_at_diagnosis) AS retired_at_diagnosis
 			FROM "PATIENTS GENERAL DATA"
 			WHERE retired_at_diagnosis <> ''
 

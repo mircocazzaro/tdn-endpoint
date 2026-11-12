@@ -2,6 +2,8 @@
 {% load static %}
 {% block content %}
 <h2>Data source</h2>
+<p class="small text-muted mb-3">Active source: <strong>{{ active_label }}</strong>. Run Relational Queries,
+the mapping and Ontop use it. Galois keeps its own database. After switching, save the mapping again.</p>
 
 <div class="accordion" id="dataSources">
 {% for card in cards %}
@@ -12,13 +14,18 @@
               aria-expanded="{% if card.configured %}true{% else %}false{% endif %}" aria-controls="source-{{ card.id }}">
         {% if card.icon %}<img src="{% static 'myapp/sources/' %}{{ card.icon }}.svg" alt="" height="22" class="me-2">{% else %}<i class="bi bi-filetype-csv fs-5 me-2" aria-hidden="true"></i>{% endif %}
         {{ card.label }}
-        {% if card.configured %}<span class="badge bg-success ms-2">configured</span>{% else %}<span class="badge bg-secondary ms-2">not configured</span>{% endif %}
+        {% if card.active %}<span class="badge bg-primary ms-2">active</span>{% elif card.configured %}<span class="badge bg-success ms-2">configured</span>{% else %}<span class="badge bg-secondary ms-2">not configured</span>{% endif %}
       </button>
     </h2>
     <div id="source-{{ card.id }}" class="accordion-collapse collapse {% if card.configured %}show{% endif %}" data-bs-parent="#dataSources">
       <div class="accordion-body">
 
         {% if card.id == "csv" %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="csv">
+            <button type="submit" name="action" value="activate" class="btn btn-outline-primary btn-sm" {% if card.active %}disabled{% endif %}>Use for queries</button>
+          </form>
           <form action="{% url 'upload_csv' %}" method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
             {% csrf_token %}
             <div class="col-md-8">
@@ -30,6 +37,13 @@
           </form>
 
         {% elif card.type == "file" %}
+          {% if card.configured %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ card.id }}">
+            <button type="submit" name="action" value="activate" class="btn btn-outline-primary btn-sm" {% if card.active %}disabled{% endif %}>Use for queries</button>
+          </form>
+          {% endif %}
           <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
             {% csrf_token %}
             <input type="hidden" name="kind" value="{{ card.id }}">
@@ -69,6 +83,7 @@
             <div class="col-12 d-flex gap-2">
               <button type="submit" name="action" value="save" class="btn btn-primary btn-sm">Save</button>
               <button type="submit" name="action" value="test" class="btn btn-outline-secondary btn-sm">Save and test</button>
+              {% if card.configured %}<button type="submit" name="action" value="activate" class="btn btn-outline-primary btn-sm" {% if card.active %}disabled{% endif %}>Use for queries</button>{% endif %}
             </div>
           </form>
         {% endif %}

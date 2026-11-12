@@ -13,6 +13,9 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from . import catalog, datastore, exports, llm_providers, ontology, ontop_process
+from . import datasources as ds_sources
+from . import site as site_db
+from . import knowledge_graph
 from .galois import store as galois_store
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
@@ -36,7 +39,7 @@ audit = logging.getLogger('hdn.audit')
 from django import forms
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
@@ -204,6 +207,7 @@ def upload_csv_view(request):
                 with ontop_paused(request):
                     try:
                         results = datastore.ingest_csvs(DUCKDB_PATH, files)
+                        knowledge_graph.invalidate()  # i dati sono cambiati
                     except datastore.DataStoreBusy:
                         messages.error(request, BUSY_MESSAGE + " No table was updated.")
                     except datastore.IngestError as exc:
@@ -222,27 +226,35 @@ def upload_csv_view(request):
 
 def query_view(request):
     """
-    Allows the user to input a SQL query and returns JSON or HTML results.
+    Esegue SQL sulla sorgente attiva (Data source): il DuckDB locale per i CSV,
+    altrimenti la sorgente configurata, in sola lettura.
     """
     results = []
     error = None
     query_text = ""
     columns = []
+    truncated = False
 
     export = ''
+    source = ds_sources.active()
     if request.method == 'POST':
         query_text = request.POST.get('sql_query', '')
         export = request.POST.get('export', '')
         try:
-            with datastore.read_connection(DUCKDB_PATH) as conn:
-                if conn is None:
-                    raise RuntimeError("no data has been uploaded yet")
-                df: pd.DataFrame = conn.execute(query_text).df()
-                # grab column names
-            columns = df.columns.tolist()
-            results = df.values.tolist()
+            if source == "csv":
+                with datastore.read_connection(DUCKDB_PATH) as conn:
+                    if conn is None:
+                        raise RuntimeError("no data has been uploaded yet")
+                    df: pd.DataFrame = conn.execute(query_text).df()
+                    # grab column names
+                columns = df.columns.tolist()
+                results = df.values.tolist()
+            else:
+                columns, results, truncated = ds_sources.run_query(source, query_text)
         except datastore.DataStoreBusy:
             error = BUSY_MESSAGE
+        except ds_sources.DataSourceError as e:
+            error = e.detail or e.code
         except Exception as e:
             error = str(e)
         if export in exports.EXPORT_FORMATS and error is None:
@@ -254,8 +266,24 @@ def query_view(request):
         'columns': columns,
         'error': error,
         'sql_schema': sql_schema(),
+        'source_label': SOURCE_LABEL.get(source) or ds_sources.KINDS[source].label,
+        'truncated': truncated,
+        'max_rows': ds_sources.MAX_ROWS,
     }
     return render(request, 'myapp/query.html', context)
+
+
+SOURCE_LABEL = {"csv": "Local DuckDB (CSV files)"}
+
+
+SITE_ERRORS = (datastore.DataStoreBusy, ds_sources.DataSourceError)
+
+
+def site_error(exc):
+    """Messaggio per l'utente quando il database del sito non si legge."""
+    if isinstance(exc, datastore.DataStoreBusy):
+        return BUSY_MESSAGE
+    return f"Data source: {exc.detail or exc.code}"
 
 
 def export_response(fmt, base_name, title, columns, rows):
@@ -268,7 +296,17 @@ def export_response(fmt, base_name, title, columns, rows):
 
 
 def sql_schema():
-    """Tabelle e colonne per il completamento dell'editor SQL (vuoto se occupato)."""
+    """Tabelle e colonne per il completamento dell'editor SQL (vuoto se occupato).
+
+    Per una sorgente remota o file si completano i nomi delle tabelle; le colonne
+    non sono lette per non aprire la connessione a ogni caricamento della pagina.
+    """
+    source = ds_sources.active()
+    if source != "csv":
+        try:
+            return {'tables': {t: [] for t in ds_sources.list_tables(source)}}
+        except Exception:
+            return {'tables': {}}
     try:
         return {'tables': datastore.tables_columns(DUCKDB_PATH)}
     except Exception:
@@ -425,12 +463,16 @@ def field_mapping_view(request):
         messages.info(request, "Galois mode is on: the mapping is fixed and generated from "
                                "the Galois schema. It is shown on the Galois page.")
         return redirect('galois')
-    # 2) Introspect DuckDB for tables and columns (sola lettura: convive con Ontop)
+    # 2) Introspect the active data source for tables and columns (sola lettura: convive con Ontop)
     try:
-        tables_columns = datastore.tables_columns(DUCKDB_PATH)
-    except datastore.DataStoreBusy:
+        tables_columns = site_db.tables_columns(DUCKDB_PATH)
+    except SITE_ERRORS as exc:
         tables_columns = {}
-        messages.warning(request, BUSY_MESSAGE)
+        messages.warning(request, site_error(exc))
+    if os.path.exists(OBDA_FILE) and not site_db.mapping_matches_site():
+        messages.warning(request, f"The saved mapping was generated for {site_db.mapping_dialect()}, "
+                                  f"but the active source is {site_db.dialect()}: save the mapping "
+                                  "again before Ontop answers queries from this source.")
     
     header, mapping_blocks = template_mapping_blocks(tables_columns)
 
@@ -531,8 +573,8 @@ def field_mapping_view(request):
     from .bootstrap import run as bootstrap_run
     from .bootstrap.schema import Schema as BootstrapSchema
     try:
-        bschema = BootstrapSchema.from_site(tables_columns, datastore.column_types(DUCKDB_PATH))
-    except datastore.DataStoreBusy:
+        bschema = BootstrapSchema.from_site(tables_columns, site_db.column_types(DUCKDB_PATH))
+    except SITE_ERRORS:
         bschema = BootstrapSchema.from_site(tables_columns)
     stored = bootstrap_run.load(bootstrap_run.fingerprint(header, mapping_blocks, bschema))
     suggested = {}
@@ -612,10 +654,10 @@ def field_mapping_view(request):
         skipped = []    # regole non scritte: segnaposto senza colonna non eliminabili
         reduced = []    # regole scritte senza i predicati di cui il sito non ha dati
         try:
-            site_types = datastore.column_types(DUCKDB_PATH)
-        except datastore.DataStoreBusy:
+            site_types = site_db.column_types(DUCKDB_PATH)
+        except SITE_ERRORS as exc:
             site_types = {}
-            problems.append(BUSY_MESSAGE)
+            problems.append(site_error(exc))
 
         for blk in mapping_blocks:
             mid = blk['mappingId']
@@ -681,7 +723,7 @@ def field_mapping_view(request):
             # isnan() del template presuppone colonne numeriche: dove nel sito
             # la colonna e' testo viene sostituito con un controllo "e' un
             # numero" compatibile con Ontop.
-            src, adapted = adapt_isnan(src, site_types.get(tbl, {}))
+            src, adapted = adapt_isnan(src, site_types.get(tbl, {}), site_db.dialect())
             if adapted:
                 adapted_cols.append(f"{mid} ({', '.join(adapted)})")
 
@@ -713,12 +755,12 @@ def field_mapping_view(request):
                             + "; ".join(skipped) + ".")
         if not problems and generated_sources:
             try:
-                failing = datastore.failing_sources(DUCKDB_PATH, generated_sources)
-            except datastore.DataStoreBusy:
+                failing = site_db.failing_sources(DUCKDB_PATH, generated_sources)
+            except SITE_ERRORS as exc:
                 failing = {}
-                problems.append(BUSY_MESSAGE)
+                problems.append(site_error(exc))
             for mid, error in failing.items():
-                problems.append(f"{mid}: la query sorgente non esegue sui dati locali: {error}")
+                problems.append(f"{mid}: la query sorgente non esegue sulla sorgente attiva: {error}")
 
         if problems:
             for problem in problems:
@@ -730,6 +772,7 @@ def field_mapping_view(request):
         else:
             lines.append(']]')
             backup = save_active_mapping(OBDA_FILE, "\n".join(lines), mapping_backup_dir())
+            site_db.record_mapping_dialect()
 
             if reduced:
                 messages.info(request, "Written without the predicates whose placeholders have "
@@ -777,6 +820,7 @@ def field_mapping_view(request):
         'form':                form,
         'bootstrap':           stored,
         'llm_choices':         llm_providers.choices(),
+        'kg_status':           knowledge_graph.status(),
         'n_suggested':         len(suggested),
     })
 
@@ -795,9 +839,9 @@ def get_columns(request):
     # istruzioni in un'unica execute: anche in sola lettura un COPY ... TO
     # scriveva su disco il contenuto di qualunque tabella.
     try:
-        schema = datastore.tables_columns(DUCKDB_PATH)
-    except datastore.DataStoreBusy:
-        return JsonResponse({'columns': [], 'error': BUSY_MESSAGE}, status=503)
+        schema = site_db.tables_columns(DUCKDB_PATH)
+    except SITE_ERRORS as exc:
+        return JsonResponse({'columns': [], 'error': site_error(exc)}, status=503)
     return JsonResponse({'columns': schema.get(table, [])})
 
 def ontop_control_view(request):
@@ -1115,6 +1159,7 @@ def delete_table_view(request, table_name):
                     existing = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
                     if table_name in existing:
                         conn.execute(f'DROP TABLE {datastore.quote_identifier(table_name)}')
+                        knowledge_graph.invalidate()
                         messages.success(request, f"Tables updated: `{table_name}` deleted.")
                     else:
                         messages.error(request, f"Table `{table_name}` does not exist.")
@@ -1123,3 +1168,18 @@ def delete_table_view(request, table_name):
     except OntopDidNotStop:
         messages.error(request, "Ontop did not stop in time: no table was deleted.")
     return redirect('home')
+
+
+@require_GET
+def knowledge_graph_view(request):
+    """Scarica il knowledge graph RDF: dalla cache se il mapping e i dati non sono cambiati."""
+    try:
+        path, cached, _meta = knowledge_graph.get_or_materialize()
+    except knowledge_graph.KnowledgeGraphError as exc:
+        messages.error(request, f"Knowledge graph: {exc}")
+        return redirect('map_fields')
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    response = FileResponse(open(path, 'rb'), content_type='text/turtle')
+    response['Content-Disposition'] = f'attachment; filename="knowledge-graph-{stamp}.ttl"'
+    response['X-HDN-Cache'] = 'hit' if cached else 'miss'
+    return response

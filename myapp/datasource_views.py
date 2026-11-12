@@ -12,7 +12,7 @@ def _cards():
     cards = []
     for key, k in ds.KINDS.items():
         card = {"id": key, "label": k.label, "icon": k.icon, "type": k.kind,
-                "configured": ds.configured(key)}
+                "configured": ds.configured(key), "active": ds.active() == key}
         if k.kind == "remote":
             pub = ds.public(key)
             card["fields"] = [{"name": f.name, "label": f.label, "placeholder": f.placeholder or
@@ -28,10 +28,31 @@ def _cards():
 @require_http_methods(["GET", "POST"])
 def data_sources_view(request):
     if request.method == "GET":
-        return render(request, "myapp/data_sources.html", {"cards": _cards()})
+        return render(request, "myapp/data_sources.html", {
+            "cards": _cards(), "active": ds.active(),
+            "active_label": "Local DuckDB (CSV files)" if ds.active() == "csv" else ds.KINDS[ds.active()].label,
+        })
 
     kind = request.POST.get("kind", "")
     action = request.POST.get("action", "")
+    if action == "activate":
+        if kind not in ds.KINDS:
+            messages.error(request, "Unknown data source.")
+            return redirect("data_sources")
+        try:
+            ds.set_active(kind)
+        except ds.DataSourceError as exc:
+            messages.error(request, exc.detail or exc.code)
+            return redirect("data_sources")
+        messages.success(request, f"{ds.KINDS[kind].label} is now the source for Run Relational "
+                                  "Queries, Ontop and the mapping.")
+        from . import site as site_db
+        if not site_db.mapping_matches_site():
+            messages.warning(request, "The saved mapping was generated for another dialect: "
+                                      "run Map Data to HERO and save it again before Ontop answers.")
+        from .views import restart_ontop_for_new_mapping
+        restart_ontop_for_new_mapping(request)
+        return redirect("data_sources")
     if kind not in ds.KINDS or kind == "csv":
         messages.error(request, "Unknown data source.")
         return redirect("data_sources")
@@ -50,6 +71,11 @@ def data_sources_view(request):
             messages.error(request, f"{label}: the file is not a {label} database.")
             return redirect("data_sources")
         ds.store_file(kind, upload.chunks())
+        if kind == "sqlite":
+            nullable = ds.sqlite_nullable_keys()
+            if nullable:
+                messages.warning(request, "Ontop refuses primary keys that can be NULL: declare "
+                                          f"them NOT NULL ({', '.join(nullable)}).")
         try:
             tables = ds.list_tables(kind)
             messages.success(request, f"{label} loaded: {len(tables)} tables"

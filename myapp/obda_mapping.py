@@ -341,37 +341,51 @@ def _numeric_text(col):
     return f"regexp_full_match(CAST({col} AS VARCHAR), {NUMERIC_TEXT_PATTERN})"
 
 
-def adapt_isnan(source, column_types):
+def adapt_isnan(source, column_types, dialect="duckdb"):
     """Riscrive isnan() sulle colonne che nel database del sito sono testo.
 
-    ``column_types`` mappa nome di colonna (qualunque maiuscola) a tipo DuckDB
-    per la tabella del source. Restituisce ``(source, colonne_riscritte)``.
+    ``column_types`` mappa nome di colonna (qualunque maiuscola) a tipo SQL
+    normalizzato come DuckDB (VARCHAR, DOUBLE, ...). Restituisce
+    ``(source, colonne_riscritte)``.
 
+    Per DuckDB:
     - ``NOT isnan(c)`` diventa ``regexp_full_match(CAST(c AS VARCHAR), ...)``;
     - ``isnan(c)`` diventa ``(NOT regexp_full_match(...))``;
     - nella proiezione di primo livello ``c`` diventa
       ``CASE WHEN <c numerico> THEN CAST(c AS DOUBLE) END AS c``, cosi' che il
       target riceva sempre un numero o NULL, mai il testo non numerico.
+    Le colonne numeriche restano invariate: isnan() su DOUBLE e' corretto.
 
-    Le colonne numeriche restano invariate: isnan() su DOUBLE e' corretto, e
-    su interi DuckDB lo applica con un cast implicito.
+    Per gli altri dialetti (myapp/dialects.py) isnan() non esiste: su una
+    colonna numerica diventa ``IS [NOT] NULL``, su una colonna di testo il test
+    di numero del dialetto, con la stessa proiezione.
     """
+    from .dialects import DUCKDB, numeric_cast, numeric_text
+
     types = {k.lower(): v for k, v in column_types.items()}
     rewritten = []
 
     def _replace(m):
         col = m.group("col")
         sql_type = types.get(col.lower())
-        if not _is_text(sql_type):
-            return m.group(0)
-        if col not in rewritten:
-            rewritten.append(col)
-        check = _numeric_text(col)
-        return check if m.group("not") else f"(NOT {check})"
+        text = _is_text(sql_type)
+        if dialect == DUCKDB:
+            if not text:
+                return m.group(0)
+            if col not in rewritten:
+                rewritten.append(col)
+            check = numeric_text(DUCKDB, col)
+            return check if m.group("not") else f"(NOT {check})"
+        if text:
+            if col not in rewritten:
+                rewritten.append(col)
+            check = numeric_text(dialect, col)
+            return f"({check})" if m.group("not") else f"(NOT {check})"
+        return f"({col} IS NOT NULL)" if m.group("not") else f"({col} IS NULL)"
 
     out = _ISNAN_RE.sub(_replace, source)
     if not rewritten:
-        return source, []
+        return out, []
 
     span = _projection_span(out)
     if span is not None:
@@ -384,8 +398,8 @@ def adapt_isnan(source, column_types):
             name = plain.group(1).strip('"') if plain else None
             if name is not None and name.lower() in targets:
                 col = name
-                item = (f'CASE WHEN {_numeric_text(col)} '
-                        f"THEN CAST({col} AS DOUBLE) END AS {col}")
+                item = (f'CASE WHEN {numeric_text(dialect, col)} '
+                        f"THEN {numeric_cast(dialect, col)} END AS {col}")
             new_items.append(item)
         out = out[:start] + " " + ", ".join(new_items) + " " + out[end:]
 

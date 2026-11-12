@@ -163,6 +163,64 @@ def _scrub(exc, secret):
     return f"{type(exc).__name__}: {text[:200]}"
 
 
+LIST_TABLES_SQL = {
+    "mysql": ("SELECT table_name FROM information_schema.tables "
+              "WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' ORDER BY table_name"),
+    "postgresql": ("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' "
+                   "AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_name"),
+    "oracle": "SELECT table_name FROM user_tables ORDER BY table_name",
+    "mssql": ("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
+              "WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME"),
+}
+
+
+def _engine(kind):
+    params = stored(kind)
+    return params.get("engine", "mysql") if kind == "aurora" else kind
+
+
+def _connect(kind):
+    """Connessione in sola lettura al database remoto configurato. Ritorna (motore, connessione)."""
+    if missing(kind, None):
+        raise DataSourceError("not-configured", "fill in the connection details first")
+    p = stored(kind)
+    engine = _engine(kind)
+    port = _port(kind, p)
+    try:
+        if engine == "mysql":
+            import pymysql
+            con = pymysql.connect(host=p["host"], port=port, user=p["user"], password=p["password"],
+                                  database=p["database"], connect_timeout=TIMEOUT, autocommit=True)
+            with con.cursor() as cur:
+                # il mapping usa identificatori tra doppi apici, come DuckDB
+                cur.execute("SET SESSION sql_mode = 'ANSI_QUOTES'")
+                cur.execute("SET SESSION TRANSACTION READ ONLY")
+        elif engine == "postgresql":
+            import psycopg
+            con = psycopg.connect(host=p["host"], port=port, user=p["user"], password=p["password"],
+                                  dbname=p["database"], connect_timeout=TIMEOUT, autocommit=True,
+                                  options="-c default_transaction_read_only=on")
+        elif engine == "oracle":
+            import oracledb
+            con = oracledb.connect(user=p["user"], password=p["password"],
+                                   dsn=f"{p['host']}:{port}/{p['database']}",
+                                   tcp_connect_timeout=TIMEOUT)
+        elif engine == "mssql":
+            import pymssql
+            con = pymssql.connect(server=p["host"], port=str(port), user=p["user"],
+                                  password=p["password"], database=p["database"],
+                                  login_timeout=TIMEOUT)
+        else:
+            raise DataSourceError("unknown-engine", engine)
+    except DataSourceError:
+        raise
+    except ImportError as exc:
+        raise DataSourceError("driver-missing", f"Python driver not installed ({exc})")
+    except Exception as exc:
+        raise DataSourceError("unreachable", _scrub(exc, p.get("password", "")))
+    return engine, con
+
+
 def list_tables(kind):
     """Nomi delle tabelle della sorgente configurata; DataSourceError se non raggiungibile."""
     k = KINDS[kind]
@@ -170,85 +228,85 @@ def list_tables(kind):
         return _list_file_tables(kind)
     if k.kind != "remote":
         raise DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
-    params = stored(kind)
-    if missing(kind, None):
-        raise DataSourceError("not-configured", "fill in the connection details first")
-    engine = params.get("engine", "mysql") if kind == "aurora" else kind
-    port = _port(kind, params)
+    engine, con = _connect(kind)
     try:
-        if engine == "mysql":
-            return _list_mysql(params, port)
-        if engine == "postgresql":
-            return _list_postgres(params, port)
-        if engine == "oracle":
-            return _list_oracle(params, port)
-        if engine == "mssql":
-            return _list_mssql(params, port)
+        cur = con.cursor()
+        cur.execute(LIST_TABLES_SQL[engine])
+        return [r[0] for r in cur.fetchall()]
+    except Exception as exc:
+        raise DataSourceError("query-error", _scrub(exc, stored(kind).get("password", "")))
+    finally:
+        con.close()
+
+
+MAX_ROWS = 5000
+
+
+def _result(cursor):
+    if cursor.description is None:
+        return [], [], False
+    cols = [d[0] for d in cursor.description]
+    rows = cursor.fetchmany(MAX_ROWS + 1)
+    return cols, [list(r) for r in rows[:MAX_ROWS]], len(rows) > MAX_ROWS
+
+
+def run_query(kind, sql):
+    """Esegue SQL sulla sorgente in sola lettura. Ritorna (colonne, righe, troncato).
+
+    Per MySQL e PostgreSQL la sessione e' read-only; per Oracle e MS SQL vale
+    solo il privilegio dell'utente: usare un utente di sola lettura.
+    """
+    k = KINDS[kind]
+    if k.kind == "file":
+        return _run_file(kind, sql)
+    if k.kind != "remote":
+        raise DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
+    _engine_name, con = _connect(kind)
+    try:
+        cur = con.cursor()
+        cur.execute(sql)
+        return _result(cur)
+    except Exception as exc:
+        raise DataSourceError("query-error", _scrub(exc, stored(kind).get("password", "")))
+    finally:
+        con.close()
+
+
+def _run_file(kind, sql):
+    path = file_path(kind)
+    if not path.exists():
+        raise DataSourceError("not-configured", "no file uploaded yet")
+    try:
+        if kind == "sqlite":
+            con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+            try:
+                return _result(con.execute(sql))
+            finally:
+                con.close()
+        import duckdb
+        con = duckdb.connect(str(path), read_only=True)
+        try:
+            return _result(con.execute(sql))
+        finally:
+            con.close()
     except DataSourceError:
         raise
-    except ImportError as exc:
-        raise DataSourceError("driver-missing", f"Python driver not installed ({exc})")
     except Exception as exc:
-        raise DataSourceError("unreachable", _scrub(exc, params.get("password", "")))
-    raise DataSourceError("unknown-engine", engine)
+        raise DataSourceError("query-error", _scrub(exc, ""))
 
 
-def _list_mysql(p, port):
-    import pymysql
-    con = pymysql.connect(host=p["host"], port=port, user=p["user"], password=p["password"],
-                          database=p["database"], connect_timeout=TIMEOUT)
-    try:
-        with con.cursor() as cur:
-            cur.execute("SET SESSION TRANSACTION READ ONLY")
-            cur.execute("SELECT table_name FROM information_schema.tables "
-                        "WHERE table_schema = %s AND table_type = 'BASE TABLE' ORDER BY table_name",
-                        (p["database"],))
-            return [r[0] for r in cur.fetchall()]
-    finally:
-        con.close()
+def active():
+    """Sorgente usata da Run Relational Queries: "csv" (DuckDB locale) o una chiave di KINDS."""
+    value = _read_registry().get("active", "csv")
+    return value if value in KINDS else "csv"
 
 
-def _list_postgres(p, port):
-    import psycopg
-    con = psycopg.connect(host=p["host"], port=port, user=p["user"], password=p["password"],
-                          dbname=p["database"], connect_timeout=TIMEOUT,
-                          options="-c default_transaction_read_only=on")
-    try:
-        rows = con.execute(
-            "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' "
-            "AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_name"
-        ).fetchall()
-        return [r[0] for r in rows]
-    finally:
-        con.close()
-
-
-def _list_oracle(p, port):
-    import oracledb
-    con = oracledb.connect(user=p["user"], password=p["password"],
-                           dsn=f"{p['host']}:{port}/{p['database']}", tcp_connect_timeout=TIMEOUT)
-    try:
-        cur = con.cursor()
-        cur.execute("SELECT table_name FROM user_tables ORDER BY table_name")
-        return [r[0] for r in cur.fetchall()]
-    finally:
-        con.close()
-
-
-def _list_mssql(p, port):
-    import pymssql
-    con = pymssql.connect(server=p["host"], port=str(port), user=p["user"],
-                          password=p["password"], database=p["database"], login_timeout=TIMEOUT)
-    try:
-        cur = con.cursor()
-        cur.execute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
-                    "WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME")
-        return [r[0] for r in cur.fetchall()]
-    finally:
-        con.close()
-
-
-SQLITE_MAGIC = b"SQLite format 3\x00"
+def set_active(kind):
+    if kind != "csv" and not configured(kind):
+        raise DataSourceError("not-configured", "configure the source before using it")
+    data = _read_registry()
+    data["active"] = kind
+    _write_registry(data)
 
 
 def _list_file_tables(kind):
@@ -271,6 +329,9 @@ def _list_file_tables(kind):
         return [r[0] for r in rows]
     finally:
         con.close()
+
+
+SQLITE_MAGIC = b"SQLite format 3\x00"
 
 
 def check_file_header(kind, head):
@@ -297,3 +358,158 @@ def store_file(kind, chunks):
             os.unlink(tmp)
         raise
     return target
+
+
+# ---------------------------------------------------------------------------
+# Catalogo, tipi e validazione per il sito attivo
+# ---------------------------------------------------------------------------
+
+SCHEMA_SQL = {
+    "mysql": ("SELECT table_name, column_name, data_type FROM information_schema.columns "
+              "WHERE table_schema = DATABASE() ORDER BY table_name, ordinal_position"),
+    "postgresql": ("SELECT table_name, column_name, data_type FROM information_schema.columns "
+                   "WHERE table_schema NOT IN ('pg_catalog', 'information_schema') "
+                   "ORDER BY table_name, ordinal_position"),
+    "oracle": ("SELECT table_name, column_name, data_type FROM user_tab_columns "
+               "ORDER BY table_name, column_id"),
+    "mssql": ("SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
+              "ORDER BY TABLE_NAME, ORDINAL_POSITION"),
+}
+
+
+def normalize_type(raw):
+    """Tipo del motore in un nome DuckDB, cosi' che il resto del codice lo riconosca."""
+    t = (raw or "").upper()
+    if not t or any(x in t for x in ("CHAR", "TEXT", "CLOB", "STRING")):
+        return "VARCHAR"
+    if "INT" in t or "SERIAL" in t:
+        return "BIGINT"
+    if any(x in t for x in ("DECIMAL", "NUMERIC", "NUMBER", "FLOAT", "DOUBLE", "REAL", "MONEY")):
+        return "DOUBLE"
+    if "DATE" in t and "TIME" not in t:
+        return "DATE"
+    if "TIME" in t:
+        return "TIMESTAMP"
+    if "BOOL" in t or "BIT" in t:
+        return "BOOLEAN"
+    return t
+
+
+def schema(kind):
+    """{tabella: [(colonna, tipo normalizzato)]} della sorgente attiva o configurata."""
+    k = KINDS[kind]
+    if k.kind == "file":
+        return _file_schema(kind)
+    if k.kind != "remote":
+        raise DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
+    engine, con = _connect(kind)
+    try:
+        cur = con.cursor()
+        cur.execute(SCHEMA_SQL[engine])
+        out = {}
+        for table, column, dtype in cur.fetchall():
+            out.setdefault(table, []).append((column, normalize_type(dtype)))
+        return out
+    except Exception as exc:
+        raise DataSourceError("query-error", _scrub(exc, stored(kind).get("password", "")))
+    finally:
+        con.close()
+
+
+def _file_schema(kind):
+    path = file_path(kind)
+    if not path.exists():
+        raise DataSourceError("not-configured", "no file uploaded yet")
+    if kind == "sqlite":
+        con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        try:
+            out = {}
+            for (table,) in con.execute("SELECT name FROM sqlite_master WHERE type = 'table' "
+                                        "AND name NOT LIKE 'sqlite_%' ORDER BY name").fetchall():
+                cols = con.execute(f'PRAGMA table_info("{table.replace(chr(34), chr(34) * 2)}")')
+                out[table] = [(c[1], normalize_type(c[2])) for c in cols.fetchall()]
+            return out
+        finally:
+            con.close()
+    import duckdb
+    con = duckdb.connect(str(path), read_only=True)
+    try:
+        rows = con.execute("SELECT table_name, column_name, data_type FROM information_schema.columns "
+                           "WHERE table_schema = 'main' ORDER BY table_name, ordinal_position").fetchall()
+        out = {}
+        for table, column, dtype in rows:
+            out.setdefault(table, []).append((column, normalize_type(dtype)))
+        return out
+    finally:
+        con.close()
+
+
+def tables_columns(kind):
+    """{tabella: [colonne]} della sorgente."""
+    return {t: [c for c, _ in cols] for t, cols in schema(kind).items()}
+
+
+def column_types(kind):
+    """{tabella: {colonna: tipo normalizzato}} della sorgente."""
+    return {t: dict(cols) for t, cols in schema(kind).items()}
+
+
+def failing_sources(kind, sources):
+    """Esegue ogni query sorgente sulla sorgente; {id: errore} per quelle che non eseguono.
+
+    Come per DuckDB, l'esecuzione conta tutte le righe: alcuni errori di tipo
+    emergono solo leggendo il risultato.
+    """
+    failing = {}
+    k = KINDS[kind]
+    if k.kind == "file":
+        import duckdb
+        for mid, sql in sources:
+            try:
+                if kind == "sqlite":
+                    con = sqlite3.connect(f"file:{file_path(kind)}?mode=ro", uri=True)
+                    try:
+                        con.execute(f"SELECT count(*) FROM ({sql}) hdn_check").fetchone()
+                    finally:
+                        con.close()
+                else:
+                    con = duckdb.connect(str(file_path(kind)), read_only=True)
+                    try:
+                        con.execute(f"SELECT count(*) FROM ({sql}) hdn_check").fetchone()
+                    finally:
+                        con.close()
+            except Exception as exc:
+                failing[mid] = f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
+        return failing
+    _engine_name, con = _connect(kind)
+    try:
+        cur = con.cursor()
+        for mid, sql in sources:
+            try:
+                cur.execute(f"SELECT count(*) FROM ({sql}) hdn_check")
+                cur.fetchall()
+            except Exception as exc:
+                failing[mid] = _scrub(exc, stored(kind).get("password", "")).splitlines()[0]
+    finally:
+        con.close()
+    return failing
+
+
+def sqlite_nullable_keys(kind="sqlite"):
+    """Colonne chiave (PRIMARY KEY) senza NOT NULL nel file SQLite: Ontop le rifiuta."""
+    path = file_path(kind)
+    if not path.exists():
+        return []
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        tables = [r[0] for r in con.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")]
+        out = []
+        for t in tables:
+            for _cid, name, _type, notnull, _dflt, pk in con.execute(
+                    f'PRAGMA table_info("{t.replace(chr(34), chr(34) * 2)}")'):
+                if pk and not notnull:
+                    out.append(f"{t}.{name}")
+        return out
+    finally:
+        con.close()
