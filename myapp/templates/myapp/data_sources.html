@@ -1,0 +1,81 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block content %}
+<h2>Data source</h2>
+
+<div class="accordion" id="dataSources">
+{% for card in cards %}
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button {% if not card.configured %}collapsed{% endif %}" type="button"
+              data-bs-toggle="collapse" data-bs-target="#source-{{ card.id }}"
+              aria-expanded="{% if card.configured %}true{% else %}false{% endif %}" aria-controls="source-{{ card.id }}">
+        {% if card.icon %}<img src="{% static 'myapp/sources/' %}{{ card.icon }}.svg" alt="" height="22" class="me-2">{% else %}<i class="bi bi-filetype-csv fs-5 me-2" aria-hidden="true"></i>{% endif %}
+        {{ card.label }}
+        {% if card.configured %}<span class="badge bg-success ms-2">configured</span>{% else %}<span class="badge bg-secondary ms-2">not configured</span>{% endif %}
+      </button>
+    </h2>
+    <div id="source-{{ card.id }}" class="accordion-collapse collapse {% if card.configured %}show{% endif %}" data-bs-parent="#dataSources">
+      <div class="accordion-body">
+
+        {% if card.id == "csv" %}
+          <form action="{% url 'upload_csv' %}" method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <div class="col-md-8">
+              <label for="csv_files" class="form-label">CSV files</label>
+              <input class="form-control" type="file" name="csv_files" id="csv_files" accept=".csv" multiple required>
+              <div class="form-text">Each file becomes a table of the local DuckDB database.</div>
+            </div>
+            <div class="col-auto"><button type="submit" class="btn btn-primary">Upload</button></div>
+          </form>
+
+        {% elif card.type == "file" %}
+          <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ card.id }}">
+            <div class="col-md-8">
+              <label for="{{ card.id }}-file" class="form-label">{{ card.label }} file</label>
+              <input class="form-control" type="file" name="file" id="{{ card.id }}-file" required>
+              <div class="form-text">Uploading replaces the file already stored for this source.</div>
+            </div>
+            <div class="col-auto"><button type="submit" class="btn btn-primary">Upload</button></div>
+          </form>
+
+        {% else %}
+          <form method="post" class="row g-3">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ card.id }}">
+            {% for f in card.fields %}
+            <div class="{% if f.name == 'host' or f.name == 'database' %}col-md-6{% else %}col-md-3{% endif %}">
+              <label class="form-label" for="{{ card.id }}-{{ f.name }}">{{ f.label }}</label>
+              {% if f.secret %}
+              <input class="form-control" type="password" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" autocomplete="new-password"
+                     placeholder="{% if f.has_value %}stored: leave empty to keep it{% else %}required{% endif %}">
+              {% else %}
+              <input class="form-control" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" value="{{ f.value }}"
+                     placeholder="{{ f.placeholder }}">
+              {% endif %}
+            </div>
+            {% endfor %}
+            {% if card.engines %}
+            <div class="col-md-3">
+              <label class="form-label" for="{{ card.id }}-engine">Engine</label>
+              <select class="form-select" id="{{ card.id }}-engine" name="engine">
+                <option value="mysql" {% if card.engine == "mysql" %}selected{% endif %}>Aurora MySQL</option>
+                <option value="postgresql" {% if card.engine == "postgresql" %}selected{% endif %}>Aurora PostgreSQL</option>
+              </select>
+            </div>
+            {% endif %}
+            <div class="col-12 d-flex gap-2">
+              <button type="submit" name="action" value="save" class="btn btn-primary btn-sm">Save</button>
+              <button type="submit" name="action" value="test" class="btn btn-outline-secondary btn-sm">Save and test</button>
+            </div>
+          </form>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}
