@@ -1,6 +1,7 @@
 {% extends 'myapp/base.html' %}
+{% load static %}
 {% block content %}
-<h2>Endpoint configuration</h2>
+<h2><img src="{% static 'myapp/endpoint-configuration.png' %}" alt="" height="40" class="d-inline-block align-text-center me-2">Endpoint configuration</h2>
 
 <div class="accordion" id="llmProviders">
 {% for card in cards %}

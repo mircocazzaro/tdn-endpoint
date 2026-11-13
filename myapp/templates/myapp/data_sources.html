@@ -1,7 +1,7 @@
 {% extends 'myapp/base.html' %}
 {% load static %}
 {% block content %}
-<h2>Data source</h2>
+<h2><img src="{% static 'myapp/database-management.png' %}" alt="" height="40" class="d-inline-block align-text-center me-2">Data source</h2>
 <p class="small text-muted mb-3">Active source: <strong>{{ active_label }}</strong>. Run Relational Queries,
 the mapping and Ontop use it. Galois keeps its own database. After switching, save the mapping again.</p>
 
