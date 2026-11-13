@@ -170,7 +170,7 @@ Other names are supported by associating template blocks with the appropriate ta
 
 ### 2. Map data to HERO
 
-In *Map Data to HERO*, select a table for each template block, then click each placeholder and its corresponding column. Click *Save*.
+In *Map Data to HERO*, select a table for each template block, then click each placeholder and its corresponding column. Click *Save*. To map a placeholder to several columns, right-click it, choose *Sum* or *Concatenate* and select the columns in order; the arrows are dashed. A sum accepts numeric columns only. In a concatenation a missing value counts as empty text; in a sum it makes the result missing.
 
 Source queries are executed against local data before saving. A failing block prevents the mapping from being saved and produces an explanation. Numeric columns loaded as text, for example because they contain missing-value codes such as `u`, receive an adjusted validation check and a notification.
 
@@ -267,12 +267,29 @@ Catalog queries `q15_L0`–`q18_L4` target this mode; `q17` and `q18` require L4
 
 The documented Azure-client tests use a simulated service rather than live Azure.
 
+## Data sources
+
+*Data source* chooses what the endpoint answers from. One source is active at a time.
+
+| Section | Sources | Queries run through |
+|---|---|---|
+| Files | CSV (loaded into the local DuckDB), DuckDB file, SQLite file | Ontop and the mapping |
+| RDBMS | MySQL, PostgreSQL, Oracle, MS SQL Server, Amazon Aurora | Ontop and the mapping |
+| Triple store | GraphDB | GraphDB directly |
+
+With a triple store, Ontop and the mapping are bypassed: HDN Central's query is matched against the catalog and checked against the disclosure level as usual, and only then sent to the GraphDB repository. A refused or failed query returns the same empty answer as before. GraphDB must already hold the data as RDF using the HERO ontology; activating it stops Ontop, and Run Relational Queries, Map Data to HERO and the RDF download are not available. Galois mode needs Ontop, so it cannot be on while a triple store is active. The reasoning GraphDB applies depends on the ruleset of its repository, unlike Ontop's OWL 2 QL rewriting.
+
+The user and password of GraphDB are optional and used as Basic authentication; with a user the server URL must be HTTPS, or a local server. Credentials of every source are stored in `datasources.json` (see below), never shown again and never written in error messages.
+
 ## File locations and backups
 
 | Path | Contents | Tracked in Git |
 |---|---|---|
 | `myapp/obda/mydatabase.duckdb` | Uploaded institutional data | No |
 | `myapp/obda/hereditary_ontology_2.obda` | Active site mapping | No |
+| `uploads/hdn/datasources.json` | Connections and credentials of the data sources, and the active one | No |
+| `uploads/hdn/sources/` | Uploaded SQLite and DuckDB files | No |
+| `myapp/obda/hereditary_ontology_2.combinations.json` | Columns and mode of each combined placeholder, for the mapping editor | No |
 | `myapp/obda/mapping-backups/` | Last 10 mapping versions | No |
 | `uploads/level.duckdb` | Disclosure setting | Yes |
 | `uploads/hdn/identity.pem` | Endpoint private key | No |

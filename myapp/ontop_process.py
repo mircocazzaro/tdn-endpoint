@@ -162,10 +162,17 @@ def environment():
     return env
 
 
+class OntopNotApplicable(RuntimeError):
+    """Ontop non si avvia: la sorgente attiva e' un triple store, che risponde da solo."""
+
+
 def start():
     """Avvia Ontop se non e' gia' acceso. Restituisce il PID."""
     if is_running():
         return read_pid()
+    from . import datasources
+    if datasources.active_is_triplestore():
+        raise OntopNotApplicable("the active source is a triple store: queries bypass Ontop")
     with open(CONSOLE_FILE, "w") as console:
         console.write(f"===== avvio {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n")
         console.flush()

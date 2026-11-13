@@ -21,6 +21,7 @@ local-testdata/
 # Il mapping attivo e' configurazione per singolo sito, derivata dal template
 # su uno schema locale: non e' sorgente condivisa.
 myapp/obda/hereditary_ontology_2.obda
+myapp/obda/hereditary_ontology_2.combinations.json
 myapp/obda/*_old.obda
 myapp/obda/mapping-backups/
 

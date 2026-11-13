@@ -2,22 +2,29 @@
 {% load static %}
 {% block content %}
 <h2><img src="{% static 'myapp/database-management.png' %}" alt="" height="40" class="d-inline-block align-text-center me-2">Data source</h2>
+{% if active_is_triplestore %}
+<p class="small text-muted mb-3">Active source: <strong>{{ active_label }}</strong>. SPARQL queries, after the privacy
+check, go straight to it. Ontop, the mapping and Run Relational Queries are not used.</p>
+{% else %}
 <p class="small text-muted mb-3">Active source: <strong>{{ active_label }}</strong>. Run Relational Queries,
 the mapping and Ontop use it. Galois keeps its own database. After switching, save the mapping again.</p>
+{% endif %}
 
-<div class="accordion" id="dataSources">
-{% for card in cards %}
+{% for section in sections %}
+<h5 class="mt-4 mb-2 text-secondary" id="section-{{ section.id }}">{{ section.title }}</h5>
+<div class="accordion" id="sources-{{ section.id }}">
+{% for card in section.cards %}
   <div class="accordion-item">
     <h2 class="accordion-header">
       <button class="accordion-button {% if not card.configured %}collapsed{% endif %}" type="button"
               data-bs-toggle="collapse" data-bs-target="#source-{{ card.id }}"
               aria-expanded="{% if card.configured %}true{% else %}false{% endif %}" aria-controls="source-{{ card.id }}">
-        {% if card.icon %}<img src="{% static 'myapp/sources/' %}{{ card.icon }}.svg" alt="" height="22" class="me-2">{% else %}<i class="bi bi-filetype-csv fs-5 me-2" aria-hidden="true"></i>{% endif %}
+        {% if card.icon_path %}<img src="{% static card.icon_path %}" alt="" height="22" class="me-2">{% else %}<i class="bi bi-filetype-csv fs-5 me-2" aria-hidden="true"></i>{% endif %}
         {{ card.label }}
         {% if card.active %}<span class="badge bg-primary ms-2">active</span>{% elif card.configured %}<span class="badge bg-success ms-2">configured</span>{% else %}<span class="badge bg-secondary ms-2">not configured</span>{% endif %}
       </button>
     </h2>
-    <div id="source-{{ card.id }}" class="accordion-collapse collapse {% if card.configured %}show{% endif %}" data-bs-parent="#dataSources">
+    <div id="source-{{ card.id }}" class="accordion-collapse collapse {% if card.configured %}show{% endif %}" data-bs-parent="#sources-{{ section.id }}">
       <div class="accordion-body">
 
         {% if card.id == "csv" %}
@@ -60,11 +67,11 @@ the mapping and Ontop use it. Galois keeps its own database. After switching, sa
             {% csrf_token %}
             <input type="hidden" name="kind" value="{{ card.id }}">
             {% for f in card.fields %}
-            <div class="{% if f.name == 'host' or f.name == 'database' %}col-md-6{% else %}col-md-3{% endif %}">
+            <div class="{% if f.wide %}col-md-6{% else %}col-md-3{% endif %}">
               <label class="form-label" for="{{ card.id }}-{{ f.name }}">{{ f.label }}</label>
               {% if f.secret %}
               <input class="form-control" type="password" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" autocomplete="new-password"
-                     placeholder="{% if f.has_value %}stored: leave empty to keep it{% else %}required{% endif %}">
+                     placeholder="{% if f.has_value %}stored: leave empty to keep it{% elif f.required %}required{% endif %}">
               {% else %}
               <input class="form-control" id="{{ card.id }}-{{ f.name }}" name="{{ f.name }}" value="{{ f.value }}"
                      placeholder="{{ f.placeholder }}">
@@ -93,4 +100,5 @@ the mapping and Ontop use it. Galois keeps its own database. After switching, sa
   </div>
 {% endfor %}
 </div>
+{% endfor %}
 {% endblock %}

@@ -31,8 +31,8 @@ def bootstrap_view(request):
 
     try:
         schema = site_schema(views.DUCKDB_PATH)
-    except datastore.DataStoreBusy:
-        messages.error(request, views.BUSY_MESSAGE)
+    except views.SITE_ERRORS as exc:
+        messages.error(request, views.site_error(exc))
         return redirect("map_fields")
     header, blocks = views.template_mapping_blocks({t: [c.name for c in tb.columns]
                                                     for t, tb in schema.tables.items()})

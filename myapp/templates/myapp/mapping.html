@@ -103,7 +103,8 @@
                         <ul class="list-group">
                           {% for var in blk.placeholders %}
                             <li class="list-group-item placeholder-click p-2 mb-2 bg-white rounded"
-                                data-var="{{ var }}" role="button" tabindex="0">
+                                data-var="{{ var }}" role="button" tabindex="0"
+                                title="Click, then a column. Right-click to combine columns.">
                               <code>{{ var }}</code>
                             </li>
                           {% endfor %}
@@ -127,6 +128,37 @@
     </div>
 
   </form>
+</div>
+
+<div class="modal fade" id="combineModal" tabindex="-1" aria-labelledby="combineTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="combineTitle"><code id="combinePlaceholder"></code></h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="btn-group w-100 mb-3" role="group" aria-label="Mode">
+          <input type="radio" class="btn-check" name="combine-mode" id="combine-mode-sum" value="sum" autocomplete="off">
+          <label class="btn btn-outline-primary" for="combine-mode-sum">Sum</label>
+          <input type="radio" class="btn-check" name="combine-mode" id="combine-mode-concat" value="concat" autocomplete="off" checked>
+          <label class="btn btn-outline-primary" for="combine-mode-concat">Concatenate</label>
+        </div>
+        <div id="combine-separator-row" class="mb-3">
+          <label class="form-label small mb-1" for="combine-separator">Separator</label>
+          <input type="text" class="form-control form-control-sm" id="combine-separator" maxlength="20" autocomplete="off">
+        </div>
+        <div id="combine-columns" class="list-group mb-2"></div>
+        <div id="combine-preview" class="small text-muted"></div>
+        <div id="combine-empty" class="small text-muted" hidden>Select a table first.</div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-link text-danger me-auto" id="combine-remove" hidden>Remove</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="combine-apply">Apply</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 {{ mapping_connections|json_script:"saved-mappings" }}
@@ -155,6 +187,111 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
   }
 
+  // Modale per combinare colonne: clic destro su un segnaposto.
+  var combine = (function () {
+    var el = document.getElementById('combineModal');
+    var modal = bootstrap.Modal.getOrCreateInstance(el);
+    var nameEl = document.getElementById('combinePlaceholder');
+    var listEl = document.getElementById('combine-columns');
+    var sepRow = document.getElementById('combine-separator-row');
+    var sepEl = document.getElementById('combine-separator');
+    var previewEl = document.getElementById('combine-preview');
+    var emptyEl = document.getElementById('combine-empty');
+    var removeBtn = document.getElementById('combine-remove');
+    var applyBtn = document.getElementById('combine-apply');
+    var modeEls = Array.prototype.slice.call(el.querySelectorAll('input[name="combine-mode"]'));
+    var ctx = null, mode = 'concat', order = [], items = [];
+
+    function build() {
+      listEl.innerHTML = '';
+      items = ctx.columns.map(function (name) {
+        var label = document.createElement('label');
+        label.className = 'list-group-item d-flex align-items-center gap-2';
+        var box = document.createElement('input');
+        box.type = 'checkbox';
+        box.className = 'form-check-input m-0';
+        box.addEventListener('change', function () {
+          order = S.pick(order, name);
+          refresh();
+        });
+        var text = document.createElement('span');
+        text.textContent = name;
+        var badge = document.createElement('span');
+        badge.className = 'badge bg-primary ms-auto';
+        label.appendChild(box);
+        label.appendChild(text);
+        label.appendChild(badge);
+        listEl.appendChild(label);
+        return { name: name, label: label, box: box, badge: badge };
+      });
+    }
+
+    // Aggiorna lo stato dei controlli senza ricostruirli: la tastiera non perde il fuoco.
+    function refresh() {
+      var allowed = S.usable(mode, ctx.columns, ctx.numeric);
+      items.forEach(function (it) {
+        var ok = allowed.indexOf(it.name) !== -1;
+        var pos = order.indexOf(it.name);
+        it.box.checked = pos !== -1;
+        it.box.disabled = !ok;
+        it.label.classList.toggle('text-muted', !ok);
+        it.label.title = ok ? '' : 'Not numeric';
+        it.badge.textContent = pos === -1 ? '' : String(pos + 1);
+        it.badge.hidden = pos === -1;
+      });
+      sepRow.hidden = mode !== 'concat';
+      var text;
+      if (order.length === 0) text = 'No column selected';
+      else if (order.length === 1) text = order[0] + ' (single column)';
+      else {
+        text = S.describe({ mode: mode, columns: order });
+        if (mode === 'concat' && sepEl.value) text += '   separator: "' + sepEl.value + '"';
+      }
+      previewEl.textContent = text;
+    }
+
+    modeEls.forEach(function (r) {
+      r.addEventListener('change', function () {
+        if (!r.checked) return;
+        mode = r.value;
+        order = S.restrict(mode, order, ctx.numeric);
+        refresh();
+      });
+    });
+    sepEl.addEventListener('input', function () { if (ctx) refresh(); });
+    sepEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); applyBtn.click(); }
+    });
+    applyBtn.addEventListener('click', function () {
+      if (!ctx) return;
+      ctx.apply(mode, order, sepEl.value);
+      modal.hide();
+    });
+    removeBtn.addEventListener('click', function () {
+      if (!ctx) return;
+      ctx.apply('concat', [], '');
+      modal.hide();
+    });
+
+    function open(context) {
+      ctx = context;
+      var value = ctx.value;
+      nameEl.textContent = ctx.name;
+      mode = S.isCombo(value) ? value.mode : 'concat';
+      order = S.restrict(mode, S.columnsOf(value), ctx.numeric);
+      sepEl.value = S.isCombo(value) ? (value.separator || '') : '';
+      modeEls.forEach(function (r) { r.checked = r.value === mode; });
+      removeBtn.hidden = !value;
+      emptyEl.hidden = ctx.columns.length > 0;
+      applyBtn.disabled = ctx.columns.length === 0;
+      build();
+      refresh();
+      modal.show();
+    }
+
+    return { open: open };
+  })();
+
   document.querySelectorAll('.mapping-card').forEach(function (card) {
     var mid = card.dataset.mid;
     var area = card.querySelector('.mapping-area');
@@ -168,6 +305,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Lo stato e' l'unica fonte di verita': le frecce si ridisegnano da qui.
     var state = S.parse(input.value);
     var loadedTable = tableSelect.value;
+    var columnNames = [];
+    var numericNames = [];
+    var drawnSize = '';
     instances[mid] = instance;
 
     instance.importDefaults({
@@ -184,23 +324,71 @@ document.addEventListener('DOMContentLoaded', function () {
       return null;
     }
 
+    // Etichetta sul segnaposto che ha una combinazione: modalita' e colonne.
+    function markCombination(ph, value, color) {
+      var badge = ph.querySelector('.hdn-combo-badge');
+      if (!S.isCombo(value)) {
+        if (badge) badge.remove();
+        return;
+      }
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'badge hdn-combo-badge ms-2';
+        ph.appendChild(badge);
+      }
+      badge.textContent = value.mode === 'sum' ? 'sum' : 'concat';
+      badge.style.backgroundColor = color;
+      badge.title = S.describe(value);
+    }
+
     function redraw() {
       instance.deleteEveryConnection();
       placeholders.forEach(function (ph) {
-        var col = columnItem(state[ph.dataset.var]);
-        if (!col) return;
-        var color = hashToColor(ph.dataset.var);
-        instance.connect({
-          source: ph, target: col,
-          anchors: ['Center', 'LeftMiddle'],
-          paintStyle: { stroke: color, strokeWidth: 2 },
-          overlays: [['Arrow', { location: 1, width: 10, length: 10, foldback: 0.7,
-                                 paintStyle: { fill: color } }]]
+        var name = ph.dataset.var;
+        var value = state[name];
+        var combo = S.isCombo(value);
+        var color = hashToColor(name);
+        S.columnsOf(value).forEach(function (colName, i) {
+          var col = columnItem(colName);
+          if (!col) return;
+          // una combinazione e' tratteggiata, dello stesso colore del segnaposto
+          var paint = { stroke: color, strokeWidth: 2 };
+          if (combo) paint.dashstyle = '4 3';
+          var overlays = [['Arrow', { location: 1, width: 10, length: 10, foldback: 0.7,
+                                      paintStyle: { fill: color } }]];
+          if (combo && value.mode === 'concat') {
+            overlays.push(['Label', { label: String(i + 1), location: 0.78, cssClass: 'hdn-order-label' }]);
+          }
+          instance.connect({
+            source: ph, target: col,
+            anchors: ['Center', 'LeftMiddle'],
+            paintStyle: paint,
+            overlays: overlays
+          });
         });
+        markCombination(ph, value, color);
       });
       input.value = S.serialize(state);
       instance.repaintEverything();
+      drawnSize = area.offsetWidth + 'x' + area.offsetHeight;
     }
+
+    // Le frecce sono disegnate in coordinate assolute: se il layout cambia
+    // (finestra ridimensionata, colonne che vanno a capo) vanno ricalcolate.
+    function relayout(force) {
+      if (!area.offsetWidth || !columnList.children.length) return;
+      if (!force && drawnSize === area.offsetWidth + 'x' + area.offsetHeight) return;
+      redraw();
+    }
+    var pending = null;
+    function scheduleRelayout(force) {
+      if (pending) cancelAnimationFrame(pending);
+      pending = requestAnimationFrame(function () { pending = null; relayout(force); });
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { scheduleRelayout(false); }).observe(area);
+    }
+    window.addEventListener('resize', function () { scheduleRelayout(true); });
 
     function select(ph) {
       placeholders.forEach(function (p) { p.classList.remove('active-bg'); });
@@ -213,11 +401,29 @@ document.addEventListener('DOMContentLoaded', function () {
       ph.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(ph); }
       });
+      // Clic destro: scelta di piu' colonne e della modalita'.
+      ph.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+        var name = ph.dataset.var;
+        combine.open({
+          name: name,
+          columns: columnNames,
+          numeric: numericNames,
+          value: state[name],
+          apply: function (mode, cols, separator) {
+            state = S.setCombination(state, name, mode, cols, separator);
+            redraw();
+            document.dispatchEvent(new Event('hdn:mapping-changed'));
+          }
+        });
+      });
     });
 
     function load() {
       instance.deleteEveryConnection();
       columnList.innerHTML = '';
+      columnNames = [];
+      numericNames = [];
       var table = tableSelect.value;
       if (table !== loadedTable) {
         // Cambio tabella: le associazioni precedenti non valgono piu'; si
@@ -232,6 +438,8 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function (r) { return r.json(); })
         .then(function (data) {
           var columns = data.columns || [];
+          columnNames = columns.slice();
+          numericNames = data.numeric || [];
           columns.forEach(function (name) {
             var li = document.createElement('li');
             li.className = 'list-group-item column-click p-2 mb-2 bg-white rounded';
@@ -286,10 +494,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <style>
   .active-bg { background-color: #e7f1ff !important; }
+  .hdn-combo-badge { color: #fff; font-weight: 500; }
+  .mapping-area > .jtk-overlay.hdn-order-label { background: #fff; border: 1px solid #6c757d; border-radius: 50%;
+                     width: 18px; height: 18px; font-size: 11px; line-height: 16px; text-align: center; z-index: 1001; }
   .bootstrap-done:disabled { opacity: 1; }
   .mapping-nav-btn { min-width: 9rem; font-weight: 600; display: inline-flex; align-items: center; gap: .5rem; }
   .mapping-nav-btn .bi { font-size: 1.5rem; line-height: 1; }
   .jtk-connector, .jtk-endpoint { z-index: 1000; }
+  /* .mapping-area e' una .row: Bootstrap da' a ogni suo figlio diretto width 100% e un
+     padding laterale, e le frecce (figli diretti) risultavano spostate di 12px. */
+  .mapping-area > .jtk-connector, .mapping-area > .jtk-overlay, .mapping-area > .jtk-endpoint {
+    padding: 0; margin: 0; max-width: none; width: auto;
+  }
+  /* Le frecce non sono bersagli: partono dal centro del segnaposto e ne intercetterebbero il clic. */
+  .mapping-area .jtk-connector, .mapping-area .jtk-connector path,
+  .mapping-area .jtk-overlay, .mapping-area .jtk-overlay * { pointer-events: none; }
   .carousel-item { display: block !important; visibility: hidden; position: absolute; width: 100%; top: 0; left: 0; }
   .carousel-item.active { visibility: visible; position: relative; }
 </style>
