@@ -50,14 +50,14 @@ class SqlInjectionTests(TestCase):
                    "SELECT * FROM pragma_table_info('T")
         resp = Client().get("/get-columns/", {"table": payload})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {"columns": []})
+        self.assertEqual(resp.json(), {"columns": [], "numeric": []})
         self.assertFalse(out.exists(), "il parametro e' stato eseguito come SQL")
 
     def test_get_columns_with_awkward_but_real_names(self):
         resp = Client().get("/get-columns/", {"table": 'it\'s "quoted"'})
-        self.assertEqual(resp.json(), {"columns": ["a"]})
-        self.assertEqual(Client().get("/get-columns/", {"table": "T"}).json(),
-                         {"columns": ["secret"]})
+        self.assertEqual(resp.json()["columns"], ["a"])
+        self.assertEqual(Client().get("/get-columns/", {"table": "T"}).json()["columns"],
+                         ["secret"])
 
     def test_delete_table_with_quotes_in_the_name(self):
         Client().post("/delete-table/" + 'it\'s "quoted"' + "/")

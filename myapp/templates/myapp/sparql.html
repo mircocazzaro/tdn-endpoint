@@ -11,7 +11,7 @@
       height="40"
       class="d-inline-block align-text-center me-2"
       >
-      <h2 class="card-title">Run a SPARQL Query on Ontop VKG</h2>
+      <h2 class="card-title">Run a SPARQL Query on {{ sparql_source|default:"Ontop VKG" }}</h2>
     <p class="card-text">
       Enter a SPARQL SELECT query below and press “Execute” to see the results.
       Prefixes, ontology terms and variables are suggested as you type; press Ctrl+Space to ask for suggestions, and Ctrl+Enter to run.

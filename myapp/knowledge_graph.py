@@ -44,7 +44,10 @@ def _meta_path():
 
 
 def has_mappings():
-    """True se il mapping attivo contiene almeno una regola."""
+    """True se il mapping attivo contiene almeno una regola (mai con un triple store)."""
+    from . import datasources
+    if datasources.active_is_triplestore():
+        return False
     mapping, _ = ontop_process.active_files()
     try:
         return "mappingId" in Path(mapping).read_text(encoding="utf-8")

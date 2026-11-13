@@ -15,6 +15,7 @@ uploads/
 *.duckdb.wal
 *.sqlite3
 myapp/obda/hereditary_ontology_2.obda
+myapp/obda/hereditary_ontology_2.combinations.json
 myapp/obda/*_old.obda
 myapp/obda/mapping-backups/
 myapp/obda/ontop.pid

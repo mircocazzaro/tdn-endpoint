@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
+from . import datasources as ds
 from . import llm_providers
 from .galois import schema, store
 from .galois.llm import LLMError
@@ -61,6 +62,10 @@ def galois_view(request):
             if len(ids) == 1:
                 default = ids[0]
             new["llm_provider"] = default if default in ids else ""
+            if new["enabled"] and ds.active_is_triplestore():
+                messages.error(request, "Galois mode needs Ontop: the active source is a triple "
+                                        "store, which bypasses it. Choose another source in Data source.")
+                return redirect("galois")
             if new["enabled"] and not ids:
                 messages.error(request, "Galois mode needs an LLM provider: configure one in "
                                         "Settings > Endpoint configuration.")

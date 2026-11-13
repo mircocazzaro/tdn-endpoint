@@ -103,6 +103,8 @@ def ontop_properties_text(kind=None):
     kind = kind or ds.active()
     if kind == LOCAL:
         raise ValueError("the local DuckDB uses the repository properties file")
+    if ds.is_triplestore(kind):
+        raise ValueError("a triple store is queried directly: Ontop is not used")
     k = ds.KINDS[kind]
     if k.kind == "file":
         path = ds.file_path(kind)

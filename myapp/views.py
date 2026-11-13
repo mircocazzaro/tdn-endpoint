@@ -15,7 +15,7 @@ from datetime import datetime
 from . import catalog, datastore, exports, llm_providers, ontology, ontop_process
 from . import datasources as ds_sources
 from . import site as site_db
-from . import knowledge_graph
+from . import combinations, knowledge_graph, triplestore
 from .galois import store as galois_store
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
@@ -241,6 +241,8 @@ def query_view(request):
         query_text = request.POST.get('sql_query', '')
         export = request.POST.get('export', '')
         try:
+            if ds_sources.is_triplestore(source):
+                raise RuntimeError("the active source is a triple store: use Run SPARQL Query")
             if source == "csv":
                 with datastore.read_connection(DUCKDB_PATH) as conn:
                     if conn is None:
@@ -274,6 +276,29 @@ def query_view(request):
 
 
 SOURCE_LABEL = {"csv": "Local DuckDB (CSV files)"}
+
+
+def run_sparql(query, timeout):
+    """JSON dei risultati SPARQL, da Ontop o, se la sorgente attiva e' un triple store, da GraphDB.
+
+    Con un triple store Ontop e il mapping non servono: la query va direttamente
+    al repository. Lo scambio avviene sempre dopo i controlli di chi chiama.
+    """
+    if ds_sources.active_is_triplestore():
+        return triplestore.query(query, timeout)
+    resp = requests.post(
+        settings.ONTOP_SPARQL_ENDPOINT,
+        data={'query': query},
+        headers={'Accept': 'application/sparql-results+json'},
+        timeout=timeout,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def sparql_backend():
+    """Nome del backend SPARQL attivo, per l'audit e per le pagine."""
+    return "graphdb" if ds_sources.active_is_triplestore() else "ontop"
 
 
 SITE_ERRORS = (datastore.DataStoreBusy, ds_sources.DataSourceError)
@@ -459,6 +484,10 @@ def template_mapping_blocks(tables_columns):
 
 
 def field_mapping_view(request):
+    if ds_sources.active_is_triplestore():
+        messages.info(request, "The active source is a triple store: it is queried directly, "
+                               "so there is no mapping to edit.")
+        return redirect('data_sources')
     if galois_store.enabled():
         messages.info(request, "Galois mode is on: the mapping is fixed and generated from "
                                "the Galois schema. It is shown on the Galois page.")
@@ -480,6 +509,7 @@ def field_mapping_view(request):
     existing = {}
     existing_placeholders = {}
     inner_existing = ''
+    saved_combinations = combinations.load_sidecar(OBDA_FILE)
     if os.path.exists(OBDA_FILE):
         with open(OBDA_FILE, 'r', encoding='utf-8') as f:
             raw_obda = f.read()
@@ -559,6 +589,16 @@ def field_mapping_view(request):
                 for orig, new in filter_map.items():
                     ph_map[orig] = new
 
+                # Una colonna virtuale del mapping salvato e' una combinazione:
+                # modalita' e colonne vengono dal file accanto al mapping, e
+                # valgono solo se il mapping le conferma.
+                for var, col in list(ph_map.items()):
+                    combo = combinations.restored(
+                        saved_combinations.get(mid, {}).get(var), col, tbl, src_line,
+                        site_db.mapping_dialect())
+                    if combo:
+                        ph_map[var] = combo
+
                 existing[mid] = {
                     'table':        tbl,
                     'placeholders': ph_map,
@@ -601,6 +641,12 @@ def field_mapping_view(request):
             if not col:
                 continue
 
+            if isinstance(col, dict):
+                # combinazione ripristinata: vale se la tabella ha ancora tutte le colonne
+                if all(c in cols for c in col['columns']):
+                    pairs[var] = col
+                continue
+
             # try to match that column name back to the current table's cols
             match_idx = None
             if col in cols:
@@ -633,8 +679,9 @@ def field_mapping_view(request):
         if info.get('table'):
             initial[f"{mid}__table"] = info['table']
         for var in blk['placeholders']:
-            if var in info.get('placeholders', {}):
-                initial[f"{mid}__{var}"] = info['placeholders'][var]
+            value = info.get('placeholders', {}).get(var)
+            if isinstance(value, str):
+                initial[f"{mid}__{var}"] = value
 
     # 6) Instantiate the form with mapping_blocks and tables_columns
     form = FieldMappingForm(
@@ -652,6 +699,7 @@ def field_mapping_view(request):
         generated_sources = []
         adapted_cols = []
         skipped = []    # regole non scritte: segnaposto senza colonna non eliminabili
+        combos_written = {}   # combinazioni delle regole scritte, per la UI
         reduced = []    # regole scritte senza i predicati di cui il sito non ha dati
         try:
             site_types = site_db.column_types(DUCKDB_PATH)
@@ -683,17 +731,38 @@ def field_mapping_view(request):
             # interpretare ogni chiave come indice: due voci per lo stesso
             # segnaposto, con l'ordine del dict a decidere quale vinceva.
             cols = tables_columns.get(tbl, [])
+            col_types = site_types.get(tbl, {})
             conn_map = {}
+            virtuals = []       # (nome, espressione, tipo) di ogni combinazione del blocco
+            block_combos = {}   # metadati per la UI, scritti accanto al mapping
+            taken = {c.lower() for c in cols}
             if not isinstance(parsed, dict):
                 parsed = {}
-            for var_name, col_name in parsed.items():
-                if var_name not in blk['placeholders'] or col_name not in cols:
+            for var_name, value in parsed.items():
+                if var_name not in blk['placeholders']:
                     problems.append(
-                        f"{mid}: associazione {var_name!r} -> {col_name!r} non valida "
+                        f"{mid}: associazione {var_name!r} non valida per la tabella {tbl!r}")
+                    continue
+                if combinations.is_combination(value):
+                    try:
+                        combo = combinations.parse(value, cols, col_types if site_types else None)
+                    except combinations.CombinationError as exc:
+                        problems.append(f"{mid}: {var_name!r}: {exc}")
+                        continue
+                    vname = combinations.virtual_name(var_name, taken)
+                    taken.add(vname.lower())
+                    conn_map[var_name] = vname
+                    virtuals.append((vname, combinations.expression(site_db.dialect(), combo),
+                                     combinations.result_type(combo)))
+                    block_combos[var_name] = dict(combo, table=tbl, virtual=vname)
+                    continue
+                if not isinstance(value, str) or value not in cols:
+                    problems.append(
+                        f"{mid}: associazione {var_name!r} -> {value!r} non valida "
                         f"per la tabella {tbl!r}"
                     )
                     continue
-                conn_map[var_name] = col_name
+                conn_map[var_name] = value
 
             # Un segnaposto senza colonna associata vale come associato se la
             # tabella ha una colonna con lo stesso nome.
@@ -723,7 +792,9 @@ def field_mapping_view(request):
             # isnan() del template presuppone colonne numeriche: dove nel sito
             # la colonna e' testo viene sostituito con un controllo "e' un
             # numero" compatibile con Ontop.
-            src, adapted = adapt_isnan(src, site_types.get(tbl, {}), site_db.dialect())
+            block_types = dict(site_types.get(tbl, {}))
+            block_types.update({name: sql_type for name, _expr, sql_type in virtuals})
+            src, adapted = adapt_isnan(src, block_types, site_db.dialect())
             if adapted:
                 adapted_cols.append(f"{mid} ({', '.join(adapted)})")
 
@@ -738,6 +809,10 @@ def field_mapping_view(request):
                 )
                 continue
 
+            src = combinations.wrap_source(src, tbl, cols,
+                                           [(name, expr) for name, expr, _t in virtuals])
+            if block_combos:
+                combos_written[mid] = block_combos
             lines += [
                 f"mappingId\t{mid}",
                 # now write out the instantiated target
@@ -773,6 +848,11 @@ def field_mapping_view(request):
             lines.append(']]')
             backup = save_active_mapping(OBDA_FILE, "\n".join(lines), mapping_backup_dir())
             site_db.record_mapping_dialect()
+            try:
+                combinations.save_sidecar(OBDA_FILE, combos_written)
+            except OSError as exc:
+                messages.warning(request, "The mapping is saved, but the column combinations "
+                                          f"could not be recorded for the editor ({exc}).")
 
             if reduced:
                 messages.info(request, "Written without the predicates whose placeholders have "
@@ -839,10 +919,12 @@ def get_columns(request):
     # istruzioni in un'unica execute: anche in sola lettura un COPY ... TO
     # scriveva su disco il contenuto di qualunque tabella.
     try:
-        schema = site_db.tables_columns(DUCKDB_PATH)
+        types = site_db.column_types(DUCKDB_PATH).get(table, {})
     except SITE_ERRORS as exc:
         return JsonResponse({'columns': [], 'error': site_error(exc)}, status=503)
-    return JsonResponse({'columns': schema.get(table, [])})
+    # 'numeric': le colonne che una somma puo' usare (la UI disabilita le altre)
+    return JsonResponse({'columns': list(types),
+                         'numeric': [c for c, t in types.items() if combinations.is_numeric_type(t)]})
 
 def ontop_control_view(request):
     # Avvio e arresto passano da myapp/ontop_process.py, la stessa logica usata
@@ -852,7 +934,11 @@ def ontop_control_view(request):
         if action in ('stop', 'restart'):
             ontop_process.stop()
         if action in ('start', 'restart'):
-            ontop_process.start()
+            try:
+                ontop_process.start()
+            except ontop_process.OntopNotApplicable as exc:
+                text = str(exc)
+                messages.info(request, text[:1].upper() + text[1:] + ".")
         return redirect('ontop_control')
 
     status = 'running' if ontop_process.is_running() else 'stopped'
@@ -921,7 +1007,8 @@ def set_level(request):
 
 def sparql_query_view(request):
     """
-    Dedicated page for running SPARQL queries against the Ontop VKG.
+    Dedicated page for running SPARQL queries against the Ontop VKG, or against
+    GraphDB when the active source is a triple store.
     """
     sparql_query   = ""
     sparql_results = None
@@ -930,15 +1017,8 @@ def sparql_query_view(request):
     if request.method == 'POST':
         sparql_query = request.POST.get('sparql_query', '').strip()
         try:
-            # send to your running Ontop SPARQL endpoint
-            resp = requests.post(
-                settings.ONTOP_SPARQL_ENDPOINT,
-                data={'query': sparql_query},
-                headers={'Accept': 'application/sparql-results+json'},
-                timeout=60,
-            )
-            resp.raise_for_status()
-            data = resp.json()
+            # Ontop, o GraphDB se la sorgente attiva e' un triple store
+            data = run_sparql(sparql_query, 60)
             if 'boolean' in data:
                 # Risposta di una ASK: nessuna variabile, un solo booleano.
                 sparql_results = {'vars': ['boolean'],
@@ -962,6 +1042,7 @@ def sparql_query_view(request):
         'sparql_results': sparql_results,
         'sparql_error':   sparql_error,
         'sparql_schema':  sparql_schema(),
+        'sparql_source':  'GraphDB' if sparql_backend() == 'graphdb' else 'Ontop VKG',
     })
 
 
@@ -1046,6 +1127,13 @@ def protected_sparql(request):
         return no_contribution('disclosure-refused',
                                requested=allowed_level, local_max=local_max_level)
 
+    backend = sparql_backend()
+
+    # Galois ripopola le tabelle che Ontop usa; con un triple store la query le
+    # salterebbe e risponderebbe con altri dati. Fail-closed.
+    if backend == 'graphdb' and galois_store.enabled():
+        return no_contribution('galois-with-triplestore')
+
     # Modalita' Galois: prima di interrogare Ontop si ripopolano dall'LLM le
     # tabelle che la query usa. Senza dati appena recuperati non si risponde.
     if galois_store.enabled():
@@ -1059,14 +1147,7 @@ def protected_sparql(request):
     # 4) KL-divergence analytics
     if analytics_key == 'klDiv':
         try:
-            resp = requests.post(
-                settings.ONTOP_SPARQL_ENDPOINT,
-                data={'query': executed_query},
-                headers={'Accept': 'application/sparql-results+json'},
-                timeout=10
-            )
-            resp.raise_for_status()
-            data = resp.json()
+            data = run_sparql(executed_query, 10)
 
             # Extract and normalize ages
             bindings = data.get('results', {}).get('bindings', [])
@@ -1118,21 +1199,14 @@ def protected_sparql(request):
         except Exception as exc:
             return no_contribution('analytics-error', error=type(exc).__name__)
 
-    # 5) A Ontop va la query ricostruita dal catalogo, non quella ricevuta
+    # 5) Al backend (Ontop o GraphDB) va la query ricostruita dal catalogo, non quella ricevuta
     try:
-        resp = requests.post(
-            settings.ONTOP_SPARQL_ENDPOINT,
-            data={'query': executed_query},
-            headers={'Accept': 'application/sparql-results+json'},
-            timeout=10
-        )
-        resp.raise_for_status()
-        data = resp.json()
+        data = run_sparql(executed_query, 10)
     except Exception as exc:
-        return no_contribution('backend-error', error=type(exc).__name__)
+        return no_contribution('backend-error', error=type(exc).__name__, backend=backend)
 
-    audit.info("contributed template=%s level=%s remote=%s",
-               template.key, allowed_level, request.META.get('REMOTE_ADDR', '-'))
+    audit.info("contributed template=%s level=%s remote=%s backend=%s",
+               template.key, allowed_level, request.META.get('REMOTE_ADDR', '-'), backend)
     return JsonResponse(data)
 
 @require_POST
@@ -1173,6 +1247,9 @@ def delete_table_view(request, table_name):
 @require_GET
 def knowledge_graph_view(request):
     """Scarica il knowledge graph RDF: dalla cache se il mapping e i dati non sono cambiati."""
+    if ds_sources.active_is_triplestore():
+        messages.error(request, "Knowledge graph: not available, the active source is a triple store.")
+        return redirect('data_sources')
     try:
         path, cached, _meta = knowledge_graph.get_or_materialize()
     except knowledge_graph.KnowledgeGraphError as exc:

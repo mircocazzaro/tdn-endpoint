@@ -6,10 +6,12 @@
 - MySQL, PostgreSQL, Oracle, MS SQL e Aurora (MySQL o PostgreSQL compatibile):
   credenziali salvate in HDN_STATE_DIR/datasources.json con permessi 0600. Non
   tornano mai alle pagine; i messaggi d'errore non contengono la password.
+- GraphDB (triple store): il database e' gia' un grafo RDF, quindi Ontop e il
+  mapping non servono. Dopo il controllo di privacy la query SPARQL va a
+  GraphDB (myapp/triplestore.py).
 
-Questa fase configura e verifica le sorgenti. Ontop, mapping e pagina SQL
-continuano a usare il DuckDB locale: l'attivazione di una sorgente remota e'
-la fase successiva.
+La sorgente attiva guida Run Relational Queries, il mapping e Ontop, oppure,
+per un triple store, il solo dispatch delle query SPARQL.
 """
 import json
 import os
@@ -21,25 +23,41 @@ from pathlib import Path
 from django.conf import settings
 
 Kind = namedtuple("Kind", "label icon kind fields default_port")
-Field = namedtuple("Field", "name label secret default placeholder")
+Field = namedtuple("Field", "name label secret default placeholder required", defaults=(True,))
 
 REMOTE_FIELDS = [
     Field("host", "Host", False, "", "db.example.org"),
-    Field("port", "Port", False, "", ""),
+    Field("port", "Port", False, "", "", False),
     Field("database", "Database", False, "", ""),
     Field("user", "User", False, "", ""),
     Field("password", "Password", True, "", ""),
 ]
 
+# GraphDB: le credenziali servono solo se la sicurezza del server e' attiva
+GRAPHDB_FIELDS = [
+    Field("url", "Server URL", False, "", "http://graphdb:7200"),
+    Field("repository", "Repository", False, "", "hero"),
+    Field("user", "User (optional)", False, "", "", False),
+    Field("password", "Password (optional)", True, "", "", False),
+]
+
 KINDS = OrderedDict([
     ("csv", Kind("CSV files", None, "csv", [], None)),
-    ("sqlite", Kind("SQLite file", "sqlite", "file", [], None)),
     ("duckdb", Kind("DuckDB file", "duckdb", "file", [], None)),
+    ("sqlite", Kind("SQLite file", "sqlite", "file", [], None)),
     ("mysql", Kind("MySQL", "mysql", "remote", REMOTE_FIELDS, 3306)),
     ("postgresql", Kind("PostgreSQL", "postgresql", "remote", REMOTE_FIELDS, 5432)),
     ("oracle", Kind("Oracle", "oracle", "remote", REMOTE_FIELDS, 1521)),
     ("mssql", Kind("MS SQL Server", "mssql", "remote", REMOTE_FIELDS, 1433)),
     ("aurora", Kind("Amazon Aurora", "aurora", "remote", REMOTE_FIELDS, 3306)),
+    ("graphdb", Kind("GraphDB", "graphdb", "triplestore", GRAPHDB_FIELDS, 7200)),
+])
+
+# Sezioni della pagina Data source
+GROUPS = OrderedDict([
+    ("files", ("Files", ("csv", "file"))),
+    ("rdbms", ("RDBMS", ("remote",))),
+    ("triplestore", ("Triple store", ("triplestore",))),
 ])
 
 AURORA_ENGINES = {"mysql": 3306, "postgresql": 5432}
@@ -52,6 +70,12 @@ class DataSourceError(Exception):
         super().__init__(f"{code}: {detail}" if detail else code)
         self.code = code
         self.detail = detail
+
+
+def _not_a_database(kind):
+    if KINDS[kind].kind == "triplestore":
+        return DataSourceError("not-a-database", "a triple store has no tables: query it with SPARQL")
+    return DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
 
 
 def _state_dir():
@@ -99,7 +123,7 @@ def save_remote(kind, values):
     """Salva i parametri; una password lasciata vuota conserva quella attuale."""
     current = stored(kind)
     params = {}
-    for f in REMOTE_FIELDS:
+    for f in KINDS[kind].fields:
         value = (values.get(f.name) or "").strip()
         if not value and f.secret:
             value = current.get(f.name, "")
@@ -116,8 +140,8 @@ def missing(kind, values):
     """Campi obbligatori mancanti (valori nuovi, con la password salvata come ripiego)."""
     current = stored(kind)
     out = []
-    for f in REMOTE_FIELDS:
-        if f.name == "port":
+    for f in KINDS[kind].fields:
+        if not f.required:
             continue
         value = (values.get(f.name) or "").strip() if values is not None else current.get(f.name, "")
         if f.secret and not value:
@@ -130,14 +154,23 @@ def missing(kind, values):
 def public(kind):
     """Parametri per le pagine: la password diventa il flag has_password."""
     current = stored(kind)
-    out = {f.name: current.get(f.name, "") for f in REMOTE_FIELDS if not f.secret}
+    out = {f.name: current.get(f.name, "") for f in KINDS[kind].fields if not f.secret}
     out["has_password"] = bool(current.get("password"))
     out["engine"] = current.get("engine", "mysql")
     return out
 
 
+def is_triplestore(kind):
+    return KINDS[kind].kind == "triplestore"
+
+
+def active_is_triplestore():
+    """True se la sorgente attiva e' un triple store: le query SPARQL non passano da Ontop."""
+    return is_triplestore(active())
+
+
 def configured(kind):
-    if KINDS[kind].kind == "remote":
+    if KINDS[kind].kind in ("remote", "triplestore"):
         return not missing(kind, None)
     if KINDS[kind].kind == "file":
         return file_path(kind).exists()
@@ -227,7 +260,7 @@ def list_tables(kind):
     if k.kind == "file":
         return _list_file_tables(kind)
     if k.kind != "remote":
-        raise DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
+        raise _not_a_database(kind)
     engine, con = _connect(kind)
     try:
         cur = con.cursor()
@@ -260,7 +293,7 @@ def run_query(kind, sql):
     if k.kind == "file":
         return _run_file(kind, sql)
     if k.kind != "remote":
-        raise DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
+        raise _not_a_database(kind)
     _engine_name, con = _connect(kind)
     try:
         cur = con.cursor()
@@ -296,7 +329,7 @@ def _run_file(kind, sql):
 
 
 def active():
-    """Sorgente usata da Run Relational Queries: "csv" (DuckDB locale) o una chiave di KINDS."""
+    """Sorgente attiva: "csv" (DuckDB locale) o una chiave di KINDS."""
     value = _read_registry().get("active", "csv")
     return value if value in KINDS else "csv"
 
@@ -401,7 +434,7 @@ def schema(kind):
     if k.kind == "file":
         return _file_schema(kind)
     if k.kind != "remote":
-        raise DataSourceError("not-a-database", "CSV files are loaded into the local DuckDB")
+        raise _not_a_database(kind)
     engine, con = _connect(kind)
     try:
         cur = con.cursor()

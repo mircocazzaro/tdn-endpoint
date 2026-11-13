@@ -55,3 +55,58 @@ def numeric_cast(dialect, col):
     if dialect not in casts:
         raise ValueError(f"unknown dialect {dialect}")
     return casts[dialect]
+
+
+# ---------------------------------------------------------------------------
+# Colonne combinate (somma o concatenazione) in un segnaposto
+# ---------------------------------------------------------------------------
+
+def quote(name):
+    """Identificatore fra doppi apici (il mapping usa gia' "tabella" cosi'; su MySQL
+    la sessione ha ANSI_QUOTES)."""
+    return '"' + name.replace('"', '""') + '"'
+
+
+def text_cast(dialect, expr):
+    """Cast di ``expr`` a testo, con il tipo che ogni motore accetta."""
+    casts = {
+        DUCKDB: f"CAST({expr} AS VARCHAR)",
+        MYSQL: f"CAST({expr} AS CHAR)",
+        POSTGRESQL: f"CAST({expr} AS TEXT)",
+        SQLITE: f"CAST({expr} AS TEXT)",
+        ORACLE: f"CAST({expr} AS VARCHAR2(4000))",
+        MSSQL: f"CAST({expr} AS NVARCHAR(4000))",
+    }
+    if dialect not in casts:
+        raise ValueError(f"unknown dialect {dialect}")
+    return casts[dialect]
+
+
+def sum_expression(dialect, columns):
+    """Somma aritmetica delle colonne. Come in SQL, un NULL rende NULL il risultato."""
+    if dialect not in (DUCKDB, SQLITE, MYSQL, POSTGRESQL, ORACLE, MSSQL):
+        raise ValueError(f"unknown dialect {dialect}")
+    return "(" + " + ".join(quote(c) for c in columns) + ")"
+
+
+def concat_expression(dialect, columns, separator=""):
+    """Concatenazione delle colonne, nell'ordine dato, con un separatore opzionale.
+
+    Un valore NULL conta come testo vuoto su ogni motore (COALESCE): CONCAT non
+    e' uniforme, in MySQL un NULL annulla tutto il risultato. Il separatore e'
+    un literal: il chiamante ha gia' escluso backslash e caratteri di controllo.
+    """
+    if dialect not in (DUCKDB, SQLITE, MYSQL, POSTGRESQL, ORACLE, MSSQL):
+        raise ValueError(f"unknown dialect {dialect}")
+    sep = "'" + separator.replace("'", "''") + "'"
+    items = []
+    for i, c in enumerate(columns):
+        if i and separator:
+            items.append(sep)
+        items.append(f"COALESCE({text_cast(dialect, quote(c))}, '')")
+    # CONCAT a due argomenti, annidato: Oracle ne accetta solo due e il dialetto SQLite
+    # di Ontop li impone (CONCAT2). La forma binaria vale su ogni motore.
+    expr = items[0]
+    for item in items[1:]:
+        expr = f"CONCAT({expr}, {item})"
+    return expr
