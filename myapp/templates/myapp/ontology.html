@@ -1,7 +1,7 @@
 {% extends 'myapp/base.html' %}
 {% load static %}
 {% block content %}
-<h2>Ontology Monitor</h2>
+<h2><img src="{% static 'myapp/monitoring-system.png' %}" alt="" height="40" class="d-inline-block align-text-center me-2">Ontology Monitor</h2>
 <!--<p class="small" id="ontology-installed">
   Active ontology: <strong>v{{ ontology_version }}</strong>{% if ontology_version == 0 %} (built-in, from the repository){% endif %}
   {% if ontology_sha256 %}· SHA-256 <code>{{ ontology_sha256 }}</code>{% endif %}

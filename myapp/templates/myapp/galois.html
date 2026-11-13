@@ -1,6 +1,7 @@
 {% extends 'myapp/base.html' %}
+{% load static %}
 {% block content %}
-<h2>Galois mode</h2>
+<h2><img src="{% static 'myapp/galoislogo.png' %}" alt="" height="40" class="d-inline-block align-text-center me-2">Galois mode</h2>
 <p class="text-muted">
   In Galois mode this endpoint does not expose local data. Its tables are views
   that Galois fills by querying a large language model each time HDN Central sends
