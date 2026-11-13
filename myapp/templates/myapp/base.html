@@ -101,7 +101,7 @@
       <!-- Sidebar items or menu placeholders -->
       <ul class="nav flex-column">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'data_sources' %}"><i class="bi bi-database me-2" aria-hidden="true"></i>Data source</a>
+          <a class="nav-link" href="{% url 'data_sources' %}"><img src="{% static 'myapp/database-management.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Data source</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'map_fields' %}"><img src="{% static 'myapp/mind-map.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Map Data to HERO</a>
@@ -118,7 +118,7 @@
         <li class="nav-item">
           <button class="nav-link w-100 text-start d-flex align-items-center border-0 bg-transparent" type="button"
                   data-bs-toggle="collapse" data-bs-target="#settingsMenu" aria-expanded="false" aria-controls="settingsMenu">
-            <i class="bi bi-gear me-2" aria-hidden="true"></i>Settings
+            <img src="{% static 'myapp/settings.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Settings
             <i class="bi bi-chevron-down ms-auto small" aria-hidden="true"></i>
           </button>
           {% with rn=request.resolver_match.url_name %}
@@ -128,10 +128,10 @@
                 <a class="nav-link" href="{% url 'ontop_control' %}"><img src="{% static 'myapp/ontop-small.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Ontop Monitor</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'ontology' %}"><i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>Ontology Monitor</a>
+                <a class="nav-link" href="{% url 'ontology' %}"><img src="{% static 'myapp/monitoring-system.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Ontology Monitor</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'settings' %}"><i class="bi bi-cpu me-2" aria-hidden="true"></i>Endpoint configuration</a>
+                <a class="nav-link" href="{% url 'settings' %}"><img src="{% static 'myapp/endpoint-configuration.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Endpoint configuration</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'network' %}"><img src="{% static 'myapp/hdnlogo.png' %}" alt="HDN logo" height="20" class="d-inline-block align-text-center me-2">HDN Network</a>
