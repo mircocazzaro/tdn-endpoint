@@ -4,6 +4,7 @@ import json
 import os
 
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import catalog
 from myapp.models import CentralMembership, Notification
@@ -51,7 +52,7 @@ class CatalogProtocolTests(StateDirMixin, TestCase):
         super().setUp()
         self.central = FakeCentral()
         self.central.membership()
-        self.client = Client()
+        self.client = logged_in_client()
 
     def send(self, doc):
         return self.central.post(self.client, "/hdn/catalog/", "catalog", {"catalog": doc})

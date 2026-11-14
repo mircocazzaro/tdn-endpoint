@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest import mock
 
 from django.test import SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from rdflib.namespace import OWL
 
@@ -118,6 +119,7 @@ class IndexCacheTests(SimpleTestCase):
 
 class OntologyMonitorViewTests(StateDirMixin, TestCase):
     def setUp(self):
+        self.client = logged_in_client()
         super().setUp()
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

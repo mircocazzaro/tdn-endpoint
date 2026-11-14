@@ -6,6 +6,7 @@ from unittest import mock
 
 import duckdb
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import azure_settings, catalog, ontology, ontop_process
 from myapp.galois import llm, schema, store
@@ -206,7 +207,7 @@ class ProtectedSparqlGaloisTests(StateDirMixin, TestCase):
         store.save_config(cfg)
         azure_settings.save("https://res.openai.azure.com", "dep", "", "k")
         store.apply(cfg)
-        self.client = Client()
+        self.client = logged_in_client()
         self.ontop = mock.patch("myapp.views.requests.post", return_value=mock.Mock(
             status_code=200, raise_for_status=lambda: None,
             json=lambda: {"head": {"vars": ["nDISEASE"]}, "results": {"bindings": [
@@ -251,15 +252,12 @@ class ProtectedSparqlGaloisTests(StateDirMixin, TestCase):
 class GaloisPageTests(StateDirMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.client = Client()
+        self.client = logged_in_client()
+        azure_settings.save("https://res.openai.azure.com/", "gpt-4o-mini", "", "TOPSECRET")
         for fn, ret in (("is_running", False),):
             p = mock.patch.object(ontop_process, fn, lambda *a, _r=ret: _r)
             p.start()
             self.addCleanup(p.stop)
-
-    def setUp(self):
-        super().setUp()
-        azure_settings.save("https://res.openai.azure.com/", "gpt-4o-mini", "", "TOPSECRET")
 
     def form(self, **extra):
         data = {"action": "save", "enabled": "on", "max_iter": "2"}

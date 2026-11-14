@@ -13,6 +13,7 @@ from unittest import mock
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import datasources as ds
 from myapp import site
@@ -195,15 +196,13 @@ class SiteViewTests(StateDirMixin, TestCase):
         ds.set_active("sqlite")
 
     def test_get_columns_reads_the_active_source(self):
-        from django.test import Client as C
         self._sqlite_source()
-        r = C().get("/get-columns/", {"table": "pazienti"})
+        r = logged_in_client().get("/get-columns/", {"table": "pazienti"})
         self.assertEqual(r.json()["columns"], ["id", "eta", "peso"])
 
     def test_mapping_page_renders_with_a_remote_style_source(self):
-        from django.test import Client as C
         self._sqlite_source()
-        r = C().get("/map-fields/")
+        r = logged_in_client().get("/map-fields/")
         self.assertEqual(r.status_code, 200)
 
 
@@ -236,5 +235,5 @@ class SqliteKeyTests(StateDirMixin, TestCase):
         con.close()
         f = SimpleUploadedFile("db.sqlite", open(path, "rb").read(), content_type="application/octet-stream")
         os.unlink(path)
-        r = Client().post("/data/", {"kind": "sqlite", "file": f}, follow=True)
+        r = logged_in_client().post("/data/", {"kind": "sqlite", "file": f}, follow=True)
         self.assertContains(r, "Ontop refuses primary keys that can be NULL")

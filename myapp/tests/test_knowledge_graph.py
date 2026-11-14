@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest import mock
 
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import knowledge_graph as kg
 from myapp import ontop_process
@@ -117,22 +118,22 @@ class KnowledgeGraphPageTests(StateDirMixin, TestCase):
 
     def test_button_is_disabled_without_a_mapping(self):
         self.obda.write_text("[PrefixDeclaration]\n", encoding="utf-8")
-        page = Client().get("/map-fields/").content.decode()
+        page = logged_in_client().get("/map-fields/").content.decode()
         self.assertIn("Download RDF graph", page)
         self.assertNotIn('href="/map-fields/knowledge-graph/"', page)
         self.assertIn("disabled", page)
 
     def test_button_links_to_the_download_with_a_mapping(self):
         self.obda.write_text(MAPPING_TEXT, encoding="utf-8")
-        page = Client().get("/map-fields/").content.decode()
+        page = logged_in_client().get("/map-fields/").content.decode()
         self.assertIn('href="/map-fields/knowledge-graph/"', page)
 
     def test_download_returns_turtle_and_second_request_hits_the_cache(self):
         self.obda.write_text(MAPPING_TEXT, encoding="utf-8")
         calls = []
         with mock.patch("myapp.knowledge_graph.subprocess.run", side_effect=_fake_materialize(calls)):
-            first = Client().get("/map-fields/knowledge-graph/")
-            second = Client().get("/map-fields/knowledge-graph/")
+            first = logged_in_client().get("/map-fields/knowledge-graph/")
+            second = logged_in_client().get("/map-fields/knowledge-graph/")
         self.assertEqual(first["Content-Type"], "text/turtle")
         self.assertIn("attachment; filename=\"knowledge-graph-", first["Content-Disposition"])
         self.assertEqual(first["X-HDN-Cache"], "miss")
@@ -142,5 +143,5 @@ class KnowledgeGraphPageTests(StateDirMixin, TestCase):
 
     def test_download_without_mapping_redirects_with_a_message(self):
         self.obda.write_text("[PrefixDeclaration]\n", encoding="utf-8")
-        r = Client().get("/map-fields/knowledge-graph/", follow=True)
+        r = logged_in_client().get("/map-fields/knowledge-graph/", follow=True)
         self.assertContains(r, "there is no mapping")

@@ -17,6 +17,7 @@ from unittest import mock
 import duckdb
 from django.contrib.messages import get_messages
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontop_process, views
 from myapp.obda_mapping import save_active_mapping
@@ -85,7 +86,7 @@ class MappingSaveViewTests(TestCase):
             self.addCleanup(setattr, views, name, original)
 
     def _save(self, sex_column="s"):
-        resp = Client().post("/map-fields/", {
+        resp = logged_in_client().post("/map-fields/", {
             "MAPID-SEX__table": "SRC",
             "connections_MAPID-SEX": json.dumps({"patient": "pid", "sex": sex_column}),
         })

@@ -10,6 +10,7 @@ from unittest import mock
 
 import requests
 from django.test import Client, TestCase, override_settings
+from .helpers import logged_in_client
 
 from myapp import catalog
 from myapp import datasources as ds
@@ -170,7 +171,7 @@ class ClientTests(StateDirMixin, TestCase):
 class PageTests(StateDirMixin, TestCase):
 
     def test_three_headed_sections_with_the_right_cards(self):
-        page = Client().get("/data/").content.decode()
+        page = logged_in_client().get("/data/").content.decode()
         order = [page.index(f'id="section-{s}"') for s in ("files", "rdbms", "triplestore")]
         self.assertEqual(order, sorted(order))
         for title in ("Files", "RDBMS", "Triple store"):
@@ -192,20 +193,20 @@ class PageTests(StateDirMixin, TestCase):
         self.assertIn("myapp/cropped-graphwise_favicon.png", ts)
 
     def test_graphdb_form_fields_and_optional_credentials(self):
-        page = Client().get("/data/").content.decode()
+        page = logged_in_client().get("/data/").content.decode()
         for name in ("url", "repository", "user", "password"):
             self.assertIn(f'id="graphdb-{name}"', page)
         self.assertIn("User (optional)", page)
 
     def test_save_validates_and_stores(self):
-        c = Client()
+        c = logged_in_client()
         r = c.post("/data/", {"kind": "graphdb", "action": "save", "url": URL, "repository": "hero"},
                    follow=True)
         self.assertContains(r, "GraphDB connection saved")
         self.assertTrue(ds.configured("graphdb"))
 
     def test_save_rejections(self):
-        c = Client()
+        c = logged_in_client()
         cases = [
             ({"url": "", "repository": "hero"}, "missing"),
             ({"url": "nonsense", "repository": "hero"}, "URL must be http"),
@@ -220,13 +221,13 @@ class PageTests(StateDirMixin, TestCase):
     def test_save_and_test_reports_the_server(self):
         with mock.patch("requests.post", return_value=reply({"boolean": True})), \
                 mock.patch("requests.get", return_value=mock.Mock(status_code=200, text="42")):
-            r = Client().post("/data/", {"kind": "graphdb", "action": "test", "url": URL,
+            r = logged_in_client().post("/data/", {"kind": "graphdb", "action": "test", "url": URL,
                                          "repository": "hero"}, follow=True)
         self.assertContains(r, "GraphDB reachable: 42 statements")
 
     def test_failed_test_shows_the_reason(self):
         with mock.patch("requests.post", return_value=reply(status=404)):
-            r = Client().post("/data/", {"kind": "graphdb", "action": "test", "url": URL,
+            r = logged_in_client().post("/data/", {"kind": "graphdb", "action": "test", "url": URL,
                                          "repository": "nope"}, follow=True)
         self.assertContains(r, "GraphDB test failed")
         self.assertContains(r, "repository name")
@@ -241,32 +242,32 @@ class ActivationTests(StateDirMixin, TestCase):
     def test_activation_stops_ontop(self):
         with mock.patch.object(ontop_process, "is_running", return_value=True), \
                 mock.patch.object(ontop_process, "stop") as stop:
-            r = Client().post("/data/", {"kind": "graphdb", "action": "activate"}, follow=True)
+            r = logged_in_client().post("/data/", {"kind": "graphdb", "action": "activate"}, follow=True)
         stop.assert_called_once()
         self.assertEqual(ds.active(), "graphdb")
         self.assertContains(r, "Ontop and the mapping are not used")
 
     def test_an_unconfigured_triplestore_cannot_be_activated(self):
         ds.save_remote("graphdb", {"url": "", "repository": ""})
-        Client().post("/data/", {"kind": "graphdb", "action": "activate"}, follow=True)
+        logged_in_client().post("/data/", {"kind": "graphdb", "action": "activate"}, follow=True)
         self.assertEqual(ds.active(), "csv")
 
     def test_galois_blocks_the_activation(self):
         with mock.patch("myapp.galois.store.enabled", return_value=True):
-            r = Client().post("/data/", {"kind": "graphdb", "action": "activate"}, follow=True)
+            r = logged_in_client().post("/data/", {"kind": "graphdb", "action": "activate"}, follow=True)
         self.assertContains(r, "Galois mode is on")
         self.assertEqual(ds.active(), "csv")
 
     def test_a_triplestore_blocks_enabling_galois(self):
         ds.set_active("graphdb")
         from myapp.galois import store
-        r = Client().post("/galois/", {"action": "save", "enabled": "on", "max_iter": "2"}, follow=True)
+        r = logged_in_client().post("/galois/", {"action": "save", "enabled": "on", "max_iter": "2"}, follow=True)
         self.assertContains(r, "bypasses it")
         self.assertFalse(store.enabled())
 
     def test_page_text_and_other_pages_with_a_triplestore_active(self):
         ds.set_active("graphdb")
-        c = Client()
+        c = logged_in_client()
         self.assertContains(c.get("/data/"), "go straight to it")
         r = c.get("/map-fields/", follow=True)
         self.assertEqual(r.redirect_chain[-1][0], "/data/")
@@ -307,7 +308,7 @@ class DispatchTests(StateDirMixin, TestCase):
         super().setUp()
         configure()
         ds.set_active("graphdb")
-        self.client = Client()
+        self.client = logged_in_client()
         self.fields = central_request("q02_L1", disease="NCIT:C34373")
 
     def post(self, level, fields=None, **extra):
@@ -344,7 +345,7 @@ class DispatchTests(StateDirMixin, TestCase):
         post.assert_not_called()
 
     def test_graphdb_failures_look_like_no_data(self):
-        refused = Client()
+        refused = logged_in_client()
         with mock.patch("requests.post", return_value=reply()):
             refused_resp = self.post(0)
         for failure in (reply(status=500), requests.ConnectionError("down"), requests.Timeout("slow")):

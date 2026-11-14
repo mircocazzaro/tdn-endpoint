@@ -13,6 +13,7 @@ from unittest import mock
 import duckdb
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import datasources as ds
 
@@ -111,7 +112,7 @@ class FileTests(StateDirMixin, TestCase):
 class PageTests(StateDirMixin, TestCase):
 
     def test_page_lists_every_source_with_its_logo(self):
-        page = Client().get("/data/").content.decode()
+        page = logged_in_client().get("/data/").content.decode()
         for label in ("CSV files", "SQLite file", "DuckDB file", "MySQL", "PostgreSQL", "Oracle",
                       "MS SQL Server", "Amazon Aurora"):
             self.assertIn(label, page)
@@ -119,19 +120,19 @@ class PageTests(StateDirMixin, TestCase):
         self.assertIn("myapp/sources/aurora.svg", page)
 
     def test_sidebar_entry_is_data_source(self):
-        page = Client().get("/data/").content.decode()
+        page = logged_in_client().get("/data/").content.decode()
         self.assertIn('href="/data/"', page)
         self.assertIn("Data source", page)
 
     def test_sqlite_upload_is_stored_and_reported(self):
         f = SimpleUploadedFile("db.sqlite", _sqlite_bytes(), content_type="application/octet-stream")
-        r = Client().post("/data/", {"kind": "sqlite", "file": f}, follow=True)
+        r = logged_in_client().post("/data/", {"kind": "sqlite", "file": f}, follow=True)
         self.assertContains(r, "SQLite file loaded: 2 tables")
         self.assertTrue(ds.file_path("sqlite").exists())
 
     def test_wrong_file_type_is_rejected(self):
         f = SimpleUploadedFile("x.sqlite", b"plain text", content_type="text/plain")
-        r = Client().post("/data/", {"kind": "sqlite", "file": f}, follow=True)
+        r = logged_in_client().post("/data/", {"kind": "sqlite", "file": f}, follow=True)
         self.assertContains(r, "not a SQLite file database")
         self.assertFalse(ds.file_path("sqlite").exists())
 
@@ -141,15 +142,15 @@ class PageTests(StateDirMixin, TestCase):
         con = mock.MagicMock()
         con.cursor.return_value.fetchall.return_value = [("esami",)]
         with mock.patch("pymysql.connect", return_value=con) as connect:
-            r = Client().post("/data/", values, follow=True)
+            r = logged_in_client().post("/data/", values, follow=True)
         self.assertContains(r, "MySQL reachable: 1 tables (esami)")
         self.assertEqual(connect.call_args.kwargs["password"], "PW")
-        self.assertNotIn("PW", Client().get("/data/").content.decode())
+        self.assertNotIn("PW", logged_in_client().get("/data/").content.decode())
 
     def test_aurora_saves_the_chosen_engine(self):
         values = {"kind": "aurora", "action": "save", "host": "h", "port": "", "database": "d",
                   "user": "u", "password": "p", "engine": "postgresql"}
-        Client().post("/data/", values)
+        logged_in_client().post("/data/", values)
         self.assertEqual(ds.stored("aurora")["engine"], "postgresql")
 
     def test_missing_driver_is_reported(self):
@@ -229,14 +230,14 @@ class QueryTests(StateDirMixin, TestCase):
 
     def test_activate_button_switches_the_source(self):
         ds.store_file("sqlite", [_sqlite_bytes()])
-        r = Client().post("/data/", {"kind": "sqlite", "action": "activate"}, follow=True)
+        r = logged_in_client().post("/data/", {"kind": "sqlite", "action": "activate"}, follow=True)
         self.assertContains(r, "is now the source for Run Relational Queries")
         self.assertEqual(ds.active(), "sqlite")
 
     def test_sql_page_runs_on_the_active_file_source(self):
         ds.store_file("sqlite", [_sqlite_with_rows(2)])
         ds.set_active("sqlite")
-        r = Client().post("/query/", {"sql_query": "SELECT id, name FROM t ORDER BY id"})
+        r = logged_in_client().post("/query/", {"sql_query": "SELECT id, name FROM t ORDER BY id"})
         self.assertEqual(r.context["columns"], ["id", "name"])
         self.assertEqual(r.context["results"], [[0, "n0"], [1, "n1"]])
         self.assertEqual(r.context["source_label"], "SQLite file")
@@ -245,12 +246,12 @@ class QueryTests(StateDirMixin, TestCase):
     def test_sql_page_reports_query_errors_from_the_source(self):
         ds.store_file("sqlite", [_sqlite_with_rows(1)])
         ds.set_active("sqlite")
-        r = Client().post("/query/", {"sql_query": "SELECT nope FROM t"})
+        r = logged_in_client().post("/query/", {"sql_query": "SELECT nope FROM t"})
         self.assertIn("no such column", r.context["error"])
 
     def test_export_works_on_the_active_source(self):
         ds.store_file("sqlite", [_sqlite_with_rows(2)])
         ds.set_active("sqlite")
-        r = Client().post("/query/", {"sql_query": "SELECT id FROM t", "export": "csv"})
+        r = logged_in_client().post("/query/", {"sql_query": "SELECT id FROM t", "export": "csv"})
         self.assertIn(b"id", r.content)
         self.assertEqual(r["Content-Type"].split(";")[0], "text/csv")

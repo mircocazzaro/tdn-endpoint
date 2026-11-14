@@ -25,6 +25,7 @@ from pathlib import Path
 
 import duckdb
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import views
 
@@ -102,7 +103,7 @@ class MappingPageTests(TestCase):
             original = getattr(views, name)
             setattr(views, name, value)
             self.addCleanup(setattr, views, name, original)
-        self.client = Client()
+        self.client = logged_in_client()
 
     def _save(self, pairs):
         return self.client.post("/map-fields/", {

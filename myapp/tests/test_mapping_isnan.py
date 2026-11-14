@@ -20,6 +20,7 @@ from pathlib import Path
 import duckdb
 from django.conf import settings
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import views
 from myapp.obda_mapping import adapt_isnan, parse_mappings, split_collection
@@ -133,7 +134,7 @@ class GeneratorOnTextColumnsTests(TestCase):
             original = getattr(views, name)
             setattr(views, name, value)
             self.addCleanup(setattr, views, name, original)
-        self.client = Client()
+        self.client = logged_in_client()
 
     def _post(self):
         # Le colonne del sito hanno gli stessi nomi del template: associazione
@@ -213,7 +214,7 @@ class GeneratorRefusesBrokenSourcesTests(TestCase):
             self.addCleanup(setattr, views, name, original)
 
     def test_broken_source_is_not_saved(self):
-        resp = Client().post("/map-fields/", {
+        resp = logged_in_client().post("/map-fields/", {
             "MAPID-BROKEN__table": "SRC",
             "connections_MAPID-BROKEN": "{}",
         })

@@ -10,6 +10,7 @@ chiamata a Ontop abbia un timeout (punto 20).
 from unittest import mock
 
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 
 def _ontop(payload):
@@ -23,7 +24,7 @@ class SparqlPageTests(TestCase):
 
     def test_ask_is_rendered(self):
         with _ontop({"head": {}, "boolean": True}):
-            resp = Client().post("/sparql/", {"sparql_query": "ASK { ?s ?p ?o }"})
+            resp = logged_in_client().post("/sparql/", {"sparql_query": "ASK { ?s ?p ?o }"})
         self.assertEqual(resp.status_code, 200)
         self.assertIsNone(resp.context["sparql_error"])
         self.assertEqual(resp.context["sparql_results"],
@@ -33,11 +34,11 @@ class SparqlPageTests(TestCase):
         payload = {"head": {"vars": ["n"]},
                    "results": {"bindings": [{"n": {"type": "literal", "value": "3"}}]}}
         with _ontop(payload):
-            resp = Client().post("/sparql/", {"sparql_query": "SELECT ?n WHERE {}"})
+            resp = logged_in_client().post("/sparql/", {"sparql_query": "SELECT ?n WHERE {}"})
         self.assertEqual(resp.context["sparql_results"], {"vars": ["n"], "rows": [["3"]]})
 
     def test_ontop_call_has_a_timeout(self):
         with _ontop({"head": {}, "boolean": False}) as post:
-            Client().post("/sparql/", {"sparql_query": "ASK {}"})
+            logged_in_client().post("/sparql/", {"sparql_query": "ASK {}"})
         self.assertIsNotNone(post.call_args.kwargs.get("timeout"),
                              "senza timeout un Ontop bloccato blocca il worker")

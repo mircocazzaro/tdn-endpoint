@@ -21,6 +21,7 @@ from unittest import mock
 
 import duckdb
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontop_process, views
 
@@ -48,19 +49,19 @@ class SqlInjectionTests(TestCase):
         out = self.dir / "esfiltrato.csv"
         payload = (f"T'); COPY (SELECT * FROM \"T\") TO '{out}'; "
                    "SELECT * FROM pragma_table_info('T")
-        resp = Client().get("/get-columns/", {"table": payload})
+        resp = logged_in_client().get("/get-columns/", {"table": payload})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), {"columns": [], "numeric": []})
         self.assertFalse(out.exists(), "il parametro e' stato eseguito come SQL")
 
     def test_get_columns_with_awkward_but_real_names(self):
-        resp = Client().get("/get-columns/", {"table": 'it\'s "quoted"'})
+        resp = logged_in_client().get("/get-columns/", {"table": 'it\'s "quoted"'})
         self.assertEqual(resp.json()["columns"], ["a"])
-        self.assertEqual(Client().get("/get-columns/", {"table": "T"}).json()["columns"],
+        self.assertEqual(logged_in_client().get("/get-columns/", {"table": "T"}).json()["columns"],
                          ["secret"])
 
     def test_delete_table_with_quotes_in_the_name(self):
-        Client().post("/delete-table/" + 'it\'s "quoted"' + "/")
+        logged_in_client().post("/delete-table/" + 'it\'s "quoted"' + "/")
         con = duckdb.connect(str(self.db), read_only=True)
         tables = {r[0] for r in con.execute("SHOW TABLES").fetchall()}
         con.close()

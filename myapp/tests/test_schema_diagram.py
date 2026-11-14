@@ -20,6 +20,7 @@ from pathlib import Path
 
 import duckdb
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import views
 from myapp.schema_diagram import er_diagram
@@ -106,7 +107,7 @@ class HomeDiagramTests(TestCase):
             original = views.DUCKDB_PATH
             views.DUCKDB_PATH = db
             try:
-                page = Client().get("/").content.decode()
+                page = logged_in_client().get("/").content.decode()
             finally:
                 views.DUCKDB_PATH = original
         block = re.search(r'<pre class="mermaid">(.*?)</pre>', page, re.S)

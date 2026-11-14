@@ -9,6 +9,7 @@ import stat
 from unittest import mock
 
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import azure_settings, llm_adapters, llm_providers
 from myapp.galois.llm import LLMError
@@ -180,19 +181,19 @@ class SettingsPageTests(StateDirMixin, TestCase):
 
     def test_page_lists_the_four_providers_without_secrets(self):
         azure_settings.save("https://res.openai.azure.com/", "gpt", "", "TOPSECRET")
-        page = Client().get("/settings/").content.decode()
+        page = logged_in_client().get("/settings/").content.decode()
         for name in ("Microsoft Foundry", "Amazon Bedrock", "Google Cloud (Vertex AI)", "IBM watsonx.ai"):
             self.assertIn(name, page)
         self.assertNotIn("TOPSECRET", page)
         self.assertIn("stored: leave empty to keep it", page)
 
     def test_test_button_disabled_when_unconfigured(self):
-        r = Client().get("/settings/")
+        r = logged_in_client().get("/settings/")
         self.assertIn('name="action" value="test" class="btn btn-outline-secondary btn-sm" disabled',
                       r.content.decode())
 
     def test_missing_fields_are_reported_and_nothing_is_saved(self):
-        r = Client().post("/settings/", {"provider": BEDROCK, "action": "save", "region": "eu-central-1"},
+        r = logged_in_client().post("/settings/", {"provider": BEDROCK, "action": "save", "region": "eu-central-1"},
                           follow=True)
         self.assertContains(r, "missing")
         self.assertFalse(llm_providers.configured(BEDROCK))
@@ -204,7 +205,7 @@ class SettingsPageTests(StateDirMixin, TestCase):
         llm_providers.save(BEDROCK, {"region": "r", "model_id": "m", "access_key_id": "a",
                                      "secret_access_key": "s"})
         with mock.patch.object(llm_providers, "client", lambda pid: Broken()):
-            r = Client().post("/settings/", {"provider": BEDROCK, "action": "test"}, follow=True)
+            r = logged_in_client().post("/settings/", {"provider": BEDROCK, "action": "test"}, follow=True)
         self.assertContains(r, "Amazon Bedrock test failed")
 
 
@@ -212,7 +213,7 @@ class ProviderChoicePageTests(StateDirMixin, TestCase):
 
     def test_one_provider_gives_a_direct_button_without_modal(self):
         azure_settings.save("https://res.openai.azure.com/", "gpt", "", "k")
-        page = Client().get("/map-fields/").content.decode()
+        page = logged_in_client().get("/map-fields/").content.decode()
         self.assertIn('name="action" value="run"', page)
         self.assertNotIn('id="llmPickBootstrap"', page)
 
@@ -220,7 +221,7 @@ class ProviderChoicePageTests(StateDirMixin, TestCase):
         azure_settings.save("https://res.openai.azure.com/", "gpt", "", "k")
         llm_providers.save(WATSONX, {"url": "https://x.example", "project_id": "p",
                                      "model_id": "m", "api_key": "k"})
-        page = Client().get("/map-fields/").content.decode()
+        page = logged_in_client().get("/map-fields/").content.decode()
         self.assertIn('id="llmPickBootstrap"', page)
         self.assertIn('data-bs-target="#llmPickBootstrap" data-llm-action="run"', page)
         self.assertIn('value="watsonx"', page)
@@ -230,7 +231,7 @@ class ProviderChoicePageTests(StateDirMixin, TestCase):
         azure_settings.save("https://res.openai.azure.com/", "gpt", "", "k")
         with mock.patch.object(run, "load", lambda fp: {"suggestions": {}, "summary": {
                 "suggested": 0, "rules": 0}}):
-            page = Client().get("/map-fields/").content.decode()
+            page = logged_in_client().get("/map-fields/").content.decode()
         self.assertIn('id="bootstrap-run"', page)
         self.assertIn("bootstrap-done", page)
         self.assertRegex(page, r'id="bootstrap-run"[^>]*\bdisabled\b')
@@ -246,7 +247,7 @@ class GaloisProviderChoiceTests(StateDirMixin, TestCase):
         cfg = store.load_config()
         cfg["enabled"] = True
         store.save_config(cfg)
-        page = Client().get("/galois/").content.decode()
+        page = logged_in_client().get("/galois/").content.decode()
         self.assertIn('id="llmPicker"', page)
         self.assertIn('name="llm_default"', page)
         self.assertIn('data-llm-action="refresh:', page)

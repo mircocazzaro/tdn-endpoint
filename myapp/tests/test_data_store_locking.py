@@ -31,6 +31,7 @@ import duckdb
 from django.conf import settings
 from django.contrib.messages import get_messages
 from django.test import Client, TestCase, override_settings
+from .helpers import logged_in_client
 
 from myapp import datastore, ontop_process, views
 
@@ -102,7 +103,7 @@ class _DataDbTestCase(TestCase):
             original = getattr(views, name)
             setattr(views, name, value)
             self.addCleanup(setattr, views, name, original)
-        self.client = Client()
+        self.client = logged_in_client()
 
     def hold(self, **kw):
         holder = Holder(self.db, **kw)

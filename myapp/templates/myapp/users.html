@@ -1,0 +1,85 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+<h2 class="mb-3"><i class="bi bi-person-gear me-2" aria-hidden="true"></i>Users and password</h2>
+<p class="small text-muted mb-4">Local users of this endpoint. Every user is an administrator and can change all the
+settings. Passwords must be at least 10 characters, not too common and not similar to the username.</p>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Users</h5>
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Username</th><th>Last login</th><th></th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td>{{ u.username }}{% if u.pk == me.pk %} <span class="badge bg-primary">you</span>{% endif %}</td>
+          <td class="small text-muted">{{ u.last_login|default:"never" }}</td>
+          <td class="text-end">
+            {% if u.pk != me.pk %}
+            <details class="d-inline-block text-start">
+              <summary class="btn btn-sm btn-outline-secondary">Reset password</summary>
+              <form method="post" class="mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reset">
+                <input type="hidden" name="user_id" value="{{ u.pk }}">
+                <input type="password" class="form-control form-control-sm mb-1" name="password1" placeholder="New password" autocomplete="new-password" required>
+                <input type="password" class="form-control form-control-sm mb-1" name="password2" placeholder="Repeat it" autocomplete="new-password" required>
+                <button type="submit" class="btn btn-sm btn-primary">Set</button>
+              </form>
+            </details>
+            <form method="post" class="d-inline" onsubmit="return confirm('Delete user {{ u.username|escapejs }}?');">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="user_id" value="{{ u.pk }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Change your password</h5>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="change_own">
+          <div class="mb-2"><label class="form-label small" for="current">Current password</label>
+            <input type="password" class="form-control" id="current" name="current" autocomplete="current-password" required></div>
+          <div class="mb-2"><label class="form-label small" for="own1">New password</label>
+            <input type="password" class="form-control" id="own1" name="password1" autocomplete="new-password" required></div>
+          <div class="mb-3"><label class="form-label small" for="own2">Repeat the new password</label>
+            <input type="password" class="form-control" id="own2" name="password2" autocomplete="new-password" required></div>
+          <button type="submit" class="btn btn-primary">Change password</button>
+          <div class="form-text">The other sessions of your account are closed.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Create a user</h5>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create">
+          <div class="mb-2"><label class="form-label small" for="new-username">Username</label>
+            <input type="text" class="form-control" id="new-username" name="username" autocomplete="off" required>
+            <div class="form-text">3 to 150 characters: letters, digits and . @ + - _</div></div>
+          <div class="mb-2"><label class="form-label small" for="new1">Password</label>
+            <input type="password" class="form-control" id="new1" name="password1" autocomplete="new-password" required></div>
+          <div class="mb-3"><label class="form-label small" for="new2">Repeat the password</label>
+            <input type="password" class="form-control" id="new2" name="password2" autocomplete="new-password" required></div>
+          <button type="submit" class="btn btn-primary">Create user</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

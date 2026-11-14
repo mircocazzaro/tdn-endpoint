@@ -8,13 +8,14 @@ Il test usa un livello non valido, che non modifica la policy locale.
 """
 
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 
 class SetLevelRedirectTests(TestCase):
 
     def _post(self, referer):
         extra = {"HTTP_REFERER": referer} if referer is not None else {}
-        return Client().post("/set-level/", {"level": "non-valido"}, **extra)
+        return logged_in_client().post("/set-level/", {"level": "non-valido"}, **extra)
 
     def test_external_referer_is_not_followed(self):
         for referer in ["https://evil.example/phish", "//evil.example/x",

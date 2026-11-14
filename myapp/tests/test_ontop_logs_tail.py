@@ -15,12 +15,13 @@ import tempfile
 import time
 from pathlib import Path
 
-from django.test import Client, SimpleTestCase
+from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontop_process, views
 
 
-class OntopLogsTailTests(SimpleTestCase):
+class OntopLogsTailTests(TestCase):
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -35,7 +36,7 @@ class OntopLogsTailTests(SimpleTestCase):
 
     def _get(self):
         t0 = time.perf_counter()
-        resp = Client().get("/ontop/logs/")
+        resp = logged_in_client().get("/ontop/logs/")
         return resp, time.perf_counter() - t0
 
     def test_file_without_newlines_is_cheap(self):

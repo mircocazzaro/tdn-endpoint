@@ -7,6 +7,7 @@ from unittest import mock
 
 import duckdb
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import azure_settings, ontop_process, views
 from myapp.bootstrap import prompt as P
@@ -88,7 +89,7 @@ class BootstrapTestBase(StateDirMixin, TestCase):
         p = mock.patch.object(ontop_process, "is_running", lambda: False)
         p.start()
         self.addCleanup(p.stop)
-        self.client = Client()
+        self.client = logged_in_client()
 
     def blocks(self):
         from myapp.bootstrap_views import site_schema

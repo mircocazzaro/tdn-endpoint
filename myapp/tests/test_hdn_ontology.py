@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest import mock
 
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontology, ontop_process
 from myapp.models import Notification
@@ -90,7 +91,7 @@ class OntologyProtocolTests(StateDirMixin, TestCase):
         super().setUp()
         self.central = FakeCentral()
         self.central.membership()
-        self.client = Client()
+        self.client = logged_in_client()
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.obda_dir = Path(tmp.name)

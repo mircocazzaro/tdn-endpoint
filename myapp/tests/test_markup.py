@@ -9,6 +9,7 @@ from pathlib import Path
 
 import duckdb
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import views
 from myapp.tests.test_mapping_ui import unbalanced
@@ -32,7 +33,7 @@ class MarkupTests(TestCase):
         self.addCleanup(setattr, views, "DUCKDB_PATH", original)
 
     def test_every_page_is_balanced(self):
-        client = Client()
+        client = logged_in_client()
         for page in PAGES:
             with self.subTest(page=page):
                 resp = client.get(page)
