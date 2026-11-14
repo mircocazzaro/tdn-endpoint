@@ -18,12 +18,12 @@
   };
   // Un colore Bootstrap per tipo: badge, pulsanti e (lato server) nodi Mermaid.
   var KIND_COLOR = {
-    class: 'primary',
-    object_property: 'success',
-    datatype_property: 'warning',
+    class: 'warning',
+    object_property: 'primary',
+    datatype_property: 'success',
     annotation_property: 'info',
     property: 'dark',
-    individual: 'danger'
+    individual: 'purple'
   };
   var MAX_RESULTS = 300;
   var MAX_CHIPS = 60;
