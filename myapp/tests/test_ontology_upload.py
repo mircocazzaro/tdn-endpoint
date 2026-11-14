@@ -5,6 +5,7 @@ from unittest import mock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontology, ontop_process
 from myapp.models import Notification
@@ -24,7 +25,7 @@ def obda_file(text, name="template.obda"):
 class OntologyUploadTests(StateDirMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.client = Client()
+        self.client = logged_in_client()
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)

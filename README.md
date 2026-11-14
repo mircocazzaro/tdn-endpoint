@@ -267,6 +267,16 @@ Catalog queries `q15_L0`–`q18_L4` target this mode; `q17` and `q18` require L4
 
 The documented Azure-client tests use a simulated service rather than live Azure.
 
+## Access to the administration interface
+
+The administration interface on port 8000 requires a local account. A fresh database, or one with no user yet, gets the default account **`admin`** with password **`hereditary`**. This password is public (it is in this repository): sign in and change it at once. While it is in use, every page shows a warning with a link to change it; the warning disappears when the password changes. Installations that already have users are not changed by the upgrade. If no user exists, the first visit leads to *First start*, which is closed once an account exists.
+
+Every local user is an administrator. *Settings > Users and password* lists the users, creates new ones, lets each user change their own password (which closes that user's other sessions) and lets any user reset another's password or delete it. The last user and the account in use cannot be deleted. Passwords need at least 10 characters and must pass Django's usual checks: not too common, not numeric only, not similar to the username.
+
+Five wrong passwords for the same username suspend that username for 15 minutes. Sessions last 8 hours and end when the browser closes.
+
+Public paths on port 8000 are the sign-in and first-start pages, the health check `/ontop/status/`, the static files and the protocols that HDN Central calls, `/hdn/` and `/sparql-protected/`. Those protocols keep their own signature and response checks, so the sign-in does not change what Central sees.
+
 ## Data sources
 
 *Data source* chooses what the endpoint answers from. One source is active at a time.

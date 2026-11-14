@@ -14,6 +14,7 @@ from pathlib import Path
 
 import duckdb
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import views
 
@@ -41,7 +42,7 @@ class ConfirmEscapingTests(TestCase):
             original = views.DUCKDB_PATH
             views.DUCKDB_PATH = db
             try:
-                page = Client().get("/").content.decode()
+                page = logged_in_client().get("/").content.decode()
             finally:
                 views.DUCKDB_PATH = original
 

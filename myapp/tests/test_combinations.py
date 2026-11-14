@@ -12,6 +12,7 @@ from pathlib import Path
 
 import duckdb
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 
 from myapp import combinations as cmb
 from myapp import dialects, views
@@ -219,7 +220,7 @@ class CombinationViewTests(StateDirMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.client = Client()
+        self.client = logged_in_client()
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         tmp = Path(self._tmp.name)

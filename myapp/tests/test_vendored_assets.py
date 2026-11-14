@@ -17,6 +17,7 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 APP = Path(settings.BASE_DIR) / "myapp"
 VENDOR = APP / "static" / "myapp" / "vendor"
@@ -57,7 +58,7 @@ class VendoredAssetsTests(SimpleTestCase):
 class RenderedPagesTests(TestCase):
 
     def test_pages_reference_only_static_assets_that_exist(self):
-        client = Client()
+        client = logged_in_client()
         for page in PAGES:
             html = client.get(page).content.decode()
             with self.subTest(page=page):

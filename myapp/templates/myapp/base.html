@@ -76,6 +76,13 @@
               </a>
             </li>
           </ul>
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'logout' %}" class="d-flex align-items-center ms-lg-3 mt-2 mt-lg-0">
+            {% csrf_token %}
+            <span class="navbar-text small me-2">{{ user.get_username }}</span>
+            <button type="submit" class="btn btn-sm btn-outline-light">Log out</button>
+          </form>
+          {% endif %}
         </div>
       </div>
     </nav>
@@ -122,7 +129,7 @@
             <i class="bi bi-chevron-down ms-auto small" aria-hidden="true"></i>
           </button>
           {% with rn=request.resolver_match.url_name %}
-          <div class="collapse{% if rn == 'settings' or rn == 'ontop_control' or rn == 'ontology' or rn == 'network' %} show{% endif %}" id="settingsMenu">
+          <div class="collapse{% if rn == 'settings' or rn == 'users' or rn == 'ontop_control' or rn == 'ontology' or rn == 'network' %} show{% endif %}" id="settingsMenu">
             <ul class="nav flex-column ps-3">
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'ontop_control' %}"><img src="{% static 'myapp/ontop-small.png' %}" alt="Logo" height="20" class="d-inline-block align-text-center me-2">Ontop Monitor</a>
@@ -136,6 +143,9 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'network' %}"><img src="{% static 'myapp/hdnlogo.png' %}" alt="HDN logo" height="20" class="d-inline-block align-text-center me-2">HDN Network</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'users' %}"><i class="bi bi-person-gear me-2" aria-hidden="true"></i>Users and password</a>
+              </li>
             </ul>
           </div>
           {% endwith %}
@@ -146,6 +156,12 @@
 
     <!-- Main Content -->
     <div class="main-content">
+      {% if request.session.default_password %}
+        <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+          <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+          <span>You are signed in with the default password. <a href="{% url 'users' %}">Change it now</a>.</span>
+        </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </div>
 

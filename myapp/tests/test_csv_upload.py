@@ -24,6 +24,7 @@ from unittest import mock
 import duckdb
 from django.contrib.messages import get_messages
 from django.test import Client, TestCase, override_settings
+from .helpers import logged_in_client
 
 from myapp import ontop_process, views
 
@@ -57,12 +58,12 @@ class CsvUploadTests(TestCase):
         p = mock.patch.object(ontop_process, "is_running", return_value=False)
         p.start()
         self.addCleanup(p.stop)
-        self.client = Client()
+        self.client = logged_in_client()
 
     def _upload(self, *files):
         # Client nuovo per ogni upload: i messaggi di una risposta in redirect
         # restano in coda finche' non vengono mostrati, e si sommerebbero.
-        resp = Client().post("/upload-csv/", {"csv_files": list(files)})
+        resp = logged_in_client().post("/upload-csv/", {"csv_files": list(files)})
         return resp, [(m.level_tag, str(m)) for m in get_messages(resp.wsgi_request)]
 
     def _rows(self, table):

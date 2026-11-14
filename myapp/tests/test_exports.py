@@ -7,6 +7,7 @@ from unittest import mock
 
 import pandas as pd
 from django.test import Client, TestCase
+from .helpers import logged_in_client
 from openpyxl import load_workbook
 
 from myapp import exports
@@ -96,7 +97,7 @@ class SqlExportViewTests(TestCase):
     def test_csv_download(self):
         df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"]})
         with _duckdb(df):
-            resp = Client().post("/query/", {"sql_query": "SELECT * FROM t", "export": "csv"})
+            resp = logged_in_client().post("/query/", {"sql_query": "SELECT * FROM t", "export": "csv"})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], exports.CONTENT_TYPES["csv"])
         self.assertIn("attachment; filename=\"sql-results-", resp["Content-Disposition"])
@@ -106,8 +107,8 @@ class SqlExportViewTests(TestCase):
     def test_xlsx_and_pdf_download(self):
         df = pd.DataFrame({"a": [1]})
         with _duckdb(df):
-            xlsx = Client().post("/query/", {"sql_query": "q", "export": "xlsx"})
-            pdf = Client().post("/query/", {"sql_query": "q", "export": "pdf"})
+            xlsx = logged_in_client().post("/query/", {"sql_query": "q", "export": "xlsx"})
+            pdf = logged_in_client().post("/query/", {"sql_query": "q", "export": "pdf"})
         self.assertEqual(xlsx["Content-Type"], exports.CONTENT_TYPES["xlsx"])
         self.assertTrue(xlsx["Content-Disposition"].endswith('.xlsx"'))
         self.assertEqual(pdf["Content-Type"], exports.CONTENT_TYPES["pdf"])
@@ -122,19 +123,19 @@ class SqlExportViewTests(TestCase):
             yield conn
 
         with mock.patch("myapp.datastore.read_connection", fake):
-            resp = Client().post("/query/", {"sql_query": "bad", "export": "csv"})
+            resp = logged_in_client().post("/query/", {"sql_query": "bad", "export": "csv"})
         self.assertEqual(resp.status_code, 200)
         self.assertIn("syntax error", resp.context["error"])
 
     def test_plain_execute_still_renders_page(self):
         with _duckdb(pd.DataFrame({"a": [1]})):
-            resp = Client().post("/query/", {"sql_query": "q"})
+            resp = logged_in_client().post("/query/", {"sql_query": "q"})
         self.assertEqual(resp.context["columns"], ["a"])
         self.assertContains(resp, "Download:")
 
     def test_unknown_format_is_ignored(self):
         with _duckdb(pd.DataFrame({"a": [1]})):
-            resp = Client().post("/query/", {"sql_query": "q", "export": "exe"})
+            resp = logged_in_client().post("/query/", {"sql_query": "q", "export": "exe"})
         self.assertEqual(resp.status_code, 200)
         self.assertNotIn("attachment", resp.get("Content-Disposition", ""))
 
@@ -148,18 +149,18 @@ class SparqlExportViewTests(TestCase):
 
     def test_xlsx_download_of_select(self):
         with _ontop(self.PAYLOAD):
-            resp = Client().post("/sparql/", {"sparql_query": "SELECT * {}", "export": "xlsx"})
+            resp = logged_in_client().post("/sparql/", {"sparql_query": "SELECT * {}", "export": "xlsx"})
         self.assertEqual(resp["Content-Type"], exports.CONTENT_TYPES["xlsx"])
         ws = load_workbook(io.BytesIO(resp.content)).active
         self.assertEqual([c.value for c in ws[2]], ["http://x/1", "3"])
 
     def test_ask_download(self):
         with _ontop({"head": {}, "boolean": True}):
-            resp = Client().post("/sparql/", {"sparql_query": "ASK {}", "export": "csv"})
+            resp = logged_in_client().post("/sparql/", {"sparql_query": "ASK {}", "export": "csv"})
         self.assertIn(b"boolean", resp.content)
         self.assertIn(b"true", resp.content)
 
     def test_plain_execute_renders_download_bar(self):
         with _ontop(self.PAYLOAD):
-            resp = Client().post("/sparql/", {"sparql_query": "SELECT * {}"})
+            resp = logged_in_client().post("/sparql/", {"sparql_query": "SELECT * {}"})
         self.assertContains(resp, 'name="export" value="pdf"')

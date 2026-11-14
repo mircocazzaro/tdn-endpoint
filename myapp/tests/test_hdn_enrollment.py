@@ -6,6 +6,7 @@ import time
 from unittest import mock
 
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import hdnsig, network
 from myapp.models import CentralMembership, Notification
@@ -88,7 +89,7 @@ class EnrollmentDecisionTests(StateDirMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.central = FakeCentral()
-        self.client = Client()
+        self.client = logged_in_client()
 
     def test_approval_marks_member_notifies_and_signs_answer(self):
         self.central.membership(status=CentralMembership.PENDING)

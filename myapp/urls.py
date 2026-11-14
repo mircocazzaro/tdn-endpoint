@@ -1,7 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
-from . import bootstrap_views, datasource_views, galois_views, network_views, settings_views
+from . import accounts, bootstrap_views, datasource_views, galois_views, network_views, settings_views
 from .views import (
     home_view, upload_csv_view, query_view, knowledge_graph_view,
     field_mapping_view, get_columns,
@@ -30,6 +30,10 @@ urlpatterns = [
     path('ontology/graph/', network_views.ontology_graph, name='ontology_graph'),
     path('galois/', galois_views.galois_view, name='galois'),
     path('settings/', settings_views.settings_view, name='settings'),
+    path('settings/users/', accounts.users_view, name='users'),
+    path('login/', accounts.login_view, name='login'),
+    path('logout/', accounts.logout_view, name='logout'),
+    path('setup/', accounts.setup_view, name='setup'),
     path('data/', datasource_views.data_sources_view, name='data_sources'),
     path('notifications/', network_views.notifications_view, name='notifications'),
     path('notifications/read/', network_views.notifications_read, name='notifications_read'),

@@ -64,6 +64,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Login sull'interfaccia di amministrazione; vedi myapp/middleware.py
+    'myapp.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'myproject.urls'
@@ -113,6 +115,25 @@ DATABASES = {
     }
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Accesso all'interfaccia di amministrazione (myapp/accounts.py). La cache dei
+# tentativi falliti sta su file, cosi' e' condivisa fra i processi gunicorn.
+LOGIN_URL = '/login/'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(HDN_STATE_DIR, 'cache'),
+    }
+}
+SESSION_COOKIE_AGE = 8 * 3600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+     'OPTIONS': {'min_length': 10}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 
 # Policy di disclosure del sito (lavoro dedicato alla privacy, da rivedere).
 LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')

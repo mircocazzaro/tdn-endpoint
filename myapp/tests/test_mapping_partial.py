@@ -16,6 +16,7 @@ from unittest import mock
 
 import duckdb
 from django.test import Client, SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontop_process, views
 from myapp.obda_mapping import align_target_placeholders, parse_mappings, prune_unbound
@@ -99,7 +100,7 @@ class ViewTests(TestCase):
         p = mock.patch.object(ontop_process, "is_running", lambda: False)
         p.start()
         self.addCleanup(p.stop)
-        self.c = Client()
+        self.c = logged_in_client()
 
     def saved(self):
         page = self.c.get("/map-fields/").content.decode()
@@ -169,7 +170,7 @@ class AnswerALSRoundTripTests(TestCase):
         self.addCleanup(p.stop)
 
     def test_reload_and_save_reproduces_the_site_mapping(self):
-        c = Client()
+        c = logged_in_client()
         page = c.get("/map-fields/").content.decode()
         saved = json.loads(re.search(r'id="saved-mappings"[^>]*>(.*?)</script>', page, re.S).group(1))
         onset = saved["MAPID-51a6eb8de7c64b7bbe4fe62d8188208c"]["pairs"]

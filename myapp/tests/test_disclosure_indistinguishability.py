@@ -21,6 +21,7 @@ negativi producono *la stessa* risposta, byte per byte.
 import json
 
 from django.test import Client, TestCase, override_settings
+from .helpers import logged_in_client
 
 from myapp import catalog, views
 from myapp.tests.helpers import LevelStores, central_request
@@ -50,7 +51,7 @@ class DisclosureIndistinguishabilityTests(TestCase):
         super().tearDownClass()
 
     def setUp(self):
-        self.client = Client()
+        self.client = logged_in_client()
         # ONTOP_SPARQL_ENDPOINT punta a una porta chiusa: le richieste che
         # superano i controlli falliscono sul backend, che e' uno dei casi
         # negativi da rendere indistinguibile dagli altri.

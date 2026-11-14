@@ -16,6 +16,7 @@ import json
 from unittest import mock
 
 from django.test import Client, TestCase, override_settings
+from .helpers import logged_in_client
 
 from myapp import catalog
 from myapp.tests.helpers import LevelStores, central_request
@@ -77,7 +78,7 @@ class QueryBindingTests(TestCase):
         super().tearDownClass()
 
     def setUp(self):
-        self.client = Client()
+        self.client = logged_in_client()
 
     def _post(self, fields, level):
         with override_settings(LEVEL_DB=self.levels[level]):

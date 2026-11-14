@@ -54,3 +54,17 @@ class LevelStores:
 
     def cleanup(self):
         self._tmp.cleanup()
+
+
+def logged_in_client(username="tester"):
+    """Client gia' autenticato come amministratore locale, per i test delle pagine.
+
+    Crea l'utente di test alla prima chiamata nel database del test corrente.
+    """
+    from django.contrib.auth import get_user_model
+    from django.test import Client
+
+    user, _ = get_user_model().objects.get_or_create(username=username, defaults={"is_staff": True})
+    client = Client()
+    client.force_login(user)
+    return client

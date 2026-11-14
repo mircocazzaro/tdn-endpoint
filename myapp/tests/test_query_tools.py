@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest import mock
 
 from django.test import SimpleTestCase, TestCase
+from .helpers import logged_in_client
 
 from myapp import ontology, views
 
@@ -92,6 +93,10 @@ class HighlightingAndSuggestionTests(SimpleTestCase):
 
 
 class QueryPageSchemaTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.client = logged_in_client()
+
     def test_sql_page_embeds_the_tables_for_completion(self):
         db = Path(tempfile.mkdtemp()) / "site.duckdb"
         self.addCleanup(lambda: shutil.rmtree(db.parent, ignore_errors=True))
