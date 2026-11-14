@@ -36,12 +36,12 @@ NODE_STYLE = {
     "individual": "kindividual",
 }
 CLASS_DEFS = (
-    "  classDef kclass fill:#cfe2ff,stroke:#0a58ca,color:#000",
-    "  classDef kobject fill:#d1e7dd,stroke:#198754,color:#000",
-    "  classDef kdatatype fill:#fff3cd,stroke:#b58105,color:#000",
+    "  classDef kclass fill:#fff3cd,stroke:#b58105,color:#000",
+    "  classDef kobject fill:#cfe2ff,stroke:#0a58ca,color:#000",
+    "  classDef kdatatype fill:#d1e7dd,stroke:#198754,color:#000",
     "  classDef kannotation fill:#cff4fc,stroke:#0aa2c0,color:#000",
     "  classDef kproperty fill:#e9ecef,stroke:#495057,color:#000",
-    "  classDef kindividual fill:#f8d7da,stroke:#b02a37,color:#000",
+    "  classDef kindividual fill:#e2d4f5,stroke:#6f42c1,color:#000",
 )
 
 _cache = {}
