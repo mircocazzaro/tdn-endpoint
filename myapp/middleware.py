@@ -15,6 +15,7 @@ from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
+from django.urls import reverse
 
 PUBLIC_PREFIXES = (
     "/static/",
@@ -36,8 +37,10 @@ class LoginRequiredMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if is_public(request.path) or request.user.is_authenticated:
+        # path_info, non path: con un prefisso pubblico (HDN_URL_PREFIX) path lo contiene
+        # e le pagine pubbliche non verrebbero riconosciute, con un login in loop.
+        if is_public(request.path_info) or request.user.is_authenticated:
             return self.get_response(request)
         if not get_user_model().objects.exists():
             return redirect("setup")
-        return redirect(f"/login/?next={quote(request.get_full_path())}")
+        return redirect(f"{reverse('login')}?next={quote(request.get_full_path())}")
