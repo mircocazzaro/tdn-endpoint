@@ -7,6 +7,7 @@ from myapp import accounts
 from myapp.middleware import is_public
 
 from .hdn_helpers import StateDirMixin
+from .helpers import logged_in_client
 
 PASSWORD = "correct-horse-7"
 
@@ -97,7 +98,8 @@ class LoginTests(StateDirMixin, TestCase):
             self.login(password="wrong-password-1")
         r = self.login()  # la password giusta non basta durante la sospensione
         self.assertContains(r, "Too many failed attempts")
-        self.assertNotIn("sessionid", r.cookies)
+        from django.conf import settings
+        self.assertNotIn(settings.SESSION_COOKIE_NAME, r.cookies)
 
     def test_a_success_clears_the_counter(self):
         for _ in range(accounts.LOGIN_LIMIT - 1):
@@ -336,9 +338,17 @@ class PublicPrefixTests(StateDirMixin, TestCase):
         seen = {}
         def start_response(status, response_headers, exc_info=None):
             seen["status"], seen["headers"] = status, dict(response_headers)
-        def app(environ, start):
-            seen["static"] = staticfiles_storage.base_url
-            return WSGIHandler()(environ, start)
+        # il prefisso degli statici si legge da dentro la richiesta, dopo che Django ha impostato
+        # lo script prefix: lo registra un middleware di prova, che gira per ogni pagina
+        from django.test import override_settings as _override
+        import myapp.tests.test_accounts as me
+        me.SEEN_STATIC = seen
+        middleware = list(__import__("django.conf", fromlist=["settings"]).settings.MIDDLEWARE)
+        middleware.insert(0, "myapp.tests.test_accounts.StaticSpyMiddleware")
+        handler_cm = _override(MIDDLEWARE=middleware)
+        handler_cm.enable()
+        self.addCleanup(handler_cm.disable)
+        app = WSGIHandler()
         try:
             env = RequestFactory().get(path, **(headers or {})).environ
             b"".join(PrefixApp(app)(env, start_response))
@@ -405,3 +415,147 @@ class PublicPrefixTests(StateDirMixin, TestCase):
     def test_sign_in_returns_to_the_prefixed_page(self):
         r = Client().post("/login/", {"username": "ana", "password": PASSWORD, "next": "/api1/settings/"})
         self.assertEqual(r["Location"], "/api1/settings/")
+
+
+SEEN_STATIC = {}
+
+
+class StaticSpyMiddleware:
+    """Solo per i test: registra la base URL degli statici vista durante la richiesta."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from django.contrib.staticfiles.storage import staticfiles_storage
+        SEEN_STATIC["static"] = staticfiles_storage.base_url
+        return self.get_response(request)
+
+
+class StrippingProxyTests(StateDirMixin, TestCase):
+    """Apache con ``ProxyPass /api1 http://127.0.0.1:8071/``: il prefisso arriva tolto, senza header.
+
+    L'applicazione non puo' conoscerlo: i redirect sono assoluti verso l'indirizzo del backend
+    (ProxyPassReverse li riscrive) e gli URL nelle pagine sono relativi alla pagina.
+    """
+
+    PROXY = {"HTTP_X_FORWARDED_HOST": "tdn.dei.unipd.it", "HTTP_HOST": "127.0.0.1:8071"}
+
+    def setUp(self):
+        super().setUp()
+        make_user()
+        from django.urls import set_script_prefix
+        self.addCleanup(set_script_prefix, "/")
+
+    def get(self, path, **extra):
+        from django.test import Client as C
+        return C(**self.PROXY).get(path, **extra)
+
+    def test_the_double_slash_apache_sends_is_not_a_prefix(self):
+        from myproject.prefix import detect, collapse_slashes
+        self.assertEqual(collapse_slashes("//data/"), "/data/")
+        for path in ("//data/", "//", "///settings/users/", "/data/"):
+            self.assertEqual(detect({"PATH_INFO": path}), "", path)
+
+    def test_redirects_are_absolute_on_the_backend_with_a_double_slash(self):
+        """Apache sostituisce 'http://127.0.0.1:8071/' con '/api1': serve uno slash in piu' per non perdere quello del percorso."""
+        r = self.get("/settings/")
+        self.assertEqual(r["Location"], "http://127.0.0.1:8071//login/?next=/settings/")
+
+    def test_redirect_from_the_root_page(self):
+        r = self.get("/")
+        self.assertEqual(r["Location"], "http://127.0.0.1:8071//login/?next=/")
+
+    def test_a_relative_redirect_is_resolved_against_the_request_path(self):
+        from myapp.proxy import absolute_backend_url
+        from django.test import RequestFactory
+        req = RequestFactory().get("/settings/users/", **self.PROXY)
+        self.assertEqual(absolute_backend_url(req, "../../data/"), "http://127.0.0.1:8071//data/")
+        self.assertEqual(absolute_backend_url(req, "/data/"), "http://127.0.0.1:8071//data/")
+        self.assertEqual(absolute_backend_url(req, "https://other.example/x"), "https://other.example/x")
+        self.assertEqual(absolute_backend_url(req, "//other.example/x"), "//other.example/x")
+
+    def test_relative_prefix_follows_the_depth_of_the_page(self):
+        from myproject.prefix import relative_prefix
+        for path, expected in (("/", "./"), ("/login/", "../"), ("/data/", "../"),
+                               ("/settings/users/", "../../"), ("/map-fields/bootstrap/", "../../")):
+            self.assertEqual(relative_prefix(path), expected, path)
+
+    def test_pages_use_urls_relative_to_the_page(self):
+        c = logged_in_client()
+        c.defaults.update(self.PROXY)
+        for path, expected_prefix in (("/data/", "../"), ("/settings/users/", "../../")):
+            html = c.get(path).content.decode()
+            self.assertIn(f'href="{expected_prefix}static/', html, path)
+            self.assertIn(f'href="{expected_prefix}data/"', html, path)
+            self.assertNotIn('href="/data/"', html, path)
+            self.assertNotIn('src="/static/', html, path)
+
+    def test_without_a_proxy_urls_are_from_the_root(self):
+        html = logged_in_client().get("/data/").content.decode()
+        self.assertIn('href="/data/"', html)
+        self.assertIn('/static/myapp/', html)
+
+    def test_the_root_goes_to_a_page_with_a_trailing_slash(self):
+        """Il browser puo' essere su /api1 o /api1/: il backend li vede uguali."""
+        c = logged_in_client()
+        c.defaults.update(self.PROXY)
+        r = c.get("/")
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r["Location"], "http://127.0.0.1:8071//home/")
+        self.assertEqual(c.get("/home/").status_code, 200)
+
+    def test_the_root_is_still_the_home_without_a_proxy(self):
+        self.assertEqual(logged_in_client().get("/").status_code, 200)
+
+    def test_csrf_accepts_the_public_origin_behind_a_proxy(self):
+        import re
+        for origin in ("https://tdn.dei.unipd.it", "http://tdn.dei.unipd.it"):
+            c = Client(enforce_csrf_checks=True, **self.PROXY)  # un client nuovo per ogni origine
+            page = c.get("/login/").content.decode()
+            token = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', page).group(1)
+            r = c.post("/login/", {"csrfmiddlewaretoken": token, "username": "ana", "password": PASSWORD},
+                       HTTP_ORIGIN=origin)
+            self.assertEqual(r.status_code, 302, f"Origin {origin} deve essere accettato")
+
+    def test_csrf_still_rejects_other_domains_behind_a_proxy(self):
+        c = Client(enforce_csrf_checks=True, **self.PROXY)
+        page = c.get("/login/").content.decode()
+        import re
+        token = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', page).group(1)
+        for origin in ("https://evil.example", "https://tdn.dei.unipd.it.evil.example",
+                       "https://evil.example/tdn.dei.unipd.it", "https://tdn.dei.unipd.it:8443",
+                       "https://tdn.dei.unipd.it@evil.example", "null", "ftp://tdn.dei.unipd.it",
+                       "http://127.0.0.1:9"):
+            r = c.post("/login/", {"csrfmiddlewaretoken": token, "username": "ana", "password": PASSWORD},
+                       HTTP_ORIGIN=origin)
+            self.assertEqual(r.status_code, 403, f"Origin {origin} deve essere rifiutato")
+
+    def test_csrf_is_unchanged_without_a_proxy(self):
+        c = Client(enforce_csrf_checks=True)
+        page = c.get("/login/").content.decode()
+        import re
+        token = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', page).group(1)
+        r = c.post("/login/", {"csrfmiddlewaretoken": token, "username": "ana", "password": PASSWORD},
+                   HTTP_ORIGIN="https://tdn.dei.unipd.it")
+        self.assertEqual(r.status_code, 403, "senza proxy l'Origin deve coincidere con l'Host")
+
+    def test_instances_on_the_same_domain_do_not_share_cookies(self):
+        from django.conf import settings
+        self.assertRegex(settings.SESSION_COOKIE_NAME, r"^hdn_session_[0-9a-f]{8}$")
+        self.assertRegex(settings.CSRF_COOKIE_NAME, r"^hdn_csrf_[0-9a-f]{8}$")
+        self.assertNotEqual(settings.SESSION_COOKIE_NAME, "sessionid")
+
+    def test_the_instance_id_is_stable_and_private(self):
+        import os, stat, tempfile
+        from importlib import reload
+        import myproject.settings as cfg
+        with tempfile.TemporaryDirectory() as d:
+            old = cfg.HDN_STATE_DIR
+            cfg.HDN_STATE_DIR = d
+            try:
+                first = cfg._instance_id()
+                self.assertEqual(cfg._instance_id(), first)
+                self.assertEqual(stat.S_IMODE(os.stat(os.path.join(d, "instance-id")).st_mode), 0o600)
+            finally:
+                cfg.HDN_STATE_DIR = old

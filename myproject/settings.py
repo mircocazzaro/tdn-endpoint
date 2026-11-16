@@ -59,9 +59,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # Dietro un proxy che toglie il prefisso: URL relativi e redirect assoluti (myapp/proxy.py).
+    # Deve avvolgere gli altri, cosi' vede anche i redirect di CommonMiddleware e del login.
+    'myapp.proxy.StrippedPrefixMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'myapp.proxy.ProxyAwareCsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -113,6 +116,46 @@ FILE_UPLOAD_HANDLERS = [
 # ontologia ricevuti da Central, copie di sicurezza. Non versionato.
 HDN_STATE_DIR = os.environ.get('HDN_STATE_DIR', os.path.join(MEDIA_ROOT, 'hdn'))
 os.makedirs(HDN_STATE_DIR, exist_ok=True)
+
+
+def _instance_id():
+    """Identificatore casuale di questa istanza, salvato con lo stato (sopravvive ai riavvii).
+
+    Piu' istanze possono stare sullo stesso dominio (tdn.dei.unipd.it/api0, /api1, ...): senza un
+    nome diverso per i cookie, il login in una cancellerebbe la sessione delle altre. Il file si crea
+    in modo atomico: i worker che partono insieme leggono lo stesso valore.
+    """
+    path = os.path.join(HDN_STATE_DIR, 'instance-id')
+    try:
+        with open(path, encoding='utf-8') as fh:
+            value = fh.read().strip()
+            if value:
+                return value
+    except FileNotFoundError:
+        pass
+    import secrets
+    candidate = secrets.token_hex(4)
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        pass
+    else:
+        with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+            fh.write(candidate)
+        return candidate
+    for _ in range(50):  # un altro worker sta scrivendo: attendi il suo valore
+        import time
+        time.sleep(0.05)
+        with open(path, encoding='utf-8') as fh:
+            value = fh.read().strip()
+        if value:
+            return value
+    return candidate
+
+
+HDN_INSTANCE_ID = _instance_id()
+SESSION_COOKIE_NAME = f'hdn_session_{HDN_INSTANCE_ID}'
+CSRF_COOKIE_NAME = f'hdn_csrf_{HDN_INSTANCE_ID}'
 
 # Il database (iscrizioni ai Central, notifiche) sta con il resto dello stato,
 # cosi' che un solo volume lo conservi.
