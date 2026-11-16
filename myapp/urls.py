@@ -2,6 +2,7 @@
 
 from django.urls import path
 from . import accounts, bootstrap_views, datasource_views, galois_views, network_views, settings_views
+from .proxy import root_view
 from .views import (
     home_view, upload_csv_view, query_view, knowledge_graph_view,
     field_mapping_view, get_columns,
@@ -10,7 +11,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path('', home_view, name='home'),
+    path('', root_view, name='home'),
+    path('home/', home_view, name='home_page'),
     path('upload-csv/', upload_csv_view, name='upload_csv'),
     path('query/', query_view, name='query'),
     path('map-fields/', field_mapping_view, name='map_fields'),

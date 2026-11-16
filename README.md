@@ -360,7 +360,12 @@ docker run -d --name hdn-endpoint \
 
 Restrict port 8084 to Central or a trusted network. Do not publish port 8080. Start Ontop through *Ontop Monitor*, not the `ontop` program entry in `supervisord.conf`.
 
-The endpoint can be published under any path of the domain (for example `tdn.dei.unipd.it/api1` or `hdn-endpoint.com/abcd`), and the reverse proxy may or may not remove that path. No configuration is needed: the application detects the path prefix on each request. If the proxy sends `X-Forwarded-Prefix`, that value is used. Otherwise the prefix is the leading path segment that makes the rest of the URL a known page, so redirects, links and static files keep it. The proxy must forward the `Host` header unchanged; behind HTTPS set `HDN_HTTPS=1` and send `X-Forwarded-Proto: https`. A single unknown path segment, such as `/nonexistent/`, shows the home page under that prefix, as `/` does.
+The endpoint can be published under any path of the domain (for example `tdn.dei.unipd.it/api1` or `hdn-endpoint.com/abcd`) with no configuration, whether the reverse proxy removes that path or not.
+
+- **The proxy removes the path** (Apache `ProxyPass /api1 http://127.0.0.1:8071/`): the application receives `/settings/` and cannot know the prefix. Redirects are sent as absolute addresses of the backend, which `ProxyPassReverse` rewrites to the public path (the application adds one extra slash after the host, because Apache otherwise drops the slash that follows the prefix). Links, forms, static files and JavaScript requests use addresses relative to the page, so they work under any prefix. The root `/` redirects to `/home/`, because `/api1` and `/api1/` are the same request for the backend. `ProxyPassReverse` is required, and the proxy must not send a different `Host` to the backend (`ProxyPreserveHost` left off).
+- **The proxy keeps the path**, or sends `X-Forwarded-Prefix`: the prefix is detected from the path, and redirects and links include it.
+
+The proxy must send `X-Forwarded-Host`, which Apache and nginx do by default. Forms are accepted when the browser's origin matches that host, ignoring the scheme; origins of other domains are refused. Behind HTTPS set `HDN_HTTPS=1` and send `X-Forwarded-Proto: https`. Several endpoints on one domain (`/api0`, `/api1`, ...) do not share logins: each instance has its own cookie names, stored in `instance-id` in the state directory.
 
 The `uploads/` volume preserves network state. **It does not preserve institutional data or the active mapping under `myapp/obda/`; those are lost when the container is recreated unless separately preserved.** Do not mount over all of `myapp/obda/`, because that hides the Ontop distribution supplied by updated images.
 
