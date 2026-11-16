@@ -20,6 +20,7 @@ B) Il proxy LO TOGLIE (Apache ``ProxyPass /api1 http://127.0.0.1:8071/``): arriv
 
 Senza proxy (nessun X-Forwarded-Host) tutto resta com'era: URL dalla radice.
 """
+import os
 import re
 import threading
 
@@ -47,13 +48,41 @@ def _valid_header(value):
     return value.startswith("/") and ".." not in value and "//" not in value and not value.endswith("/")
 
 
+# Convenzione dell'istituto: sotto questi domini ogni istanza e' pubblicata come /api<x>, dove <x> e'
+# l'ultima cifra della porta a cui il proxy la inoltra (127.0.0.1:8071 -> /api1). Il proxy mette il
+# dominio in X-Forwarded-Host e la sua porta nell'Host che inoltra. HDN_PORT_PREFIX_HOSTS (elenco
+# separato da virgole) cambia i domini; vuoto disattiva la regola.
+DEFAULT_PORT_PREFIX_HOSTS = "tdn.dei.unipd.it"
+
+
+def _port_prefix_hosts():
+    raw = os.environ.get("HDN_PORT_PREFIX_HOSTS", DEFAULT_PORT_PREFIX_HOSTS)
+    return {h.strip().lower() for h in raw.split(",") if h.strip()}
+
+
+def port_rule_prefix(environ):
+    """'/api<x>' per un dominio della convenzione, ricavando x dall'ultima cifra della porta del backend.
+
+    Vale solo se il dominio pubblico (X-Forwarded-Host) e' uno dei domini della regola e l'Host
+    inoltrato ha una porta. Altrimenti restituisce ''.
+    """
+    forwarded = environ.get("HTTP_X_FORWARDED_HOST", "").split(",")[0].strip().lower()
+    public_host = re.sub(r":\d+$", "", forwarded)
+    if not public_host or public_host not in _port_prefix_hosts():
+        return ""
+    port = re.search(r":(\d+)$", environ.get("HTTP_HOST", "").strip())
+    return f"/api{port.group(1)[-1]}" if port else ""
+
+
 def collapse_slashes(path):
     """'//data/' -> '/data/'. Apache invia '//' dopo il prefisso con ProxyPass /api1 http://host/."""
     return re.sub(r"/{2,}", "/", path)
 
 
 def detect(environ):
-    """Prefisso presente nel percorso (es. '/api1'), o '' se non ce n'e'.
+    """Prefisso della richiesta (es. '/api1'), o '' se non ce n'e'.
+
+    In ordine: header X-Forwarded-Prefix, regola del dominio (porta del backend), percorso.
 
     Un prefisso non ha segmenti vuoti: il percorso e' normalizzato prima di cercarlo, altrimenti
     '//data/' (Apache) sembrerebbe avere il prefisso '/'.
@@ -61,6 +90,9 @@ def detect(environ):
     header = environ.get("HTTP_X_FORWARDED_PREFIX", "").strip().rstrip("/")
     if header and _valid_header(header):
         return header
+    rule = port_rule_prefix(environ)
+    if rule:
+        return rule
     path = collapse_slashes(environ.get("PATH_INFO", "") or "/")
     if _resolves(path):
         return ""

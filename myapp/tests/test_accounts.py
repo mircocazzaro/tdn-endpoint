@@ -559,3 +559,132 @@ class StrippingProxyTests(StateDirMixin, TestCase):
                 self.assertEqual(stat.S_IMODE(os.stat(os.path.join(d, "instance-id")).st_mode), 0o600)
             finally:
                 cfg.HDN_STATE_DIR = old
+
+
+class PortRuleTests(StateDirMixin, TestCase):
+    """Dominio tdn.dei.unipd.it: il prefisso e' /api<x>, con x ultima cifra della porta del backend."""
+
+    def setUp(self):
+        super().setUp()
+        make_user()
+        from django.urls import set_script_prefix
+        self.addCleanup(set_script_prefix, "/")
+
+    def env(self, port, public="tdn.dei.unipd.it", path="/settings/", **extra):
+        from django.test import RequestFactory
+        return RequestFactory().get(path, HTTP_X_FORWARDED_HOST=public, HTTP_HOST=f"127.0.0.1:{port}",
+                                    **extra).environ
+
+    def test_the_last_digit_of_the_port_is_the_prefix(self):
+        from myproject.prefix import detect
+        for port in range(8070, 8076):
+            self.assertEqual(detect(self.env(port)), f"/api{port - 8070}", port)
+        self.assertEqual(detect(self.env(9003)), "/api3")
+
+    def test_the_rule_applies_whether_or_not_the_proxy_strips_the_path(self):
+        from myproject.prefix import detect
+        self.assertEqual(detect(self.env(8071, path="/settings/")), "/api1")
+        self.assertEqual(detect(self.env(8071, path="/api1/settings/")), "/api1")
+
+    def test_the_public_port_does_not_matter(self):
+        from myproject.prefix import detect
+        self.assertEqual(detect(self.env(8072, public="tdn.dei.unipd.it:8443")), "/api2")
+        self.assertEqual(detect(self.env(8072, public="TDN.DEI.UNIPD.IT")), "/api2")
+        self.assertEqual(detect(self.env(8072, public="tdn.dei.unipd.it, other.example")), "/api2")
+
+    def test_other_domains_are_not_affected(self):
+        from myproject.prefix import detect, port_rule_prefix
+        for public in ("example.org", "dei.unipd.it", "tdn.dei.unipd.it.evil.example", "evil-tdn.dei.unipd.it", ""):
+            self.assertEqual(port_rule_prefix(self.env(8071, public=public)), "", public)
+        self.assertEqual(detect(self.env(8071, public="example.org")), "", "senza regola: nessun prefisso nel percorso")
+
+    def test_without_a_backend_port_the_rule_does_not_apply(self):
+        from django.test import RequestFactory
+        from myproject.prefix import port_rule_prefix
+        env = RequestFactory().get("/settings/", HTTP_X_FORWARDED_HOST="tdn.dei.unipd.it",
+                                   HTTP_HOST="tdn.dei.unipd.it").environ
+        self.assertEqual(port_rule_prefix(env), "")
+
+    def test_the_header_wins_over_the_rule(self):
+        from myproject.prefix import detect
+        self.assertEqual(detect(self.env(8071, HTTP_X_FORWARDED_PREFIX="/zz")), "/zz")
+
+    def test_the_domain_list_can_be_changed_or_disabled(self):
+        from unittest import mock
+        from myproject.prefix import port_rule_prefix
+        with mock.patch.dict("os.environ", {"HDN_PORT_PREFIX_HOSTS": "a.example, b.example"}):
+            self.assertEqual(port_rule_prefix(self.env(8074, public="b.example")), "/api4")
+            self.assertEqual(port_rule_prefix(self.env(8074)), "", "il dominio predefinito non vale piu'")
+        with mock.patch.dict("os.environ", {"HDN_PORT_PREFIX_HOSTS": ""}):
+            self.assertEqual(port_rule_prefix(self.env(8074)), "")
+
+    def call(self, path, port=8071, public="tdn.dei.unipd.it"):
+        from django.core.handlers.wsgi import WSGIHandler
+        from django.urls import set_script_prefix
+        from myproject.prefix import PrefixApp
+        seen = {}
+        def start_response(status, headers, exc_info=None):
+            seen["status"], seen["headers"] = status, dict(headers)
+        try:
+            b"".join(PrefixApp(WSGIHandler())(self.env(port, public, path), start_response))
+        finally:
+            set_script_prefix("/")
+        return seen["status"], seen["headers"].get("Location")
+
+    def test_redirects_carry_the_prefix_without_help_from_the_proxy(self):
+        status, location = self.call("/settings/", 8071)
+        self.assertTrue(status.startswith("302"), status)
+        # un percorso, non un URL assoluto: basta il prefisso. next e' il percorso pubblico completo
+        self.assertEqual(location, "/api1/login/?next=/api1/settings/")
+
+    def test_the_root_needs_no_redirect_and_the_double_slash_is_absorbed(self):
+        # gunicorn passa PATH_INFO='//settings/' come lo riceve da Apache; RequestFactory la
+        # leggerebbe come un URL con host, quindi si imposta a mano
+        from django.core.handlers.wsgi import WSGIHandler
+        from django.urls import set_script_prefix
+        from myproject.prefix import PrefixApp
+        env = self.env(8073, path="/settings/")
+        env["PATH_INFO"] = "//settings/"
+        seen = {}
+        def start_response(status, headers, exc_info=None):
+            seen["headers"] = dict(headers)
+        try:
+            b"".join(PrefixApp(WSGIHandler())(env, start_response))
+        finally:
+            set_script_prefix("/")
+        self.assertEqual(seen["headers"]["Location"], "/api3/login/?next=/api3/settings/")
+        status, location = self.call("/", 8070)
+        self.assertEqual(location, "/api0/login/?next=/api0/")
+
+    def test_pages_use_absolute_urls_under_the_prefix(self):
+        """Una pagina vera, passata dal gestore WSGI come in produzione, con la sessione aperta."""
+        from django.conf import settings
+        from django.core.handlers.wsgi import WSGIHandler
+        from django.test import RequestFactory
+        from django.urls import set_script_prefix
+        from myproject.prefix import PrefixApp
+        c = logged_in_client()
+        cookie = c.cookies[settings.SESSION_COOKIE_NAME].value
+        env = self.env(8071, path="/data/", HTTP_COOKIE=f"{settings.SESSION_COOKIE_NAME}={cookie}")
+        seen = {}
+        def start_response(status, headers, exc_info=None):
+            seen["status"] = status
+        try:
+            html = b"".join(PrefixApp(WSGIHandler())(env, start_response)).decode()
+        finally:
+            set_script_prefix("/")
+        self.assertTrue(seen["status"].startswith("200"), seen["status"])
+        self.assertIn('href="/api1/data/"', html)
+        self.assertIn('href="/api1/static/myapp/', html)
+        self.assertNotIn('href="../', html)
+
+    def test_the_stripped_proxy_fallback_is_off_when_the_rule_applies(self):
+        from myapp.proxy import behind_stripping_proxy
+        from django.test import RequestFactory
+        from myproject import prefix as pm
+        pm._local.prefix = "/api1"
+        try:
+            req = RequestFactory().get("/", HTTP_X_FORWARDED_HOST="tdn.dei.unipd.it")
+            self.assertFalse(behind_stripping_proxy(req))
+        finally:
+            pm._local.prefix = ""
