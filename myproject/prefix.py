@@ -70,7 +70,10 @@ def port_rule_prefix(environ):
     public_host = re.sub(r":\d+$", "", forwarded)
     if not public_host or public_host not in _port_prefix_hosts():
         return ""
-    port = re.search(r":(\d+)$", environ.get("HTTP_HOST", "").strip())
+    backend = environ.get("HTTP_HOST", "").strip()
+    if backend.lower() == forwarded:
+        return ""  # il proxy inoltra l'Host pubblico (ProxyPreserveHost On): la porta e' quella pubblica
+    port = re.search(r":(\d+)$", backend)
     return f"/api{port.group(1)[-1]}" if port else ""
 
 
