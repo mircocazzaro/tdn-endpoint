@@ -1,7 +1,7 @@
 """Login sull'interfaccia di amministrazione, primo avvio e utenti locali."""
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 
 from myapp import accounts
 from myapp.middleware import is_public
@@ -315,3 +315,62 @@ class DefaultAccountTests(StateDirMixin, TestCase):
         migration.create_default_admin(apps, None)
         self.assertFalse(get_user_model().objects.filter(username="admin").exists())
 
+
+
+class PublicPrefixTests(StateDirMixin, TestCase):
+    """Il proxy non toglie nulla: Django riceve il percorso completo, per esempio /api1/settings/,
+    e il wrapper myproject/prefix.py lo porta in SCRIPT_NAME. Vale qualunque prefisso."""
+
+    def setUp(self):
+        super().setUp()
+        make_user()
+        from django.urls import set_script_prefix
+        self.addCleanup(set_script_prefix, "/")
+
+    def app(self, prefix):
+        from django.core.handlers.wsgi import WSGIHandler
+        from myproject.prefix import PrefixApp
+        return PrefixApp(WSGIHandler(), prefix)
+
+    def call(self, prefix, path):
+        """(stato, Location) della risposta a path, come la riceve il server WSGI."""
+        from django.test import RequestFactory
+        from django.urls import set_script_prefix
+        seen = {}
+        def start_response(status, headers, exc_info=None):
+            seen["status"], seen["headers"] = status, dict(headers)
+        try:
+            body = self.app(prefix)(RequestFactory().get(path).environ, start_response)
+            b"".join(body)
+        finally:
+            set_script_prefix("/")
+        return seen["status"], seen["headers"].get("Location")
+
+    def test_login_redirect_keeps_the_prefix(self):
+        status, location = self.call("/api1", "/api1/settings/")
+        self.assertTrue(status.startswith("302"), status)
+        self.assertEqual(location, "/api1/login/?next=/api1/settings/")
+
+    def test_any_prefix_works(self):
+        status, location = self.call("/hdn-node/tdn", "/hdn-node/tdn/settings/")
+        self.assertEqual(location, "/hdn-node/tdn/login/?next=/hdn-node/tdn/settings/")
+
+    def test_public_paths_are_recognised_after_the_prefix(self):
+        status, _ = self.call("/api1", "/api1/ontop/status/")
+        self.assertTrue(status.startswith("200"), status)
+        status, _ = self.call("/api1", "/api1/login/")
+        self.assertTrue(status.startswith("200"), status)
+
+    def test_health_check_without_prefix_still_works(self):
+        """Il container controlla http://127.0.0.1:8000/ontop/status/ senza prefisso."""
+        status, _ = self.call("/api1", "/ontop/status/")
+        self.assertTrue(status.startswith("200"), status)
+
+    def test_sign_in_returns_to_the_prefixed_page(self):
+        """Il valore di next e' un percorso con il prefisso, e viene riportato cosi'."""
+        r = Client().post("/login/", {"username": "ana", "password": PASSWORD, "next": "/api1/settings/"})
+        self.assertEqual(r["Location"], "/api1/settings/")
+
+    def test_without_prefix_nothing_changes(self):
+        status, location = self.call("", "/settings/")
+        self.assertEqual(location, "/login/?next=/settings/")

@@ -34,6 +34,13 @@ ALLOWED_HOSTS = ['*']
 # sessione e CSRF marcati Secure non verrebbero mai inviati dal browser e ogni
 # form dell'interfaccia fallirebbe.
 HTTPS = os.environ.get('HDN_HTTPS') == '1'
+
+# Prefisso pubblico quando l'endpoint e' pubblicato sotto un sotto-percorso (es.
+# tdn.dei.unipd.it/api1). Il reverse proxy NON lo toglie: lo gestisce myproject/prefix.py,
+# che lo sposta in SCRIPT_NAME. Vuoto = radice. Qualsiasi valore che inizi con '/'.
+HDN_URL_PREFIX = os.environ.get('HDN_URL_PREFIX', '').strip().rstrip('/')
+if HDN_URL_PREFIX and not HDN_URL_PREFIX.startswith('/'):
+    raise ValueError("HDN_URL_PREFIX must start with '/', for example /api1")
 SESSION_COOKIE_SECURE = HTTPS
 CSRF_COOKIE_SECURE = HTTPS
 SECURE_SSL_REDIRECT = HTTPS
@@ -69,6 +76,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'myproject.urls'
+# Stesso entrypoint di gunicorn (con il wrapper del prefisso), anche per runserver
+WSGI_APPLICATION = 'myproject.wsgi.application'
 
 TEMPLATES = [
     {
@@ -118,7 +127,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Accesso all'interfaccia di amministrazione (myapp/accounts.py). La cache dei
 # tentativi falliti sta su file, cosi' e' condivisa fra i processi gunicorn.
-LOGIN_URL = '/login/'
+LOGIN_URL = f'{HDN_URL_PREFIX}/login/'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -143,7 +152,9 @@ LEVEL_DB = os.path.join(MEDIA_ROOT, 'level.duckdb')
 # File statici
 # ---------------------------------------------------------------------------
 
-STATIC_URL = '/static/'
+STATIC_URL = f'{HDN_URL_PREFIX}/static/'
+# WhiteNoise vede il percorso senza prefisso (lo toglie myproject/prefix.py)
+WHITENOISE_STATIC_PREFIX = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # ---------------------------------------------------------------------------

@@ -10,7 +10,10 @@ Avviata da run_sparql_server.py (supervisord, programma "sparql").
 
 import os
 
+from django.conf import settings
 from django.core.wsgi import get_wsgi_application
+
+from myproject.prefix import PrefixApp
 
 PROTECTED_PREFIX = "/sparql-protected/"
 NETWORK_PREFIX = "/hdn/"
@@ -20,8 +23,12 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
 _django = get_wsgi_application()
 
 
-def application(environ, start_response):
+def _gate(environ, start_response):
     if environ.get("PATH_INFO", "").startswith(ALLOWED_PREFIXES):
         return _django(environ, start_response)
     start_response("404 Not Found", [("Content-Type", "text/plain")])
     return [b"Not Found"]
+
+
+# Il prefisso pubblico si toglie prima del controllo sui percorsi ammessi.
+application = PrefixApp(_gate, settings.HDN_URL_PREFIX)

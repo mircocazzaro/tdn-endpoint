@@ -14,6 +14,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -47,7 +48,8 @@ def _record_failure(username):
         cache.set(key, 1, LOGIN_WINDOW)
 
 
-def _safe_next(request, default="/"):
+def _safe_next(request, default=None):
+    default = default or reverse("home")
     target = request.POST.get("next") or request.GET.get("next") or default
     if url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=False):
         return target
@@ -57,7 +59,7 @@ def _safe_next(request, default="/"):
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect("/")
+        return redirect("home")
     error = None
     username = ""
     if request.method == "POST":
@@ -100,7 +102,7 @@ def setup_view(request):
         if error is None:
             user = _User().objects.create_user(username=username, password=password, is_staff=True)
             login(request, user)
-            return redirect("/")
+            return redirect("home")
     return render(request, "myapp/setup.html", {"error": error, "username": username})
 
 
