@@ -318,8 +318,7 @@ class DefaultAccountTests(StateDirMixin, TestCase):
 
 
 class PublicPrefixTests(StateDirMixin, TestCase):
-    """Il proxy non toglie nulla: Django riceve il percorso completo, per esempio /api1/settings/,
-    e il wrapper myproject/prefix.py lo porta in SCRIPT_NAME. Vale qualunque prefisso."""
+    """Il prefisso pubblico si riconosce a ogni richiesta, senza configurazione (myproject/prefix.py)."""
 
     def setUp(self):
         super().setUp()
@@ -327,50 +326,82 @@ class PublicPrefixTests(StateDirMixin, TestCase):
         from django.urls import set_script_prefix
         self.addCleanup(set_script_prefix, "/")
 
-    def app(self, prefix):
+    def call(self, path, headers=None):
+        """(stato, Location, base URL degli statici) come li vede una risposta WSGI."""
         from django.core.handlers.wsgi import WSGIHandler
-        from myproject.prefix import PrefixApp
-        return PrefixApp(WSGIHandler(), prefix)
-
-    def call(self, prefix, path):
-        """(stato, Location) della risposta a path, come la riceve il server WSGI."""
+        from django.contrib.staticfiles.storage import staticfiles_storage
         from django.test import RequestFactory
         from django.urls import set_script_prefix
+        from myproject.prefix import PrefixApp
         seen = {}
-        def start_response(status, headers, exc_info=None):
-            seen["status"], seen["headers"] = status, dict(headers)
+        def start_response(status, response_headers, exc_info=None):
+            seen["status"], seen["headers"] = status, dict(response_headers)
+        def app(environ, start):
+            seen["static"] = staticfiles_storage.base_url
+            return WSGIHandler()(environ, start)
         try:
-            body = self.app(prefix)(RequestFactory().get(path).environ, start_response)
-            b"".join(body)
+            env = RequestFactory().get(path, **(headers or {})).environ
+            b"".join(PrefixApp(app)(env, start_response))
         finally:
             set_script_prefix("/")
-        return seen["status"], seen["headers"].get("Location")
+        return seen["status"], seen["headers"].get("Location"), seen["static"]
 
-    def test_login_redirect_keeps_the_prefix(self):
-        status, location = self.call("/api1", "/api1/settings/")
-        self.assertTrue(status.startswith("302"), status)
-        self.assertEqual(location, "/api1/login/?next=/api1/settings/")
+    def test_the_prefix_is_read_from_the_path(self):
+        from myproject.prefix import detect
+        cases = {
+            "/login/": "", "/": "", "/settings/users/": "",
+            "/api1/login/": "/api1", "/api1": "/api1", "/api1/": "/api1",
+            "/abcd/settings/": "/abcd", "/tdn-node/endpoint/settings/": "/tdn-node/endpoint",
+            "/api1/static/myapp/logo.png": "/api1", "/static/myapp/logo.png": "",
+            "/ontop/status/": "", "/api1/ontop/status/": "/api1",
+            # un segmento sconosciuto e' indistinguibile da un prefisso: la home sotto quel prefisso
+            "/nonexistent/": "/nonexistent", "/nonexistent/settings/": "/nonexistent",
+        }
+        for path, expected in cases.items():
+            self.assertEqual(detect({"PATH_INFO": path}), expected, path)
 
-    def test_any_prefix_works(self):
-        status, location = self.call("/hdn-node/tdn", "/hdn-node/tdn/settings/")
-        self.assertEqual(location, "/hdn-node/tdn/login/?next=/hdn-node/tdn/settings/")
+    def test_the_header_wins_and_is_validated(self):
+        from myproject.prefix import detect
+        self.assertEqual(detect({"PATH_INFO": "/login/", "HTTP_X_FORWARDED_PREFIX": "/zz"}), "/zz")
+        self.assertEqual(detect({"PATH_INFO": "/login/", "HTTP_X_FORWARDED_PREFIX": "/zz/"}), "/zz")
+        self.assertEqual(detect({"PATH_INFO": "/login/", "HTTP_X_FORWARDED_PREFIX": "zz"}), "")
+        self.assertEqual(detect({"PATH_INFO": "/login/", "HTTP_X_FORWARDED_PREFIX": "/a/../b"}), "")
+
+    def test_redirects_keep_the_prefix_whatever_it_is(self):
+        for path, expected in (
+            ("/api1/settings/", "/api1/login/?next=/api1/settings/"),
+            ("/abcd/settings/", "/abcd/login/?next=/abcd/settings/"),
+            ("/tdn-node/endpoint/settings/", "/tdn-node/endpoint/login/?next=/tdn-node/endpoint/settings/"),
+        ):
+            status, location, _ = self.call(path)
+            self.assertTrue(status.startswith("302"), (path, status))
+            self.assertEqual(location, expected, path)
+
+    def test_the_proxy_that_strips_the_prefix_works_too(self):
+        status, location, _ = self.call("/settings/")
+        self.assertEqual(location, "/login/?next=/settings/")
+
+    def test_a_forwarded_prefix_is_used_when_the_path_is_already_stripped(self):
+        status, location, static = self.call("/settings/", {"HTTP_X_FORWARDED_PREFIX": "/zz"})
+        self.assertEqual(location, "/zz/login/?next=/zz/settings/")
+        self.assertEqual(static, "/zz/static/")
+
+    def test_static_files_follow_the_prefix(self):
+        _, _, static = self.call("/api1/login/")
+        self.assertEqual(static, "/api1/static/")
+        _, _, static = self.call("/login/")
+        self.assertEqual(static, "/static/")
 
     def test_public_paths_are_recognised_after_the_prefix(self):
-        status, _ = self.call("/api1", "/api1/ontop/status/")
+        status, _, _ = self.call("/api1/ontop/status/")
         self.assertTrue(status.startswith("200"), status)
-        status, _ = self.call("/api1", "/api1/login/")
+        status, _, _ = self.call("/api1/login/")
         self.assertTrue(status.startswith("200"), status)
 
     def test_health_check_without_prefix_still_works(self):
-        """Il container controlla http://127.0.0.1:8000/ontop/status/ senza prefisso."""
-        status, _ = self.call("/api1", "/ontop/status/")
+        status, _, _ = self.call("/ontop/status/")
         self.assertTrue(status.startswith("200"), status)
 
     def test_sign_in_returns_to_the_prefixed_page(self):
-        """Il valore di next e' un percorso con il prefisso, e viene riportato cosi'."""
         r = Client().post("/login/", {"username": "ana", "password": PASSWORD, "next": "/api1/settings/"})
         self.assertEqual(r["Location"], "/api1/settings/")
-
-    def test_without_prefix_nothing_changes(self):
-        status, location = self.call("", "/settings/")
-        self.assertEqual(location, "/login/?next=/settings/")

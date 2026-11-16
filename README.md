@@ -360,7 +360,7 @@ docker run -d --name hdn-endpoint \
 
 Restrict port 8084 to Central or a trusted network. Do not publish port 8080. Start Ontop through *Ontop Monitor*, not the `ontop` program entry in `supervisord.conf`.
 
-If the endpoint is published under a sub-path (for example `tdn.dei.unipd.it/api1`, or any other path), set `HDN_URL_PREFIX` to that path, for example `HDN_URL_PREFIX=/api1`. The reverse proxy forwards the path unchanged; the application removes the prefix itself (`myproject/prefix.py`), so redirects, links and static files keep it. Leave it empty when the endpoint is served from the root. Requests without the prefix, such as the container health check, still work.
+The endpoint can be published under any path of the domain (for example `tdn.dei.unipd.it/api1` or `hdn-endpoint.com/abcd`), and the reverse proxy may or may not remove that path. No configuration is needed: the application detects the path prefix on each request. If the proxy sends `X-Forwarded-Prefix`, that value is used. Otherwise the prefix is the leading path segment that makes the rest of the URL a known page, so redirects, links and static files keep it. The proxy must forward the `Host` header unchanged; behind HTTPS set `HDN_HTTPS=1` and send `X-Forwarded-Proto: https`. A single unknown path segment, such as `/nonexistent/`, shows the home page under that prefix, as `/` does.
 
 The `uploads/` volume preserves network state. **It does not preserve institutional data or the active mapping under `myapp/obda/`; those are lost when the container is recreated unless separately preserved.** Do not mount over all of `myapp/obda/`, because that hides the Ontop distribution supplied by updated images.
 

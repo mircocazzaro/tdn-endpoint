@@ -37,8 +37,8 @@ class LoginRequiredMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # path_info, non path: con un prefisso pubblico (HDN_URL_PREFIX) path lo contiene
-        # e le pagine pubbliche non verrebbero riconosciute, con un login in loop.
+        # path_info, non path: con un prefisso pubblico path lo contiene e le pagine
+        # pubbliche non verrebbero riconosciute, con un login in loop.
         if is_public(request.path_info) or request.user.is_authenticated:
             return self.get_response(request)
         if not get_user_model().objects.exists():

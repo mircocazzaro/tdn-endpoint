@@ -10,7 +10,6 @@ Avviata da run_sparql_server.py (supervisord, programma "sparql").
 
 import os
 
-from django.conf import settings
 from django.core.wsgi import get_wsgi_application
 
 from myproject.prefix import PrefixApp
@@ -31,4 +30,4 @@ def _gate(environ, start_response):
 
 
 # Il prefisso pubblico si toglie prima del controllo sui percorsi ammessi.
-application = PrefixApp(_gate, settings.HDN_URL_PREFIX)
+application = PrefixApp(_gate)
