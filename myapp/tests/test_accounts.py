@@ -435,11 +435,12 @@ class StaticSpyMiddleware:
 class StrippingProxyTests(StateDirMixin, TestCase):
     """Apache con ``ProxyPass /api1 http://127.0.0.1:8071/``: il prefisso arriva tolto, senza header.
 
-    L'applicazione non puo' conoscerlo: i redirect sono assoluti verso l'indirizzo del backend
-    (ProxyPassReverse li riscrive) e gli URL nelle pagine sono relativi alla pagina.
+    L'applicazione non puo' conoscerlo: redirect e URL nelle pagine sono relativi alla pagina, quindi
+    non dipendono dall'Host inoltrato ne' da ProxyPassReverse. L'Host puo' essere quello del backend
+    o, con ProxyPreserveHost On, quello pubblico.
     """
 
-    PROXY = {"HTTP_X_FORWARDED_HOST": "tdn.dei.unipd.it", "HTTP_HOST": "127.0.0.1:8071"}
+    PROXY = {"HTTP_X_FORWARDED_HOST": "tdn.dei.unipd.it", "HTTP_HOST": "tdn.dei.unipd.it"}
 
     def setUp(self):
         super().setUp()
@@ -457,23 +458,76 @@ class StrippingProxyTests(StateDirMixin, TestCase):
         for path in ("//data/", "//", "///settings/users/", "/data/"):
             self.assertEqual(detect({"PATH_INFO": path}), "", path)
 
-    def test_redirects_are_absolute_on_the_backend_with_a_double_slash(self):
-        """Apache sostituisce 'http://127.0.0.1:8071/' con '/api1': serve uno slash in piu' per non perdere quello del percorso."""
+    def test_redirects_are_relative_to_the_page(self):
+        """Da /settings/ il login e' ../login/: il browser su /api1/settings/ arriva a /api1/login/."""
         r = self.get("/settings/")
-        self.assertEqual(r["Location"], "http://127.0.0.1:8071//login/?next=/settings/")
+        self.assertEqual(r["Location"], "../login/?next=/settings/")
 
-    def test_redirect_from_the_root_page(self):
+    def test_redirects_from_deeper_pages(self):
+        r = self.get("/settings/users/")
+        self.assertEqual(r["Location"], "../../login/?next=/settings/users/")
+        r = self.get("/map-fields/")
+        self.assertEqual(r["Location"], "../login/?next=/map-fields/")
+
+    def test_the_redirect_does_not_depend_on_the_forwarded_host(self):
+        for host in ("tdn.dei.unipd.it", "127.0.0.1:8071", "tdn.dei.unipd.it:8443", "backend:9"):
+            from django.test import Client as C
+            r = C(HTTP_X_FORWARDED_HOST="tdn.dei.unipd.it", HTTP_HOST=host).get("/settings/")
+            self.assertEqual(r["Location"], "../login/?next=/settings/", host)
+
+    def test_logout_goes_back_to_the_login_with_a_relative_redirect(self):
+        c = logged_in_client()
+        c.defaults.update(self.PROXY)
+        r = c.post("/logout/")
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r["Location"], "../login/")
+
+    def test_sign_in_returns_to_the_requested_page_relatively(self):
+        from django.test import Client as C
+        r = C(**self.PROXY).post("/login/", {"username": "ana", "password": PASSWORD, "next": "/settings/users/"})
+        self.assertEqual(r["Location"], "../settings/users/")
+
+    def test_the_root_page_fixes_the_trailing_slash_in_the_browser(self):
+        """Il backend vede / sia per /api1 sia per /api1/: lo slash lo aggiunge il browser."""
         r = self.get("/")
-        self.assertEqual(r["Location"], "http://127.0.0.1:8071//login/?next=/")
+        self.assertEqual(r.status_code, 200)
+        html = r.content.decode()
+        self.assertIn("location.replace(p+'home/'+location.search)", html)
+        self.assertIn("p+='/'", html)
+        self.assertNotIn("static/", html, "nessuna risorsa: deve funzionare da /api1 senza slash")
+        self.assertEqual(r["Cache-Control"], "no-store")
 
-    def test_a_relative_redirect_is_resolved_against_the_request_path(self):
-        from myapp.proxy import absolute_backend_url
+    def test_the_root_page_needs_no_login(self):
+        """L'utente anonimo che apre /api1 deve poter arrivare al login: la radice non puo' reindirizzare."""
+        self.assertEqual(self.get("/").status_code, 200)
+
+    def test_relative_location_helper(self):
+        from myapp.proxy import relative_location
         from django.test import RequestFactory
-        req = RequestFactory().get("/settings/users/", **self.PROXY)
-        self.assertEqual(absolute_backend_url(req, "../../data/"), "http://127.0.0.1:8071//data/")
-        self.assertEqual(absolute_backend_url(req, "/data/"), "http://127.0.0.1:8071//data/")
-        self.assertEqual(absolute_backend_url(req, "https://other.example/x"), "https://other.example/x")
-        self.assertEqual(absolute_backend_url(req, "//other.example/x"), "//other.example/x")
+        def rel(path, loc):
+            return relative_location(RequestFactory().get(path, **self.PROXY), loc)
+        self.assertEqual(rel("/data/", "/login/?next=/data/"), "../login/?next=/data/")
+        self.assertEqual(rel("/settings/users/", "/data/"), "../../data/")
+        self.assertEqual(rel("/settings/users/", "../../data/"), "../../data/")
+        self.assertEqual(rel("/data/", "/"), "../")
+        self.assertEqual(rel("/data/", "/data/"), "./")
+        self.assertEqual(rel("/ontop/status", "/ontop/status/"), "status/", "APPEND_SLASH: la base e' la cartella")
+        self.assertEqual(rel("/data/", "/login/#x"), "../login/#x")
+        self.assertEqual(rel("/data/", "https://other.example/x"), "https://other.example/x")
+        self.assertEqual(rel("/data/", "//other.example/x"), "//other.example/x")
+
+    def test_a_relative_location_resolves_to_the_target_under_any_prefix(self):
+        """Proprieta': risolta come fa il browser sull'URL pubblico, arriva al percorso voluto."""
+        from urllib.parse import urljoin
+        from myapp.proxy import relative_location
+        from django.test import RequestFactory
+        cases = [("/data/", "/login/?next=/data/"), ("/settings/users/", "/data/"), ("/map-fields/bootstrap/", "/map-fields/"),
+                 ("/logout/", "/login/"), ("/a/b/c/", "/")]
+        for prefix in ("/api1", "/abcd", "/tdn-node/endpoint", ""):
+            for here, target in cases:
+                loc = relative_location(RequestFactory().get(here, **self.PROXY), target)
+                resolved = urljoin(f"https://tdn.dei.unipd.it{prefix}{here}", loc)
+                self.assertEqual(resolved, f"https://tdn.dei.unipd.it{prefix}{target}", (prefix, here, target))
 
     def test_relative_prefix_follows_the_depth_of_the_page(self):
         from myproject.prefix import relative_prefix
@@ -495,15 +549,6 @@ class StrippingProxyTests(StateDirMixin, TestCase):
         html = logged_in_client().get("/data/").content.decode()
         self.assertIn('href="/data/"', html)
         self.assertIn('/static/myapp/', html)
-
-    def test_the_root_goes_to_a_page_with_a_trailing_slash(self):
-        """Il browser puo' essere su /api1 o /api1/: il backend li vede uguali."""
-        c = logged_in_client()
-        c.defaults.update(self.PROXY)
-        r = c.get("/")
-        self.assertEqual(r.status_code, 302)
-        self.assertEqual(r["Location"], "http://127.0.0.1:8071//home/")
-        self.assertEqual(c.get("/home/").status_code, 200)
 
     def test_the_root_is_still_the_home_without_a_proxy(self):
         self.assertEqual(logged_in_client().get("/").status_code, 200)
@@ -597,6 +642,15 @@ class PortRuleTests(StateDirMixin, TestCase):
         for public in ("example.org", "dei.unipd.it", "tdn.dei.unipd.it.evil.example", "evil-tdn.dei.unipd.it", ""):
             self.assertEqual(port_rule_prefix(self.env(8071, public=public)), "", public)
         self.assertEqual(detect(self.env(8071, public="example.org")), "", "senza regola: nessun prefisso nel percorso")
+
+    def test_a_public_host_forwarded_as_is_does_not_trigger_the_rule(self):
+        """ProxyPreserveHost On: l'Host e' quello pubblico, e la sua porta non e' quella del backend."""
+        from django.test import RequestFactory
+        from myproject.prefix import detect, port_rule_prefix
+        for host in ("tdn.dei.unipd.it", "tdn.dei.unipd.it:8443", "TDN.DEI.UNIPD.IT:8443"):
+            env = RequestFactory().get("/settings/", HTTP_X_FORWARDED_HOST=host, HTTP_HOST=host).environ
+            self.assertEqual(port_rule_prefix(env), "", host)
+            self.assertEqual(detect(env), "", host)
 
     def test_without_a_backend_port_the_rule_does_not_apply(self):
         from django.test import RequestFactory

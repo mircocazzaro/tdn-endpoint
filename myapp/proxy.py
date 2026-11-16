@@ -3,16 +3,30 @@
 Si attiva solo quando la richiesta arriva da un proxy (header X-Forwarded-Host, che
 Apache e nginx impostano) e il percorso non contiene un prefisso gia' riconosciuto.
 Senza proxy, e quando il prefisso e' nel percorso, non fa nulla.
+
+Il meccanismo non dipende ne' dall'Host inoltrato ne' da ProxyPassReverse: ogni URL che l'applicazione
+produce e' relativo alla pagina che lo contiene, e il browser lo risolve sotto qualunque prefisso.
 """
+import posixpath
 import re
 from urllib.parse import urljoin, urlsplit
 
+from django.http import HttpResponse
 from django.middleware.csrf import CsrfViewMiddleware
 from django.urls import set_script_prefix
 
 from myproject.prefix import current_prefix, relative_prefix
 
 _SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+
+# Radice dietro un proxy che toglie il prefisso. Per il backend /api1 e /api1/ sono la stessa richiesta,
+# ma il browser li risolve in modo diverso: lo slash finale lo sistema il browser, che conosce il suo URL.
+ROOT_PAGE = (
+    "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Trusted Data Network</title></head><body>"
+    "<script>var p=location.pathname;if(p.charAt(p.length-1)!=='/')p+='/';"
+    "location.replace(p+'home/'+location.search);</script>"
+    "<noscript><a href=\"home/\">Continue</a></noscript></body></html>"
+)
 
 
 def behind_stripping_proxy(request):
@@ -21,12 +35,11 @@ def behind_stripping_proxy(request):
 
 
 class StrippedPrefixMiddleware:
-    """Dietro un proxy che toglie il prefisso: URL relativi nelle pagine, redirect assoluti.
+    """Dietro un proxy che toglie il prefisso: URL e redirect relativi alla pagina.
 
-    I link devono funzionare sotto qualunque prefisso, quindi reverse() produce URL
-    relativi alla pagina. I redirect vanno resi assoluti verso l'Host che il proxy ha
-    inoltrato (l'indirizzo del backend): ProxyPassReverse li riscrive con il prefisso,
-    mentre un Location che parte da '/' non verrebbe toccato e perderebbe il prefisso.
+    reverse() usa come prefisso '../' ripetuto per la profondita' del percorso, e i redirect sono
+    riscritti come riferimenti relativi alla pagina corrente (relative_location). La radice e' una
+    pagina che aggiunge lo slash finale e passa a /home/: il backend non distingue /api1 da /api1/.
     """
 
     def __init__(self, get_response):
@@ -35,29 +48,38 @@ class StrippedPrefixMiddleware:
     def __call__(self, request):
         stripped = behind_stripping_proxy(request)
         if stripped:
+            if request.path_info == "/" and request.method in ("GET", "HEAD"):
+                response = HttpResponse(ROOT_PAGE, content_type="text/html; charset=utf-8")
+                response["Cache-Control"] = "no-store"
+                return response
             set_script_prefix(relative_prefix(request.path_info))
         response = self.get_response(request)
         if stripped and 300 <= response.status_code < 400 and response.has_header("Location"):
-            response["Location"] = absolute_backend_url(request, response["Location"])
+            response["Location"] = relative_location(request, response["Location"])
         return response
 
 
-def absolute_backend_url(request, location):
-    """Location assoluto sull'indirizzo del backend, risolvendo un riferimento relativo.
+def relative_location(request, location):
+    """Location come riferimento relativo alla pagina corrente.
 
-    Con ``ProxyPass /api1 http://127.0.0.1:8071/`` e ``ProxyPassReverse /api1 http://127.0.0.1:8071/``
-    Apache sostituisce l'inizio ``http://127.0.0.1:8071/`` con ``/api1``: lo slash che segue l'host
-    fa parte di cio' che viene sostituito, quindi ``http://127.0.0.1:8071/login/`` diventa
-    ``/api1login/``. Uno slash in piu' (``http://127.0.0.1:8071//login/``) ne restituisce uno solo
-    dopo la sostituzione. Verificato con Apache 2.4; senza proxy che riscrive, il doppio slash
-    iniziale e' ignorato dai server, che lo trattano come '/'.
+    Da /data/ il redirect a /login/?next=/data/ diventa '../login/?next=/data/': il browser lo
+    risolve rispetto all'URL pubblico (/api1/data/) e arriva a /api1/login/, qualunque sia il prefisso.
+    Gli indirizzi assoluti e quelli di un altro sito restano com'e'.
     """
     if _SCHEME_RE.match(location) or location.startswith("//"):
         return location
-    path = urljoin(request.path_info, location)
-    # l'Host grezzo: e' l'indirizzo che ProxyPassReverse conosce, non quello pubblico
-    host = request.META.get("HTTP_HOST") or request.META.get("SERVER_NAME", "")
-    return f"{request.scheme}://{host}/{path}"
+    target = urlsplit(urljoin(request.path_info, location))
+    path = target.path or "/"
+    here = request.path_info
+    base = here if here.endswith("/") else here.rsplit("/", 1)[0] + "/"
+    rel = posixpath.relpath(path, base)
+    if rel == ".":
+        rel = "./"
+    elif path.endswith("/"):
+        rel += "/"
+    if ":" in rel.split("/", 1)[0]:
+        rel = "./" + rel  # un segmento con ':' si leggerebbe come uno schema
+    return rel + (f"?{target.query}" if target.query else "") + (f"#{target.fragment}" if target.fragment else "")
 
 
 class ProxyAwareCsrfMiddleware(CsrfViewMiddleware):
@@ -83,15 +105,6 @@ class ProxyAwareCsrfMiddleware(CsrfViewMiddleware):
 
 
 def root_view(request):
-    """Radice del sito.
-
-    Dietro un proxy che toglie il prefisso il browser puo' essere su /api1 (senza slash) o su
-    /api1/: il backend li vede uguali, ma gli URL relativi si risolvono in modo diverso. Si va a
-    una pagina con lo slash finale, con un redirect assoluto che il proxy riscrive.
-    Altrove la radice e' la home, come sempre.
-    """
-    from django.shortcuts import redirect
+    """Radice del sito: la home. Dietro un proxy che toglie il prefisso la risponde il middleware."""
     from myapp.views import home_view
-    if behind_stripping_proxy(request):
-        return redirect("home_page")
     return home_view(request)
