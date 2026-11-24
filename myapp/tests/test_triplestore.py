@@ -322,21 +322,24 @@ class DispatchTests(StateDirMixin, TestCase):
         with mock.patch("requests.post", return_value=reply()) as post:
             resp = self.post(1)
         self.assertEqual(self.urls(post), [GRAPHDB_ENDPOINT])
-        self.assertEqual(resp.json(), RESULT)
+        body = resp.json()
+        self.assertEqual((body["protocol"], body["version"]), ("hdn-components", 1))
+        self.assertTrue(body["memberships"])
 
-    def test_graphdb_receives_the_query_rebuilt_from_the_catalog(self):
+    def test_graphdb_receives_the_component_rebuilt_from_the_plan(self):
         with mock.patch("requests.post", return_value=reply()) as post:
             self.post(1)
         sent = post.call_args.kwargs["data"]["query"]
-        self.assertEqual(sent, catalog.match_query(self.fields["query"]).query)
-        self.assertIn("COUNT", sent)
+        self.assertTrue(sent.startswith("SELECT ?pat WHERE {"), sent)
+        self.assertIn("<https://w3id.org/brainteaser/ontology/schema/hasDisease>", sent)
+        self.assertNotIn("PREFIX", sent)       # niente testo della madre: solo atomi del piano
 
     def test_a_refused_level_never_reaches_graphdb(self):
         with mock.patch("requests.post", return_value=reply()) as post:
             resp = self.post(0)
         post.assert_not_called()
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["results"]["bindings"], [])
+        self.assertEqual(resp.json()["memberships"], [])
 
     def test_an_unknown_query_never_reaches_graphdb(self):
         fields = {"query": catalog.PROLOGUE + "SELECT * WHERE { ?s ?p ?o }"}
@@ -372,7 +375,7 @@ class DispatchTests(StateDirMixin, TestCase):
                 self.assertLogs("hdn.audit", "INFO") as logs:
             resp = self.post(1)
         post.assert_not_called()
-        self.assertEqual(resp.json()["results"]["bindings"], [])
+        self.assertEqual(resp.json()["memberships"], [])
         self.assertTrue(any("galois-with-triplestore" in m for m in logs.output))
 
     def test_analytics_also_goes_to_graphdb(self):

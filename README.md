@@ -80,7 +80,7 @@ The mapping bootstrap is documented as tested with a simulated LLM. The Azure cl
 - **Known biases and confounders.** Local data coverage, mappings and disclosure settings affect answers. LLM suggestions and generated public-knowledge tables may contain errors or biases; no systematic bias evaluation is documented.
 - **Failure modes.** Refused queries, unknown templates and selected backend failures produce normalized empty responses, so Central cannot reliably interpret an empty answer as absence of matching data. Ontology updates can remove mapping blocks and leave Ontop stopped. Partial mappings can omit predicates or entire rules. Galois applies row limits and does not guarantee exhaustive retrieval. Container recreation can lose uploaded data and the active mapping under the current layout.
 - **Privacy risks.** Detailed permitted answers can disclose individual-level data. Repeated queries are not covered by a documented formal disclosure guarantee. Schema metadata sent to an LLM may be sensitive even without row values. No membership-inference or model-inversion assessment of the external LLM is documented; those tests are not directly applicable to the endpoint as a non-model release.
-- **Deployment security.** Operational administration pages have no authentication; reachable users can modify data, execute SQL and change disclosure settings. Direct Ontop access accepts unrestricted SPARQL. `/sparql-protected/` is also unauthenticated. `DEBUG` is enabled, all hosts are allowed and a fixed `SECRET_KEY` is included in settings. Initial trust in Central's key is established on first contact. Management signatures do not encrypt traffic.
+- **Deployment security.** Operational administration pages have no authentication; reachable users can modify data, execute SQL and change disclosure settings. Direct Ontop access accepts unrestricted SPARQL. `/sparql-protected/` is also unauthenticated. `DEBUG` is enabled and all hosts are allowed. `SECRET_KEY` is no longer in the code (see *Secrets* below). Initial trust in Central's key is established on first contact. Management signatures do not encrypt traffic.
 - **Persistence and configuration.** The selected disclosure level is tracked in Git and initially documented as L4. Runtime institutional data and mappings require separate backup. A network-state volume alone does not preserve the clinical DuckDB database and active site mapping.
 
 ## 7. Responsible use and reporting
@@ -228,6 +228,20 @@ Ontology updates include a matching `.obda` template. The bundled `myapp/mapping
 
 Enrollment, update and restart outcomes appear in **Notifications**. These signed protocols do not authenticate `/sparql-protected/`.
 
+## Query protocol: hdn-components v1
+
+`POST /sparql-protected/` keeps its form fields (`query`, optional `template`). Central sends the *mother* query; the endpoint authorizes it, splits it into components and answers `application/json` with the compact v1 envelope (`protocol: "hdn-components"`, `version: 1`, `query_sha256`, `context`, `plan`, `plan_sha256`, `tuple_pool`, `memberships`). The contract is `HDN_protocollo_componenti_v1.md`; the code is `myapp/hdn_components.py` (contract, encoder, decoder/validator), `myapp/hdn_planner.py` (profile and planner), `myapp/hdn_service.py` (authorization, execution, response) and `myapp/rewriting/` (port of Central's rewriting verifier).
+
+- **Authorization.** The mother must be an instance of an active catalog template (the existing match and most-restrictive-level rule) or have an equivalent rewriting over the active catalog (Compose); its level is the highest among the rewriting's templates and must not exceed the local level. After that, every derived component is authorized (experimental project decision).
+- **Components.** The plan comes from the RDFLib 7.6.0 algebra of the mother and follows `hdn theory.pdf` (anchor graph, sections 4.2 and 5.2). Atoms that share an *anchored* variable (one in a local position) or local constants of the same site stay in one component, so the join stays in the site and patient correlation is preserved. Atoms linked only by shared values (codes, drugs, ages) become separate components that Central joins across sites. Reference atoms (replicated predicates) form their own components. The local queries are rebuilt from the plan's atoms, never from the received text.
+- **Export.** A site-unique component exports only its interface variables (used by other components, the head, filters, aggregates or other BGPs) with the count of each binding (eager counting, section 6.4); reference and unanchored components export every variable and Central deduplicates copies across sites.
+- **Profile.** The federation profile is an optional `HDN_STATE_DIR/profile.json`: `{"version": 1, "reference_predicates": ["https://example.org/broader"], "local_positions": [{"predicate": "https://example.org/takes", "index": 1}], "site_prefixes": [{"site": 1, "prefix": "https://example.org/site/A/"}]}`. `index` 1 is the subject and 2 the object; `"predicate": "*"` means every predicate. Without a file, the subject of every predicate is local and there are no reference predicates. The profile digest is part of the response `context`, so a different profile is visible to Central.
+- **No contribution.** Refusal, no match and any failure (backend error, mid-run failure, state changed during the run, blank nodes, more than `HDN_MAX_COMPONENT_ROWS` rows) return the same public envelope with empty `tuple_pool` and `memberships`; the plan is `null` only for queries outside the supported fragment. Reasons are in the audit log.
+- **Compatibility.** `analytics_key` requests keep the historic response until an adapter is agreed with Central. `HDN_RESPONSE_FORMAT=legacy` restores the historic SPARQL JSON response for every request, for a gradual rollout.
+- **Fixtures.** `myapp/tests/fixtures/hdn_components/` holds serialized queries, plans, site responses and expected results that Central can consume without this endpoint's backend. `HDN_UPDATE_FIXTURES=1` regenerates them.
+
+Known limitations of v1: SPARQL outside the supported fragment (EXISTS/NOT EXISTS, property paths, blank nodes in patterns, GRAPH/SERVICE, non-SELECT/ASK forms) yields `plan: null`; the Compose verifier covers only the rewriting fragment of Central (basic graph patterns, comparison filters, simple aggregates; OPTIONAL, UNION, BIND and subqueries pass only as template instances); `evaluation_query` is the mother unchanged, so ontology reasoning (OWL 2 QL) is left to the backend inside each component and no ontology rewriting is declared; the state check covers files local to the endpoint, so changes made inside an external GraphDB during a request are not detected; component order within a BGP follows list-of-strings comparison of atom ids (`b0.a10` before `b0.a2`).
+
 ## LLM-assisted mapping bootstrap
 
 **Bootstrap with an LLM** in *Map Data to HERO* implements the `mbg_bootstrap` source-prediction approach: classes, predicates, IRI templates and reference SQL remain fixed, while the LLM proposes local tables and columns.
@@ -266,6 +280,17 @@ Parquet files under `uploads/hdn/galois/data/` are exposed through views in `gal
 Catalog queries `q15_L0`–`q18_L4` target this mode; `q17` and `q18` require L4. *LLM calls per table* ranges from one to six, default three. Network retries can add requests. Responses can take tens of seconds; Central's query timeout defaults to 240 seconds through `HDN_ENDPOINT_TIMEOUT`.
 
 The documented Azure-client tests use a simulated service rather than live Azure.
+
+## Secrets
+
+Secrets are not versioned. Copy `.env.example` to `.env` (ignored by Git and by the Docker build context) or set the variables in the environment; the environment wins over `.env`. In Docker use `--env-file .env`.
+
+| Variable | Purpose |
+|---|---|
+| `HDN_SECRET_KEY` | Django signing key. If unset, a random key is generated on first start and stored with `0600` in `HDN_STATE_DIR/secret_key` |
+| `HDN_AZURE_ENDPOINT`, `HDN_AZURE_DEPLOYMENT`, `HDN_AZURE_API_VERSION`, `HDN_AZURE_API_KEY` | Azure settings; each overrides the value saved from the Settings page (`azure.json`). Values from the environment are never written to `azure.json` |
+
+The `SECRET_KEY` that was committed in earlier versions is public and must be treated as compromised: do not reuse it.
 
 ## Access to the administration interface
 
@@ -393,6 +418,9 @@ HDN_MERMAID_NODE_MODULES=/path/to/node_modules python manage.py test myapp.tests
 | `HDN_AUDIT_LOG` | Audit log path |
 | `HDN_STATE_DIR` | Network state and application database directory; default `uploads/hdn` |
 | `HDN_ONTOP_OWL_LOG_LEVEL=WARN` | Displays otherwise hidden OWL 2 QL warnings |
+| `HDN_RESPONSE_FORMAT` | `components` (default) or `legacy` for `/sparql-protected/` |
+| `HDN_COMPONENT_TIMEOUT` | Backend timeout per component, seconds; default 10 |
+| `HDN_MAX_COMPONENT_ROWS` | Rows above which the endpoint does not contribute; default 200000 |
 
 ## Licenses
 

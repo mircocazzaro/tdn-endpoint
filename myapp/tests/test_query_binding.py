@@ -18,7 +18,8 @@ from unittest import mock
 from django.test import Client, TestCase, override_settings
 from .helpers import logged_in_client
 
-from myapp import catalog
+from myapp import catalog, hdn_planner
+from myapp import hdn_components as hc
 from myapp.tests.helpers import LevelStores, central_request
 
 ALS = "NCIT:C34373"
@@ -61,6 +62,25 @@ def sent_queries(ontop):
     return [call.kwargs["data"]["query"] for call in ontop.call_args_list]
 
 
+def component_queries(query):
+    """Query che l'endpoint manda al backend per la madre ``query``: una per componente,
+    ricostruita dagli atomi del piano e mai dal testo ricevuto."""
+    text = query.strip()
+    try:
+        plan = hdn_planner.plan_query(text, hdn_planner.Profile())
+    except hc.Unplannable:
+        plan = hdn_planner.plan_query(catalog.PROLOGUE + text, hdn_planner.Profile())
+    return [hdn_planner.component_query(plan, c) for c in plan["components"]]
+
+
+def assert_empty_envelope(test, resp):
+    """Risposta v1 senza contributo: piano presente, pool e membership vuoti."""
+    body = json.loads(resp.content)
+    test.assertEqual((body["protocol"], body["version"]), ("hdn-components", 1))
+    test.assertEqual((body["tuple_pool"], body["memberships"]), ([], []))
+    return body
+
+
 def sample_request(template):
     return central_request(template.key, **{p: SAMPLE_VALUES[p] for p in template.params})
 
@@ -91,6 +111,7 @@ class QueryBindingTests(TestCase):
                          "la query e' arrivata a Ontop")
         self.assertEqual(resp.status_code, 200)
         self.assertNotIn(b"LEAKED", resp.content)
+        assert_empty_envelope(self, resp)
         return resp
 
     # ------------------------------------------------------------- l'attacco
@@ -104,8 +125,8 @@ class QueryBindingTests(TestCase):
             "template": catalog.central_mask(catalog.BY_KEY["q00_L0"].sparql),
             "query": DUMP_EVERYTHING,
         }, level=0)
-        self.assertEqual(json.loads(resp.content),
-                         {"head": {"vars": ["pat", "p", "o"]}, "results": {"bindings": []}})
+        body = assert_empty_envelope(self, resp)
+        self.assertIsNotNone(body["plan"], "il piano pubblico c'e' anche per una madre rifiutata")
 
     def test_l0_signature_cannot_carry_an_l6_catalog_query(self):
         """Stesso attacco con una query che e' nel catalogo, ma a L6."""
@@ -153,19 +174,34 @@ class QueryBindingTests(TestCase):
             "<https://w3id.org/brainteaser/ontology/schema/>", "<https://example.org/>", 1)
         self._assert_not_executed({**fields, "query": redefined}, level=6)
 
-    def test_unknown_prefixes_are_rejected(self):
+    def test_unused_extra_prefix_changes_nothing(self):
+        """Un prefisso in piu' che la query non usa non cambia l'algebra: la madre
+        e' ancora l'istanza del template (ora lo riconosce la riscrittura Compose) e a
+        Ontop arrivano le stesse componenti."""
         fields = central_request("q02_L1", disease=ALS)
         extra = "PREFIX ex: <https://example.org/>\n" + fields["query"]
-        self._assert_not_executed({**fields, "query": extra}, level=6)
+        with fake_ontop({"head": {"vars": []}, "results": {"bindings": []}}) as ontop:
+            self._post({**fields, "query": extra}, level=6)
+        self.assertEqual(sent_queries(ontop), component_queries(fields["query"]))
 
-    def test_query_without_prologue_is_not_executed(self):
-        """Senza prologo bto: non e' dichiarato: la query non e' quella del catalogo."""
+    def test_a_used_unknown_prefix_does_not_widen_the_query(self):
+        fields = central_request("q02_L1", disease=ALS)
+        widened = ("PREFIX ex: <https://example.org/>\n"
+                   + fields["query"].replace("bto:hasDisease", "ex:hasDisease"))
+        self._assert_not_executed({**fields, "query": widened}, level=6)
+
+    def test_query_without_prologue_reaches_the_backend_only_as_expanded_iris(self):
+        """Senza prologo il testo e' ancora quello del catalogo; al backend vanno
+        componenti con IRI complete, mai il testo ricevuto."""
         fields = central_request("q02_L1", disease=ALS)
         body = fields["query"][len(catalog.PROLOGUE):]
-        with fake_ontop(LEAKED) as ontop:
+        with fake_ontop({"head": {"vars": []}, "results": {"bindings": []}}) as ontop:
             self._post({**fields, "query": body}, level=6)
-        for sent in sent_queries(ontop):
-            self.assertTrue(sent.startswith(catalog.PROLOGUE))
+        sent = sent_queries(ontop)
+        self.assertTrue(sent)
+        for query in sent:
+            self.assertNotIn("bto:", query)
+            self.assertNotIn("NCIT:", query)
 
     def test_oversized_query_is_rejected(self):
         """Il limite vale anche per spazi interni, che il confronto tollererebbe.
@@ -185,8 +221,8 @@ class QueryBindingTests(TestCase):
         """Il controllo negativo: le richieste di Central passano tutte.
 
         Per ogni template, istanziato esattamente come fa Central, l'endpoint
-        deve inoltrare a Ontop una query identica byte per byte a quella che
-        Central ha costruito.
+        deve inoltrare a Ontop le componenti del piano della madre, e solo
+        quelle: ricostruite dagli atomi del piano.
         """
         for template in catalog.CATALOG:
             fields = sample_request(template)
@@ -194,7 +230,9 @@ class QueryBindingTests(TestCase):
                 with fake_ontop({"head": {"vars": []}, "results": {"bindings": []}}) as ontop:
                     resp = self._post(fields, level=6)
                 self.assertEqual(resp.status_code, 200)
-                self.assertEqual(sent_queries(ontop), [fields["query"]])
+                body = json.loads(resp.content)
+                self.assertEqual(body["plan"]["evaluation_query"], fields["query"].strip())
+                self.assertEqual(sent_queries(ontop), component_queries(fields["query"]))
 
     def test_the_level_used_is_the_one_of_the_executed_query(self):
         """Il livello e' quello della query, qualunque template si dichiari.
@@ -208,7 +246,7 @@ class QueryBindingTests(TestCase):
 
         with fake_ontop({"head": {"vars": []}, "results": {"bindings": []}}) as ontop:
             self._post({"template": q14["template"], "query": q02["query"]}, level=1)
-        self.assertEqual(sent_queries(ontop), [q02["query"]])
+        self.assertEqual(sent_queries(ontop), component_queries(q02["query"]))
 
         self._assert_not_executed({"template": q00_claim, "query": q14["query"]}, level=1)
 
@@ -216,16 +254,16 @@ class QueryBindingTests(TestCase):
         fields = central_request("q02_L1", disease=ALS)
         with fake_ontop({"head": {"vars": []}, "results": {"bindings": []}}) as ontop:
             self._post({"query": fields["query"]}, level=1)
-        self.assertEqual(sent_queries(ontop), [fields["query"]])
+        self.assertEqual(sent_queries(ontop), component_queries(fields["query"]))
 
     def test_formatting_differences_do_not_reach_ontop(self):
-        """CRLF e rientri diversi vengono riconosciuti, ma a Ontop arriva il
-        testo del catalogo."""
+        """CRLF e rientri diversi vengono riconosciuti, e a Ontop arrivano le
+        stesse componenti: dipendono dall'algebra, non dal testo ricevuto."""
         fields = central_request("q02_L1", disease=ALS)
         reformatted = fields["query"].replace("\n", "\r\n").replace("  ", "\t")
         with fake_ontop({"head": {"vars": []}, "results": {"bindings": []}}) as ontop:
             self._post({**fields, "query": reformatted}, level=1)
-        self.assertEqual(sent_queries(ontop), [fields["query"]])
+        self.assertEqual(sent_queries(ontop), component_queries(fields["query"]))
 
     def test_analytics_path_executes_the_catalog_query(self):
         fields = central_request("q11_L5", disease=ALS)

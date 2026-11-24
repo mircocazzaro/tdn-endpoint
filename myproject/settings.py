@@ -18,13 +18,73 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 
 # ---------------------------------------------------------------------------
+# Segreti da ambiente
+# ---------------------------------------------------------------------------
+
+
+def _load_dotenv(path):
+    """Legge KEY=VALUE da un file .env (non versionato) nell'ambiente.
+
+    Le variabili gia' presenti nell'ambiente hanno la precedenza. Righe vuote e
+    commenti (#) sono ignorati; i valori possono essere fra apici.
+    """
+    try:
+        lines = open(path, encoding='utf-8').read().splitlines()
+    except FileNotFoundError:
+        return
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, value = line.partition('=')
+        key, value = key.strip(), value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            value = value[1:-1]
+        if key:
+            os.environ.setdefault(key, value)
+
+
+_load_dotenv(os.environ.get('HDN_ENV_FILE', os.path.join(BASE_DIR, '.env')))
+
+# ---------------------------------------------------------------------------
 # Sicurezza
 # ---------------------------------------------------------------------------
 
-# Da rendere configurabili per sito: SECRET_KEY va ruotata e letta
-# dall'ambiente, DEBUG e ALLOWED_HOSTS rientrano nei punti 15 e 2
-# dell'assessment. Valori invariati.
-SECRET_KEY = '***REMOVED-SECRET-KEY***'
+# SECRET_KEY non e' nel codice. Ordine: HDN_SECRET_KEY (ambiente o .env); se
+# manca, una chiave casuale generata al primo avvio e salvata (0600) in
+# HDN_STATE_DIR/secret_key, cosi' che tutti i worker e i riavvii usino la stessa
+# chiave e nessun valore comune a piu' installazioni esista.
+def _secret_key(state_dir):
+    value = os.environ.get('HDN_SECRET_KEY', '').strip()
+    if value:
+        return value
+    import secrets
+    import time
+    os.makedirs(state_dir, exist_ok=True)
+    path = os.path.join(state_dir, 'secret_key')
+    for _ in range(50):
+        try:
+            with open(path, encoding='utf-8') as fh:
+                value = fh.read().strip()
+            if value:
+                return value
+        except FileNotFoundError:
+            candidate = secrets.token_urlsafe(64)
+            try:
+                fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            except FileExistsError:
+                pass  # un altro worker la sta scrivendo
+            else:
+                with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+                    fh.write(candidate)
+                return candidate
+        time.sleep(0.05)
+    raise RuntimeError('SECRET_KEY non disponibile: imposta HDN_SECRET_KEY')
+
+
+SECRET_KEY = _secret_key(os.environ.get('HDN_STATE_DIR', os.path.join(MEDIA_ROOT, 'hdn')))
+
+# DEBUG e ALLOWED_HOSTS rientrano nei punti 15 e 2 dell'assessment. Valori invariati.
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -204,6 +264,21 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # ---------------------------------------------------------------------------
 
 ONTOP_SPARQL_ENDPOINT = 'http://localhost:8080/sparql'
+
+# ---------------------------------------------------------------------------
+# Protocollo hdn-components v1 (POST /sparql-protected/)
+# ---------------------------------------------------------------------------
+
+# 'components': la madre si scompone e si risponde con l'involucro v1.
+# 'legacy': risposta SPARQL JSON storica (utile se Central non e' ancora
+# aggiornato). Le richieste con analytics_key restano sul percorso storico.
+HDN_RESPONSE_FORMAT = os.environ.get('HDN_RESPONSE_FORMAT', 'components')
+if HDN_RESPONSE_FORMAT not in ('components', 'legacy'):
+    raise ValueError("HDN_RESPONSE_FORMAT deve essere 'components' o 'legacy'")
+# Timeout di ciascuna componente verso il backend, in secondi.
+HDN_COMPONENT_TIMEOUT = int(os.environ.get('HDN_COMPONENT_TIMEOUT', '10'))
+# Oltre questo numero di righe totali non si contribuisce (nessun troncamento).
+HDN_MAX_COMPONENT_ROWS = int(os.environ.get('HDN_MAX_COMPONENT_ROWS', '200000'))
 
 # ---------------------------------------------------------------------------
 # Log

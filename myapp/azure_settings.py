@@ -2,7 +2,9 @@
 
 Galois mode and the mapping bootstrap use the same endpoint, deployment and
 key: the administrator enters them once. Stored in HDN_STATE_DIR/azure.json
-with permissions 0600; the key is never shown back. Older installations kept
+with permissions 0600; the key is never shown back. The environment (or the
+untracked .env) takes precedence: HDN_AZURE_ENDPOINT, HDN_AZURE_DEPLOYMENT,
+HDN_AZURE_API_VERSION, HDN_AZURE_API_KEY. Older installations kept
 them in HDN_STATE_DIR/galois/azure.json, which is migrated on first read.
 """
 import json
@@ -44,7 +46,25 @@ def _write(data):
         raise
 
 
+_ENV = {"endpoint": "HDN_AZURE_ENDPOINT", "deployment": "HDN_AZURE_DEPLOYMENT",
+        "api_version": "HDN_AZURE_API_VERSION", "api_key": "HDN_AZURE_API_KEY"}
+
+
+def _env_overrides():
+    out = {}
+    for field, var in _ENV.items():
+        value = os.environ.get(var, "").strip()
+        if value:
+            out[field] = value
+    return out
+
+
 def load():
+    """Stored settings, overridden field by field by the environment."""
+    return {**_load_file(), **_env_overrides()}
+
+
+def _load_file():
     for p in (path(), _legacy_path()):
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
@@ -59,7 +79,7 @@ def load():
 
 def save(endpoint, deployment, api_version, api_key=None):
     """Save the settings; ``api_key`` None (or empty) keeps the stored one."""
-    current = load()
+    current = _load_file()  # never copy environment secrets into the file
     _write({"endpoint": (endpoint or "").strip(), "deployment": (deployment or "").strip(),
             "api_version": (api_version or "").strip() or None,
             "api_key": api_key.strip() if api_key and api_key.strip() else current.get("api_key", "")})

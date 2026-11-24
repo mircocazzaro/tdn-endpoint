@@ -35,8 +35,10 @@ audit.log
 # Artefatti di collectstatic
 /staticfiles/
 
-# Ambiente
+# Ambiente e segreti (SECRET_KEY, chiave Azure): mai versionati
 .env
+.env.*
+!.env.example
 
 # ---------------------------------------------------------------------------
 # uploads/ ospita i CSV caricati dall'amministratore locale, che sono dati.
@@ -46,3 +48,7 @@ audit.log
 # ---------------------------------------------------------------------------
 uploads/*
 !uploads/level.duckdb
+
+central-tdn/
+
+HDN_*.md

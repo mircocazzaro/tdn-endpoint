@@ -19,6 +19,7 @@ negativi producono *la stessa* risposta, byte per byte.
 """
 
 import json
+from unittest import mock
 
 from django.test import Client, TestCase, override_settings
 from .helpers import logged_in_client
@@ -80,49 +81,58 @@ class DisclosureIndistinguishabilityTests(TestCase):
 
     # ------------------------------------------------------------------ forma
 
-    def test_ask_refusal_has_canonical_ask_shape(self):
-        """Un rifiuto su ASK deve avere la forma di una ASK negativa."""
+    def test_refusal_has_the_v1_envelope_with_the_public_plan(self):
+        """Un rifiuto ha la struttura di una risposta v1: piano pubblico e nessun dato.
+
+        Il piano dipende solo dalla query e dai metadati condivisi, quindi la
+        sua presenza non rivela nulla del rifiuto.
+        """
         resp = self._post({
             "template": "ASK WHERE { ?s ?p ?o }",
             "query": catalog.PROLOGUE + "ASK WHERE { ?s ?p ?o }",
         })
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(json.loads(resp.content), {"head": {}, "boolean": False})
+        self.assertEqual(resp["Content-Type"], "application/json")
+        body = json.loads(resp.content)
+        self.assertEqual((body["protocol"], body["version"]), ("hdn-components", 1))
+        self.assertEqual((body["tuple_pool"], body["memberships"]), ([], []))
+        self.assertTrue(body["plan"]["evaluation_query"].strip().endswith("ASK WHERE { ?s ?p ?o }"))
 
-    def test_select_refusal_declares_the_projected_variables(self):
-        """Una SELECT vuota deve dichiarare le variabili proiettate.
-
-        Senza questo, Central distingue il rifiuto da un risultato vuoto
-        semplicemente guardando se ``head.vars`` c'e' o no.
-        """
-        resp = self._post(central_request("q14_L6", disease=ALS))  # L6 su L2
-        self.assertEqual(json.loads(resp.content), {
-            "head": {"vars": ["pat", "name", "aOns", "sex", "ev", "evType", "evStart"]},
-            "results": {"bindings": []},
-        })
+    def test_unplannable_refusal_uses_a_null_plan(self):
+        resp = self._post({"query": catalog.PROLOGUE + "SELECT ?s WHERE { ?s bto:a/bto:b ?o }"})
+        body = json.loads(resp.content)
+        self.assertIsNone(body["plan"])
+        self.assertIsNone(body["plan_sha256"])
+        self.assertEqual((body["tuple_pool"], body["memberships"]), ([], []))
 
     # -------------------------------------------------------- indistinguibilita'
 
-    def test_all_negative_outcomes_are_byte_identical(self):
-        """La proprieta' centrale del punto 5.
+    def _public(self, resp):
+        """Corpo della risposta senza ``context``: i digest del catalogo, dell'ontologia
+        e del profilo sono metadati condivisi, uguali per chiunque abbia lo stesso stato."""
+        body = json.loads(resp.content)
+        body.pop("context")
+        return body
 
-        Tre cause diverse - template ignoto, rifiuto per livello, backend
-        irraggiungibile - devono produrre la stessa risposta byte per byte e
-        lo stesso stato HTTP. Le tre query hanno la stessa proiezione, cosi'
-        che l'unica differenza possibile sia la causa.
+    def test_all_negative_outcomes_are_byte_identical(self):
+        """La proprieta' centrale del punto 5, sulla stessa madre.
+
+        Tre cause diverse - madre fuori dal catalogo, rifiuto per livello,
+        backend irraggiungibile - producono la stessa risposta pubblica e lo
+        stesso stato HTTP.
         """
         q02 = central_request("q02_L1", disease=ALS)
+        without_q02 = catalog.from_document({
+            **catalog.BASE.to_document(), "version": 1,
+            "templates": [t for t in catalog.BASE.to_document()["templates"] if t["key"] != "q02_L1"],
+        })
 
+        with mock.patch.object(catalog, "active", return_value=without_q02):
+            unknown = self._post(q02, level=2)          # (a) madre fuori catalogo
         responses = {
-            # (a) query e template fuori catalogo
-            "unknown-template": self._post({
-                "template": "SELECT ?x WHERE { ?x a <urn:NonInCatalogo> }",
-                "query": UNKNOWN_COUNT_QUERY,
-            }),
-            # (b) template L1 su un endpoint configurato a L0
-            "disclosure-refused": self._post(q02, level=0),
-            # (c) template ammesso a L2, ma il backend Ontop non risponde
-            "backend-error": self._post(q02, level=2),
+            "unknown-template": unknown,
+            "disclosure-refused": self._post(q02, level=0),   # (b) L1 su endpoint L0
+            "backend-error": self._post(q02, level=2),        # (c) Ontop non risponde
         }
 
         for name, resp in responses.items():
@@ -132,16 +142,23 @@ class DisclosureIndistinguishabilityTests(TestCase):
                 self.assertNotIn(b"error", resp.content.lower(),
                                  f"{name}: il corpo rivela stato interno")
 
-        bodies = {name: resp.content for name, resp in responses.items()}
+        bodies = {name: json.dumps(self._public(resp), sort_keys=True) for name, resp in responses.items()}
         self.assertEqual(len(set(bodies.values())), 1,
                          "gli esiti negativi sono distinguibili: " + repr(bodies))
+        # Rifiuto e guasto, con lo stesso catalogo, coincidono anche nel contesto.
+        self.assertEqual(responses["disclosure-refused"].content, responses["backend-error"].content)
 
     def test_refusal_is_identical_to_a_genuinely_empty_answer(self):
-        """Un rifiuto deve coincidere con cio' che Ontop risponderebbe se non
+        """Un rifiuto deve coincidere con cio' che il sito risponderebbe se non
         ci fossero pazienti che matchano."""
-        refused = self._post(central_request("q02_L1", disease=ALS), level=0)
-        genuine_empty = {"head": {"vars": ["nDISEASE"]}, "results": {"bindings": []}}
-        self.assertEqual(json.loads(refused.content), genuine_empty)
+        q02 = central_request("q02_L1", disease=ALS)
+        refused = self._post(q02, level=0)
+        with mock.patch("requests.post") as post:
+            post.return_value.raise_for_status.return_value = None
+            post.return_value.json.return_value = {"head": {"vars": ["pat"]}, "results": {"bindings": []}}
+            genuine_empty = self._post(q02, level=2)
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(refused.content, genuine_empty.content)
 
     def test_level_is_enforced_in_the_right_direction(self):
         """Un template al di sotto del massimo locale non viene rifiutato dal

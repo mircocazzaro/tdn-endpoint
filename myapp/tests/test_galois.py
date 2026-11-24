@@ -221,7 +221,7 @@ class ProtectedSparqlGaloisTests(StateDirMixin, TestCase):
                                lambda sparql, prefixes: calls.append(sparql) or ["disease"]):
             r = self.client.post("/sparql-protected/", {"query": self.QUERY})
         self.assertEqual(calls, [catalog.BY_KEY["q02_L1"].sparql])
-        self.assertEqual(r.json()["results"]["bindings"][0]["nDISEASE"]["value"], "1")
+        self.assertTrue(r.json()["memberships"])
         self.ontop_post.assert_called_once()
 
     def test_llm_failure_means_no_contribution_and_no_ontop_query(self):
@@ -230,7 +230,7 @@ class ProtectedSparqlGaloisTests(StateDirMixin, TestCase):
         with mock.patch.object(store, "refresh_for_query", fail), \
                 self.assertLogs("hdn.audit", "INFO") as logs:
             r = self.client.post("/sparql-protected/", {"query": self.QUERY})
-        self.assertEqual(r.json()["results"]["bindings"], [])
+        self.assertEqual(r.json()["memberships"], [])
         self.ontop_post.assert_not_called()
         self.assertTrue(any("galois-error" in m for m in logs.output))
 

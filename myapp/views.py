@@ -16,6 +16,7 @@ from . import catalog, datastore, exports, llm_providers, ontology, ontop_proces
 from . import datasources as ds_sources
 from . import site as site_db
 from . import combinations, knowledge_graph, triplestore
+from . import hdn_planner, hdn_service
 from .galois import store as galois_store
 from .logtail import tail_lines
 from .schema_diagram import er_diagram
@@ -1046,6 +1047,80 @@ def sparql_query_view(request):
     })
 
 
+def _local_max_level():
+    """Massimo livello di disclosure configurato localmente (fail-closed: L0)."""
+    try:
+        con = duckdb.connect(settings.LEVEL_DB, read_only=True)
+        lvl_row = con.execute(
+            "SELECT value FROM options WHERE key='level'"
+        ).fetchone()
+        con.close()
+        return int(lvl_row[0][1]) if lvl_row else 0
+    except Exception as exc:
+        # Fail-closed: in assenza di una policy leggibile si assume la piu'
+        # restrittiva. L'evento va registrato perche' altrimenti l'endpoint
+        # smetterebbe di contribuire senza che nessuno lo sappia.
+        audit.warning("level-store-unreadable error=%s: fallback a L0",
+                      type(exc).__name__)
+        return 0
+
+
+def _protected_components(request, q, claimed_template):
+    """Risposta hdn-components v1 alla madre ``q`` (myapp/hdn_service.py).
+
+    Ogni mancato contributo - rifiuto, query fuori catalogo, guasto del
+    backend o dello stato locale - ha la stessa struttura pubblica, con HTTP
+    200 e pool vuoti; i motivi vanno solo nell'audit log.
+    """
+    remote = request.META.get('REMOTE_ADDR', '-')
+    cat = catalog.active()
+    backend = sparql_backend()
+
+    def prepare(auth):
+        # Galois ripopola dall'LLM le tabelle che Ontop usa; con un triple
+        # store la query le salterebbe e risponderebbe con altri dati.
+        if not galois_store.enabled():
+            return
+        if backend == 'graphdb':
+            raise hdn_service.NotAuthorized('galois-with-triplestore')
+        source = auth.match.template.sparql if auth.match else q
+        try:
+            refreshed = galois_store.refresh_for_query(source, cat.prefixes)
+        except galois_store.GaloisError as exc:
+            raise hdn_service.NotAuthorized('galois-error', error=exc.code)
+        audit.info("galois-tables template=%s tables=%s", auth.key, ",".join(refreshed))
+
+    state_dir = settings.HDN_STATE_DIR
+    outcome = hdn_service.respond(
+        q,
+        cat=cat,
+        profile=hdn_planner.load_profile(state_dir),
+        ontology_path=ontology.active_path(),
+        local_max_level=_local_max_level(),
+        run=run_sparql,
+        timeout=settings.HDN_COMPONENT_TIMEOUT,
+        stamp=lambda: hdn_service.state_stamp(state_dir, [DUCKDB_PATH, OBDA_FILE]),
+        prepare=prepare,
+        max_rows=settings.HDN_MAX_COMPONENT_ROWS,
+    )
+    auth = outcome.authorization
+    if auth is not None and auth.alternatives:
+        audit.warning("ambiguous-match template=%s alternatives=%s",
+                      auth.key, ",".join(auth.alternatives))
+    if (auth is not None and auth.match is not None and claimed_template
+            and catalog.lookup_by_template_text(claimed_template) is not auth.match.template):
+        audit.warning("template-claim-mismatch derived=%s claimed=%s remote=%s", auth.key,
+                      hashlib.sha512(claimed_template.encode('utf-8')).hexdigest()[:16], remote)
+    if outcome.contributed:
+        audit.info("contributed kind=%s template=%s level=%s remote=%s backend=%s",
+                   auth.kind, auth.key, auth.level, remote, backend)
+    else:
+        audit.info("no-contribution reason=%s remote=%s backend=%s %s", outcome.reason, remote, backend,
+                   " ".join(f"{k}={v}" for k, v in sorted(outcome.details.items())))
+    # Sempre application/json, qualunque Accept mandi il chiamante.
+    return JsonResponse(outcome.envelope, json_dumps_params={'ensure_ascii': False})
+
+
 @csrf_exempt
 def protected_sparql(request):
     """Interfaccia di servizio verso HDN Central.
@@ -1075,6 +1150,14 @@ def protected_sparql(request):
 
     if not q:
         return JsonResponse({'error': 'Must supply query'}, status=400)
+
+    # Protocollo hdn-components v1: la madre si scompone in componenti e si
+    # risponde con l'involucro compatto. Le richieste analytics_key hanno
+    # consumer dedicati e restano sul percorso storico finche' non c'e'
+    # l'adattatore concordato con Central; HDN_RESPONSE_FORMAT=legacy
+    # ripristina ovunque la risposta SPARQL storica (aggiornamenti graduali).
+    if analytics_key is None and settings.HDN_RESPONSE_FORMAT == 'components':
+        return _protected_components(request, q, claimed_template)
 
     def no_contribution(reason, **details):
         """Unica uscita negativa dell'endpoint."""
@@ -1108,20 +1191,7 @@ def protected_sparql(request):
         )
 
     # 3) Massimo livello di disclosure configurato localmente
-    try:
-        con = duckdb.connect(settings.LEVEL_DB, read_only=True)
-        lvl_row = con.execute(
-            "SELECT value FROM options WHERE key='level'"
-        ).fetchone()
-        con.close()
-        local_max_level = int(lvl_row[0][1]) if lvl_row else 0
-    except Exception as exc:
-        # Fail-closed: in assenza di una policy leggibile si assume la piu'
-        # restrittiva. L'evento va registrato perche' altrimenti l'endpoint
-        # smetterebbe di contribuire senza che nessuno lo sappia.
-        audit.warning("level-store-unreadable error=%s: fallback a L0",
-                      type(exc).__name__)
-        local_max_level = 0
+    local_max_level = _local_max_level()
 
     if allowed_level > local_max_level:
         return no_contribution('disclosure-refused',

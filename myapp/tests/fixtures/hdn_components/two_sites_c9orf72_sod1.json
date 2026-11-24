@@ -1,0 +1,467 @@
+{
+  "catalog": {
+    "prologue": "PREFIX t: <urn:t:>\n",
+    "templates": [
+      {
+        "description": "patients and variants",
+        "key": "rows_variant_L1",
+        "level": 1,
+        "params": {},
+        "sparql": "SELECT ?x ?v ?d WHERE { ?x t:variant ?v . ?x t:takes ?d . }"
+      },
+      {
+        "description": "patients and age",
+        "key": "rows_age_L1",
+        "level": 1,
+        "params": {},
+        "sparql": "SELECT ?x ?a WHERE { ?x t:age ?a . }"
+      },
+      {
+        "description": "drug labels",
+        "key": "rows_label_L3",
+        "level": 3,
+        "params": {},
+        "sparql": "SELECT ?d ?l WHERE { ?d t:label ?l . }"
+      },
+      {
+        "description": "who takes what",
+        "key": "rows_takes_L1",
+        "level": 1,
+        "params": {},
+        "sparql": "SELECT ?x ?d WHERE { ?x t:takes ?d . }"
+      },
+      {
+        "description": "drugs with optional label",
+        "key": "optional_label_L3",
+        "level": 3,
+        "params": {},
+        "sparql": "SELECT ?d ?l WHERE { ?p t:takes ?d . OPTIONAL { ?d t:label ?l } }"
+      }
+    ],
+    "version": 1
+  },
+  "context": {
+    "catalog_sha256": "c5ed8d7e4c1069cdb7a07aa2f0e9725faee153f0b0c9e1fb2cb225cde41b40de",
+    "ontology_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planner_version": "1",
+    "profile_sha256": "70311fcca6f892be4cbc0bd7ca55c022c40ed0c7cfa35e48f1ebb035e638b636"
+  },
+  "description": "C9orf72 in A, SOD1 in B, stesso farmaco: nessun sito soddisfa la madre",
+  "expected": [
+    {
+      "count": 1,
+      "row": [
+        "<urn:riluzole>"
+      ]
+    }
+  ],
+  "graphs": {
+    "A": "\n@prefix t: <urn:t:> .\n<urn:site:A:p17> t:variant <urn:C9orf72> ; t:takes <urn:riluzole> ; t:age 50 .\n<urn:site:A:p18> t:variant <urn:TARDBP> ; t:takes <urn:edaravone> ; t:age 60 .\n",
+    "B": "\n@prefix t: <urn:t:> .\n<urn:site:B:p5> t:variant <urn:SOD1> ; t:takes <urn:riluzole> ; t:age 70 .\n"
+  },
+  "plan": {
+    "algebra_version": "rdflib-7.6.0-hdn-1",
+    "bgps": [
+      {
+        "atoms": [
+          {
+            "id": "b0.a0",
+            "pattern": [
+              {
+                "type": "var",
+                "value": "p1"
+              },
+              {
+                "type": "uri",
+                "value": "urn:t:takes"
+              },
+              {
+                "type": "var",
+                "value": "d"
+              }
+            ]
+          },
+          {
+            "id": "b0.a1",
+            "pattern": [
+              {
+                "type": "var",
+                "value": "p1"
+              },
+              {
+                "type": "uri",
+                "value": "urn:t:variant"
+              },
+              {
+                "type": "uri",
+                "value": "urn:C9orf72"
+              }
+            ]
+          },
+          {
+            "id": "b0.a2",
+            "pattern": [
+              {
+                "type": "var",
+                "value": "p2"
+              },
+              {
+                "type": "uri",
+                "value": "urn:t:takes"
+              },
+              {
+                "type": "var",
+                "value": "d"
+              }
+            ]
+          },
+          {
+            "id": "b0.a3",
+            "pattern": [
+              {
+                "type": "var",
+                "value": "p2"
+              },
+              {
+                "type": "uri",
+                "value": "urn:t:variant"
+              },
+              {
+                "type": "uri",
+                "value": "urn:SOD1"
+              }
+            ]
+          }
+        ],
+        "id": "b0",
+        "path": [
+          "p",
+          "p",
+          "p"
+        ]
+      }
+    ],
+    "components": [
+      {
+        "atom_ids": [
+          "b0.a0",
+          "b0.a1"
+        ],
+        "bgp_id": "b0",
+        "id": "b0.c0",
+        "merge_mode": "site_unique_bag",
+        "vars": [
+          "d"
+        ]
+      },
+      {
+        "atom_ids": [
+          "b0.a2",
+          "b0.a3"
+        ],
+        "bgp_id": "b0",
+        "id": "b0.c1",
+        "merge_mode": "site_unique_bag",
+        "vars": [
+          "d"
+        ]
+      }
+    ],
+    "evaluation_query": "PREFIX t: <urn:t:>\nSELECT DISTINCT ?d WHERE { ?p1 t:variant <urn:C9orf72> . ?p1 t:takes ?d . ?p2 t:variant <urn:SOD1> . ?p2 t:takes ?d . }"
+  },
+  "plan_sha256": "8f022ab8f8fd50b387182252d105caa43c732b2670fe9607b602cc35b4db9386",
+  "profile": {
+    "local_positions": [
+      {
+        "index": 1,
+        "predicate": "*"
+      }
+    ],
+    "reference_predicates": [],
+    "site_prefixes": [],
+    "version": 1
+  },
+  "query": "PREFIX t: <urn:t:>\nSELECT DISTINCT ?d WHERE { ?p1 t:variant <urn:C9orf72> . ?p1 t:takes ?d . ?p2 t:variant <urn:SOD1> . ?p2 t:takes ?d . }",
+  "responses": {
+    "A": {
+      "context": {
+        "catalog_sha256": "c5ed8d7e4c1069cdb7a07aa2f0e9725faee153f0b0c9e1fb2cb225cde41b40de",
+        "ontology_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "planner_version": "1",
+        "profile_sha256": "70311fcca6f892be4cbc0bd7ca55c022c40ed0c7cfa35e48f1ebb035e638b636"
+      },
+      "memberships": [
+        {
+          "column_indices": [
+            0
+          ],
+          "component_id": "b0.c0",
+          "multiplicity": "1",
+          "tuple_index": 0
+        }
+      ],
+      "plan": {
+        "algebra_version": "rdflib-7.6.0-hdn-1",
+        "bgps": [
+          {
+            "atoms": [
+              {
+                "id": "b0.a0",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p1"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:takes"
+                  },
+                  {
+                    "type": "var",
+                    "value": "d"
+                  }
+                ]
+              },
+              {
+                "id": "b0.a1",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p1"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:variant"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:C9orf72"
+                  }
+                ]
+              },
+              {
+                "id": "b0.a2",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p2"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:takes"
+                  },
+                  {
+                    "type": "var",
+                    "value": "d"
+                  }
+                ]
+              },
+              {
+                "id": "b0.a3",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p2"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:variant"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:SOD1"
+                  }
+                ]
+              }
+            ],
+            "id": "b0",
+            "path": [
+              "p",
+              "p",
+              "p"
+            ]
+          }
+        ],
+        "components": [
+          {
+            "atom_ids": [
+              "b0.a0",
+              "b0.a1"
+            ],
+            "bgp_id": "b0",
+            "id": "b0.c0",
+            "merge_mode": "site_unique_bag",
+            "vars": [
+              "d"
+            ]
+          },
+          {
+            "atom_ids": [
+              "b0.a2",
+              "b0.a3"
+            ],
+            "bgp_id": "b0",
+            "id": "b0.c1",
+            "merge_mode": "site_unique_bag",
+            "vars": [
+              "d"
+            ]
+          }
+        ],
+        "evaluation_query": "PREFIX t: <urn:t:>\nSELECT DISTINCT ?d WHERE { ?p1 t:variant <urn:C9orf72> . ?p1 t:takes ?d . ?p2 t:variant <urn:SOD1> . ?p2 t:takes ?d . }"
+      },
+      "plan_sha256": "8f022ab8f8fd50b387182252d105caa43c732b2670fe9607b602cc35b4db9386",
+      "protocol": "hdn-components",
+      "query_sha256": "57e7f1d75675b437e0c6ee007adec16f57ba107a1767d27999942a0ccc4faab7",
+      "tuple_pool": [
+        [
+          {
+            "type": "uri",
+            "value": "urn:riluzole"
+          }
+        ]
+      ],
+      "version": 1
+    },
+    "B": {
+      "context": {
+        "catalog_sha256": "c5ed8d7e4c1069cdb7a07aa2f0e9725faee153f0b0c9e1fb2cb225cde41b40de",
+        "ontology_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "planner_version": "1",
+        "profile_sha256": "70311fcca6f892be4cbc0bd7ca55c022c40ed0c7cfa35e48f1ebb035e638b636"
+      },
+      "memberships": [
+        {
+          "column_indices": [
+            0
+          ],
+          "component_id": "b0.c1",
+          "multiplicity": "1",
+          "tuple_index": 0
+        }
+      ],
+      "plan": {
+        "algebra_version": "rdflib-7.6.0-hdn-1",
+        "bgps": [
+          {
+            "atoms": [
+              {
+                "id": "b0.a0",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p1"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:takes"
+                  },
+                  {
+                    "type": "var",
+                    "value": "d"
+                  }
+                ]
+              },
+              {
+                "id": "b0.a1",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p1"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:variant"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:C9orf72"
+                  }
+                ]
+              },
+              {
+                "id": "b0.a2",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p2"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:takes"
+                  },
+                  {
+                    "type": "var",
+                    "value": "d"
+                  }
+                ]
+              },
+              {
+                "id": "b0.a3",
+                "pattern": [
+                  {
+                    "type": "var",
+                    "value": "p2"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:t:variant"
+                  },
+                  {
+                    "type": "uri",
+                    "value": "urn:SOD1"
+                  }
+                ]
+              }
+            ],
+            "id": "b0",
+            "path": [
+              "p",
+              "p",
+              "p"
+            ]
+          }
+        ],
+        "components": [
+          {
+            "atom_ids": [
+              "b0.a0",
+              "b0.a1"
+            ],
+            "bgp_id": "b0",
+            "id": "b0.c0",
+            "merge_mode": "site_unique_bag",
+            "vars": [
+              "d"
+            ]
+          },
+          {
+            "atom_ids": [
+              "b0.a2",
+              "b0.a3"
+            ],
+            "bgp_id": "b0",
+            "id": "b0.c1",
+            "merge_mode": "site_unique_bag",
+            "vars": [
+              "d"
+            ]
+          }
+        ],
+        "evaluation_query": "PREFIX t: <urn:t:>\nSELECT DISTINCT ?d WHERE { ?p1 t:variant <urn:C9orf72> . ?p1 t:takes ?d . ?p2 t:variant <urn:SOD1> . ?p2 t:takes ?d . }"
+      },
+      "plan_sha256": "8f022ab8f8fd50b387182252d105caa43c732b2670fe9607b602cc35b4db9386",
+      "protocol": "hdn-components",
+      "query_sha256": "57e7f1d75675b437e0c6ee007adec16f57ba107a1767d27999942a0ccc4faab7",
+      "tuple_pool": [
+        [
+          {
+            "type": "uri",
+            "value": "urn:riluzole"
+          }
+        ]
+      ],
+      "version": 1
+    }
+  }
+}
