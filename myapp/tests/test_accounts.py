@@ -31,6 +31,15 @@ class ProtectedPagesTests(StateDirMixin, TestCase):
             self.assertEqual(r.status_code, 302, path)
             self.assertTrue(r["Location"].startswith("/login/?next="), (path, r["Location"]))
 
+    def test_research_notice_is_on_every_kind_of_page(self):
+        notice = ("Research prototype of the HEREDITARY project. Not a medical device "
+                  "and not for clinical use. Do not enter personal or patient data.")
+        self.assertContains(Client().get("/login/"), notice)
+        c = Client()
+        c.login(username="ana", password=PASSWORD)
+        for path in ("/home/", "/settings/", "/data/"):
+            self.assertContains(c.get(path), notice, msg_prefix=path)
+
     def test_posts_are_refused_when_anonymous(self):
         c = Client()
         for path in ("/set-level/", "/data/", "/settings/users/", "/query/"):

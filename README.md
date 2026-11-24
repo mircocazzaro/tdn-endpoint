@@ -14,7 +14,7 @@ HDN Central receives permitted query answers rather than direct access to the so
 | Name | HDN Endpoint |
 | Version | Repository snapshot `baefad7529c2694f78f2ed6a7a05c6331fc9d178`; no release tag is present in the inspected checkout |
 | Type | Software / web application; invokes external LLMs but does not release a pretrained model |
-| Owner partner and contact | Author and maintainer: Mirco Cazzaro, mirco.cazzaro.1999@gmail.com. Affiliation: University of Padua (UNIPD). Developed within the EU-funded HEREDITARY project. This attribution does not determine copyright ownership. |
+| Owner partner and contact | Author and maintainer: Mirco Cazzaro, mirco.cazzaro@phd.unipd.it. Affiliation: University of Padua (UNIPD). Developed within the EU-funded HEREDITARY project. This attribution does not determine copyright ownership. |
 | License | Apache-2.0; see LICENSE. Bundled third-party components retain their own licenses. |
 | Repository and DOI | https://github.com/mircocazzaro/tdn-endpoint; no software DOI is documented in the repository |
 | Release date | 8 October 2026, the date of the documented commit; this identifies the snapshot rather than a separately tagged release |
@@ -87,18 +87,54 @@ The mapping bootstrap is documented as tested with a simulated LLM. The Azure cl
 
 - **Terms of use.** The project code is distributed under the Apache License, Version 2.0; see LICENSE. Research is the intended use described in Section 2. The research and medical-device notices describe intended use and validation status; they do not amend Apache-2.0 or add field-of-use restrictions to it. Use only authorized data and restrict network access as described below. Do not describe the service as authenticated or clinically validated.
 - **LLM use.** Review schema metadata before transmission, review mapping suggestions before saving, and independently verify generated facts used in research conclusions. Protect Azure credentials and HDN signing keys.
-- **Web application notice.** The HEREDITARY template requires: “Research prototype of the HEREDITARY project. Not a medical device and not for clinical use. Do not enter personal or patient data.” This notice was not found in the inspected application templates. The README disclaimer alone does not implement it. The public demonstration must remain separate from any institutionally authorized clinical-data deployment.
-- **Contact for misuse or vulnerability reports.** Mirco Cazzaro: mirco.cazzaro.1999@gmail.com. Report sensitive findings privately; do not include patient records, credentials or private keys in public issues.
+- **Web application notice.** The HEREDITARY template requires: “Research prototype of the HEREDITARY project. Not a medical device and not for clinical use. Do not enter personal or patient data.” The administration interface shows it in a bar fixed at the bottom of every page, including the sign-in and first-start pages (`myapp/templates/myapp/_research_notice.html`, included by `base.html`, `login.html` and `setup.html`). This README block and the notice at the top remain the complete statement of research-only use. The public demonstration must remain separate from any institutionally authorized clinical-data deployment.
+- **Contact for misuse or vulnerability reports.** Mirco Cazzaro: mirco.cazzaro@phd.unipd.it. Report sensitive findings privately; do not include patient records, credentials or private keys in public issues.
 
 ## 8. Acknowledgement
 
 Funded by the European Union under grant agreement No 101137074 (HEREDITARY). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Health and Digital Executive Agency (HaDEA). Neither the European Union nor the granting authority can be held responsible for them.
 
-## Before you start: current security limitations
+## Before you start: network isolation is mandatory
 
-**Do not expose this version to an untrusted network.** The operational administration interface on port 8000 has no authentication, direct Ontop on port 8080 accepts arbitrary SPARQL, and the query route on port 8084 is unauthenticated. Catalog and disclosure checks apply through `/sparql-protected/`, not through direct Ontop access.
+**Deploying this release in an institution requires the network controls below. They are a condition of use, not a recommendation, and this README does not enforce them: the deploying institution must apply and verify them.** The software does not refuse to start on an exposed network.
 
-Allow Central to reach only port 8084, and restrict it to the intended Central host or trusted network. Keep ports 8000 and 8080 local using binding and firewall rules. Use an SSH tunnel for remote administration. Replace development security settings before an actual deployment.
+What the software itself protects, and what it does not:
+
+| Port | Service | Authenticated by the software | Required exposure |
+|---|---|---|---|
+| 8000 | Administration interface (Django, gunicorn) | Yes: sign-in on every page except the public paths listed in *Access to the administration interface*; the default `admin` password is public until changed | Loopback or an administrative network only. Never to the Internet; remote administration through an SSH tunnel or VPN |
+| 8084 | Query service `/sparql-protected/` and signed protocols `/hdn/` | `/hdn/` is signed (Ed25519). **`/sparql-protected/` is not authenticated**: any client that can reach it can run catalog queries up to the local disclosure level | Only the Central host or a trusted network, restricted at the firewall |
+| 8080 | Ontop | **No.** It accepts arbitrary SPARQL and bypasses catalog and disclosure checks | Loopback only. Never published, never forwarded by a proxy |
+
+Port 8000 also serves `/sparql-protected/` and `/hdn/` (without the 404 gate that port 8084 applies), so it must not be reachable by Central's network or the Internet either.
+
+Mandatory controls:
+
+1. Allow inbound connections to 8084 only from the Central host or a trusted network. Deny 8000 and 8080 from every other host.
+2. Bind 8000 to `127.0.0.1` (the Docker example below does). Ontop and the query service listen on all interfaces by default (the Ontop endpoint is a Spring Boot server with no bind option in this release, and `run_sparql_server.py` binds `""`), so for 8080 a host firewall rule, or a container that does not publish it, is the only control.
+3. A reverse proxy must forward only the path of the intended service. A proxy that forwards to 8000 publishes the administration sign-in to every client of that proxy: restrict it by source address, and add TLS (`HDN_HTTPS=1`).
+4. Change the default `admin` password at the first sign-in and set `HDN_SECRET_KEY` (see *Secrets*).
+5. Do not enter personal or patient data in a deployment that does not satisfy these controls and its own institutional approvals.
+
+Verify the effective configuration after every deployment or network change; a README statement is not evidence. From the endpoint host:
+
+```bash
+ss -ltnp | grep -E ':(8000|8080|8084)'     # 8000 must show 127.0.0.1; note 8080 and 8084
+docker port hdn-endpoint                       # Docker: only 127.0.0.1:8000 and the 8084 mapping; never 8080
+sudo ufw status verbose  # or: sudo iptables -S / nft list ruleset
+```
+
+From a host that must **not** have access (not Central, not the administrator), each of these must fail or time out:
+
+```bash
+curl -m 5 -i http://ENDPOINT:8000/login/
+curl -m 5 -i http://ENDPOINT:8080/sparql
+curl -m 5 -i -X POST http://ENDPOINT:8084/sparql-protected/ -d 'query=ASK{}'
+```
+
+From Central, `curl -i http://ENDPOINT:8084/sparql-protected/` must return `405`, and `/login/` on port 8084 must return `404`.
+
+Record the result (date, host, rules in force) with the institutional deployment documentation.
 
 ## Requirements
 
@@ -378,12 +414,12 @@ The image uses an unprivileged user and Supervisor for the administration and qu
 docker build -t hdn-endpoint .
 docker run -d --name hdn-endpoint \
   -p 127.0.0.1:8000:8000 \
-  -p 8084:8084 \
+  -p CENTRAL_FACING_IP:8084:8084 \
   -v hdn-endpoint-uploads:/app/uploads \
   hdn-endpoint
 ```
 
-Restrict port 8084 to Central or a trusted network. Do not publish port 8080. Start Ontop through *Ontop Monitor*, not the `ontop` program entry in `supervisord.conf`.
+Replace `CENTRAL_FACING_IP` with the address of the interface Central reaches; `-p 8084:8084` would publish the unauthenticated query route on every interface, and Docker adds its own firewall rules that bypass `ufw`, so restrict it with the `DOCKER-USER` chain or a network-level firewall. Do not publish port 8080. Start Ontop through *Ontop Monitor*, not the `ontop` program entry in `supervisord.conf`.
 
 The endpoint can be published under any path of the domain (for example `tdn.dei.unipd.it/api1` or `hdn-endpoint.com/abcd`) with no configuration, whether the reverse proxy removes that path or not.
 
